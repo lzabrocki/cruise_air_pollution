@@ -2138,8 +2138,6 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   }</style>
   <!--/radix_placeholder_distill-->
   <script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
-  <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
-  <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
   <script src="site_libs/popper-2.6.0/popper.min.js"></script>
   <link href="site_libs/tippy-6.2.7/tippy.css" rel="stylesheet" />
   <link href="site_libs/tippy-6.2.7/tippy-light-border.css" rel="stylesheet" />
@@ -2206,9 +2204,11 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <h3>Contents</h3>
 <ul>
 <li><a href="#required-packages">Required Packages</a></li>
-<li><a href="#toy-example">Toy Example</a></li>
+<li><a href="#toy-example">Toy Example</a>
+<ul>
 <li><a href="#science-table">Science Table</a></li>
 <li><a href="#observed-data">Observed Data</a></li>
+</ul></li>
 <li><a href="#testing-the-sharp-null-hypothesis-of-no-treatment">Testing the Sharp Null Hypothesis of No Treatment</a>
 <ul>
 <li><a href="#stating-the-hypothesis">Stating the Hypothesis</a></li>
@@ -2216,14 +2216,14 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <li><a href="#computing-the-null-distribution-of-the-test-statistic">Computing the Null Distribution of the Test Statistic</a></li>
 <li><a href="#computing-the-two-sided-p-value">Computing the Two-Sided P-Value</a></li>
 </ul></li>
-<li><a href="#computing-a-95-fisherian-intervals-for-sharp-null-hypotheses">Computing a 95% Fisherian Intervals For Sharp Null Hypotheses</a>
+<li><a href="#computing-a-95-fisherian-intervals-for-a-range-of-sharp-null-hypotheses">Computing a 95% Fisherian Intervals for a Range of Sharp Null Hypotheses</a>
 <ul>
 <li><a href="#steps-of-the-procedure">Steps of the Procedure</a></li>
 <li><a href="#computational-shortcut">Computational Shortcut</a></li>
 <li><a href="#implementation-in-r">Implementation in R</a></li>
 </ul></li>
-<li><a href="#computing-a-95-fisherian-intervals-for-weak-null-hypotheses">Computing a 95% Fisherian Intervals For Weak Null Hypotheses</a></li>
 <li><a href="#comparison-with-neymans-approach">Comparison with Neyman’s Approach</a></li>
+<li><a href="#computing-a-95-fisherian-intervals-for-weak-null-hypotheses">Computing a 95% Fisherian Intervals For Weak Null Hypotheses</a></li>
 </ul>
 </nav>
 </div>
@@ -2233,20 +2233,22 @@ text-align: justify}
 </style>
 <p>In this document, we explain with a toy example how to:</p>
 <ul>
-<li>compute a two-sided <em>p</em>-value for the test of the sharp null hypothesis of no effect.</li>
-<li>carry out a test inversion procedure to compute a 95% Fisherian interval.</li>
+<li>Test the sharp null hypothesis of no effect for all units.</li>
+<li>Carry out a test inversion procedure to compute a 95% Fisherian interval for constant treatment effects consistent with the data.</li>
+<li>Compare the results with Neyman’s approach targeting the average causal effect.</li>
+<li>Adapt the randomization inference for testing weak null hypotheses (i.e., average causal effects).</li>
 </ul>
 <p><strong>Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at <a href="mailto:leo.zabrocki@psemail.eu" class="email">leo.zabrocki@psemail.eu</a> and <a href="mailto:marion.leroutier@hhs.se" class="email">marion.leroutier@hhs.se</a>.</strong></p>
 <h1 id="required-packages">Required Packages</h1>
-<p>To reproduce exactly the <code>3_toy_example_randomization_inference.html</code> document, we first need to have installed:</p>
+<p>To reproduce the <code>3_toy_example_randomization_inference.html</code> document, we need to have installed:</p>
 <ul>
 <li>the <a href="https://www.r-project.org/">R</a> programming language</li>
 <li><a href="https://rstudio.com/">RStudio</a>, an integrated development environment for R, which will allow you to knit the <code>3_toy_example_randomization_inference.Rmd</code> file and interact with the R code chunks</li>
 <li>the <a href="https://rmarkdown.rstudio.com/">R Markdown</a> package</li>
 <li>and the <a href="https://rstudio.github.io/distill/">Distill</a> package which provides the template for this document.</li>
 </ul>
-<p>Once everything is set up, we have to load the following packages:</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<p>Once everything is set up, we load the following packages:</p>
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># load required packages</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://yihui.org/knitr/'>knitr</a></span><span class='op'>)</span> <span class='co'># for creating the R Markdown document</span>
@@ -2258,7 +2260,7 @@ text-align: justify}
 </div>
 </div>
 <p>We finally load our custom <code>ggplot2</code> theme for graphs:</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># load ggplot custom theme</span>
 <span class='kw'><a href='https://rdrr.io/r/base/source.html'>source</a></span><span class='op'>(</span><span class='fu'>here</span><span class='fu'>::</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span>
@@ -2273,18 +2275,24 @@ text-align: justify}
 </div>
 </div>
 <h1 id="toy-example">Toy Example</h1>
-<p>In this toy example, we want to estimate the effect of cruise vessels docking at Marseille’s port on NO<span class="math inline">\(_{2}\)</span> concentration. For simplicity, imagine that our matching procedure resulted in 10 pairs of hours with similar weather and calendar characteristics. Treated hours are hours with cruise vessels docking at the port while control hours are hours without cruise vessels. The outcome of the experiment is the hourly NO<span class="math inline">\(_{2}\)</span> measured at a station located in the city. The exposition of this toy example is inspired by those found in Paul Rosenbaum’s textbook (<em>Design of Observational Studies</em>, 2019, chapter II) and Tirthankar Dasgupta and Donald B. Rubin’s forthcoming textbook (<em>Experimental Design: A Randomization-Based Perspective</em>).</p>
-<h1 id="science-table">Science Table</h1>
-<p>We display below the Science Table of our imaginary experiment:</p>
+<p>In this toy example, we aim to estimate the effect of cruise vessels docking at Marseille’s port on NO<span class="math inline">\(_{2}\)</span> concentration:</p>
+<ul>
+<li>For simplicity, imagine that our matching procedure resulted in 10 pairs of hours with similar weather and calendar characteristics (i.e., same average temperature, same day of the week, etc…).</li>
+<li>Treated units are hours with cruise vessels docking at the port while control units are hours without cruise vessels.</li>
+<li>The outcome of the experiment is the hourly NO<span class="math inline">\(_{2}\)</span> concentration measured at a station located in the city.</li>
+</ul>
+<p>The exposition of this toy example is inspired by those found in the chapter II of <a href="https://link.springer.com/book/10.1007/978-3-030-46405-9">Paul Rosenbaum’s textbook</a> and Tirthankar Dasgupta and Donald B. Rubin’s forthcoming textbook (<em>Experimental Design: A Randomization-Based Perspective</em>).</p>
+<h3 id="science-table">Science Table</h3>
+<p>We display below the Science Table of our imaginary experiment, that is to say the table showing the treatment status and potential outcomes for each observation:</p>
 <ul>
 <li>The first column <strong>Pair</strong> is the indicator of the pair. We represent the index of a pair by <em>i</em> which takes values from 1 to 5.</li>
-<li>The second column <strong>Unit Index</strong> shows the index <em>j</em> of a unit within the pair (<em>j</em> is equal to 1 for the first unit in the pair and to 2 for the second unit).</li>
+<li>The second column <strong>Unit Index</strong> is the index <em>j</em> of a unit within the pair (<em>j</em> is equal to 1 for the first unit in the pair and to 2 for the second unit).</li>
 <li>The third column <strong>W</strong> indicates the treatment allocation. W = 1 for treated units and W = 0 for controls.</li>
 <li>The fourth and fifth columns are the potential outcomes of each unit and represent the NO<span class="math inline">\(_{2}\)</span> concentrations measured in <span class="math inline">\(\mu g/m^{3}\)</span>. Y(W = 0) is the potential outcome when the unit does not receive the treatment and Y(W = 1) is the potential outcome when the unit is treated. As this is an artificial example, we imagine that we know for each unit the values of both potential outcomes.</li>
 <li>The six column <span class="math inline">\(\tau\)</span> is the unit constant causal effect. Here, the causal effect is equal to +3 <span class="math inline">\(\mu g/m^{3}\)</span>.</li>
-<li>The last column <strong>Y<span class="math inline">\(^{obs}\)</span></strong> represents the potential outcome that we would observe according to the treatment allocation, that is to say <span class="math inline">\(Y_{i,j} = W_{i,j}\times Y_{i,j}(1) + (1-W_{i,j})*Y_{i,j}(0)\)</span>. Here, in each pair, the first unit does not receive the treatment so that we observe Y(0) while the second unit is treated and we observe Y(1).</li>
+<li>The last column <strong>Y<span class="math inline">\(^{obs}\)</span></strong> represents the potential outcome that we would observe according to the treatment allocation, that is to say <span class="math inline">\(Y_{i,j} = W_{i,j}\times Y_{i,j}(1) + (1-W_{i,j})\times Y_{i,j}(0)\)</span>. Here, in each pair, the first unit does not receive the treatment so that we observe Y(0) while the second unit is treated and we observe Y(1).</li>
 </ul>
-<div class="layout-chunk" data-layout="l-body-outset">
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># load the science table</span>
 <span class='va'>science_table</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>readRDS</a></span><span class='op'>(</span><span class='fu'>here</span><span class='fu'>::</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"inputs"</span>, <span class='st'>"1.data"</span>, <span class='st'>"3.toy_example"</span>, <span class='st'>"science_table.RDS"</span><span class='op'>)</span><span class='op'>)</span>
@@ -2300,11 +2308,10 @@ text-align: justify}
     <span class='st'>"$\\tau$"</span> <span class='op'>=</span> <span class='va'>tau</span>,
     <span class='st'>"Y$^{obs}$"</span> <span class='op'>=</span> <span class='va'>y</span>
   <span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://rdrr.io/pkg/knitr/man/kable.html'>kable</a></span><span class='op'>(</span>align <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='st'>"c"</span>, <span class='fl'>6</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://rdrr.io/pkg/kableExtra/man/kable_styling.html'>kable_styling</a></span><span class='op'>(</span>bootstrap_options <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"striped"</span>, <span class='st'>"hover"</span><span class='op'>)</span><span class='op'>)</span>
+  <span class='fu'><a href='https://rdrr.io/pkg/knitr/man/kable.html'>kable</a></span><span class='op'>(</span><span class='va'>.</span>, align <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='st'>"c"</span>, <span class='fl'>6</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
 </code></pre>
 </div>
-<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
+<table>
 <thead>
 <tr>
 <th style="text-align:center;">
@@ -2794,9 +2801,9 @@ X
 </tbody>
 </table>
 </div>
-<h1 id="observed-data">Observed Data</h1>
-<p>Researchers will not have access to the Science Table but the table below where they only have information on the pair indicator, the unit index, the treatment allocated and the observed NO<span class="math inline">\(_{2}\)</span> concentration. Our randomization inference procedure will be based only on this table.</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<h3 id="observed-data">Observed Data</h3>
+<p>In reality, we do not have access to the Science Table but the table below where we only have information on the pair indicator, the unit index, the treatment allocated and the observed NO<span class="math inline">\(_{2}\)</span> concentration. Our randomization inference procedure will be based only on this table.</p>
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># create observed data</span>
 <span class='va'>data</span> <span class='op'>&lt;-</span> <span class='va'>science_table</span> <span class='op'>%&gt;%</span>
@@ -2805,11 +2812,10 @@ X
 <span class='co'># display observed data</span>
 <span class='va'>data</span> <span class='op'>%&gt;%</span>
   <span class='fu'>rename</span><span class='op'>(</span>Pair <span class='op'>=</span> <span class='va'>pair</span>, <span class='st'>"Unit Index"</span> <span class='op'>=</span> <span class='va'>unit</span>, W <span class='op'>=</span> <span class='va'>w</span>, <span class='st'>"Y$^{obs}$"</span> <span class='op'>=</span> <span class='va'>y</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://rdrr.io/pkg/knitr/man/kable.html'>kable</a></span><span class='op'>(</span>align <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='st'>"c"</span>, <span class='fl'>4</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://rdrr.io/pkg/kableExtra/man/kable_styling.html'>kable_styling</a></span><span class='op'>(</span>bootstrap_options <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"striped"</span>, <span class='st'>"hover"</span><span class='op'>)</span><span class='op'>)</span>
+  <span class='fu'><a href='https://rdrr.io/pkg/knitr/man/kable.html'>kable</a></span><span class='op'>(</span>align <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='st'>"c"</span>, <span class='fl'>4</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
 </code></pre>
 </div>
-<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
+<table>
 <thead>
 <tr>
 <th style="text-align:center;">
@@ -3112,24 +3118,23 @@ X
 </div>
 <p>Before moving to the inference, we need to:</p>
 <ul>
-<li>know the number of unique treatment allocations. In a pair experiment, there are <span class="math inline">\(2^{I}\)</span> unique treatement allocations, with <em>I</em> is the number of pairs. In this experiment, there are 1024 unique treatment allocations.</li>
-<li>define a test statistic. We will build its distribution under the sharp null hypothesis. We use the average of pair differences as a test statistic.</li>
+<li>Know the number of unique treatment allocations. In a pair experiment, there are <span class="math inline">\(2^{I}\)</span> unique treatment allocations, with <em>I</em> is the number of pairs. In this experiment, there are <span class="math inline">\(2^{10} = 1024\)</span> unique treatment allocations.</li>
+<li>Define a test statistic. We will build its distribution under the sharp null hypothesis. Here, we use the average of pair differences as a test statistic.</li>
 </ul>
 <h1 id="testing-the-sharp-null-hypothesis-of-no-treatment">Testing the Sharp Null Hypothesis of No Treatment</h1>
 <h3 id="stating-the-hypothesis">Stating the Hypothesis</h3>
-<p>The sharp null hypothesis of no treatment states that <span class="math inline">\(Y_{i,j}(0) = Y_{i,j}(1)\)</span>, that is to say the treatment has no effect for each unit. With this assumption, we could impute the missing Y(1) for control units and the missing Y(0) for treated units as shown in the table below :</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<p>The sharp null hypothesis of no treatment states that $ i,j$, <span class="math inline">\(H_{0}: Y_{i,j}(0) = Y_{i,j}(1)\)</span>, that is to say the treatment has no effect for each unit. With this assumption, we could impute the missing Y(1) for control units and the missing Y(0) for treated units as shown in the table below :</p>
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># display imputed observed data</span>
 <span class='va'>data</span> <span class='op'>%&gt;%</span>
   <span class='fu'>mutate</span><span class='op'>(</span><span class='st'>"Y(0)"</span> <span class='op'>=</span> <span class='va'>y</span>,
          <span class='st'>"Y(1)"</span> <span class='op'>=</span> <span class='va'>y</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>rename</span><span class='op'>(</span>Pair <span class='op'>=</span> <span class='va'>pair</span>, <span class='st'>"Unit Index"</span> <span class='op'>=</span> <span class='va'>unit</span>, W <span class='op'>=</span> <span class='va'>w</span>, <span class='st'>"Y$^{obs}$"</span> <span class='op'>=</span> <span class='va'>y</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://rdrr.io/pkg/knitr/man/kable.html'>kable</a></span><span class='op'>(</span>align <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='st'>"c"</span>, <span class='fl'>6</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://rdrr.io/pkg/kableExtra/man/kable_styling.html'>kable_styling</a></span><span class='op'>(</span>bootstrap_options <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"striped"</span>, <span class='st'>"hover"</span><span class='op'>)</span><span class='op'>)</span>
+  <span class='fu'><a href='https://rdrr.io/pkg/knitr/man/kable.html'>kable</a></span><span class='op'>(</span>align <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='st'>"c"</span>, <span class='fl'>6</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
 </code></pre>
 </div>
-<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
+<table>
 <thead>
 <tr>
 <th style="text-align:center;">
@@ -3557,7 +3562,7 @@ X
 </table>
 </div>
 <h3 id="computional-shortcut">Computional Shortcut</h3>
-<p>To create the the distribution of the test statistic under this sharp null hypothesis, we could permute the treatment vector, express for each unit the outcome observed according to the permuted value of the treatment and then compute the average of pair differences. This is a bit cumbersome in terms of programming. In the chapter II of his textbook, Paul Rosenbaum offers a more efficient procedure:</p>
+<p>To create the the distribution of the test statistic under the sharp null hypothesis, we could permute the treatment vector, express for each unit the outcome observed according to the permuted value of the treatment and then compute the average of pair differences. This is a bit cumbersome in terms of programming. In the chapter II of his textbook, Paul Rosenbaum offers a more efficient procedure:</p>
 <ul>
 <li>For each unit <em>i</em> of each pair <em>j</em>, its observed outcome is equal to <span class="math inline">\(Y_{i,j} = W_{i,j}\times Y_{i,j}(1) + (1-W_{i,j})*Y_{i,j}(0)\)</span>.</li>
 <li>The difference in outcomes for the pair <em>i</em> (i.e., the difference in outcomes between the treated and control units) is equal to <span class="math inline">\(D_{i} = (W_{i,1} - W_{i,2})(Y_{i,1} - Y_{i,2})\)</span></li>
@@ -3568,14 +3573,14 @@ X
 <p>In terms of programming, we can proceed as follows:</p>
 <ol type="1">
 <li>We first compute the observed average of pair differences. We are now working with a table with 10 pair differences.</li>
-<li>We then compute the permutations matrix of all possible treatment assignments This is a matrix of 10 rows with 1024 columns.</li>
+<li>We then compute the permutations matrix of all possible treatment assignments. This is a matrix of 10 rows with 1024 columns.</li>
 <li>For each vector of treatment assignment, we compute the average of pair differences.</li>
 </ol>
 <h3 id="computing-the-null-distribution-of-the-test-statistic">Computing the Null Distribution of the Test Statistic</h3>
 <p>We compute the observed average of pair differences:</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># compute average_observed_pair_differences</span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># compute the observed average of pair differences</span>
 <span class='va'>average_observed_pair_differences</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'>%&gt;%</span>
   <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>pair</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>summarise</span><span class='op'>(</span>pair_difference <span class='op'>=</span> <span class='va'>y</span><span class='op'>[</span><span class='fl'>2</span><span class='op'>]</span> <span class='op'>-</span> <span class='va'>y</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
@@ -3583,14 +3588,14 @@ X
   <span class='fu'>summarise</span><span class='op'>(</span>average_pair_differences <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>pair_difference</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>pull</span><span class='op'>(</span><span class='va'>average_pair_differences</span><span class='op'>)</span>
 
-<span class='co'># display average_observed_pair_differences</span>
+<span class='co'># display the observed average of pair differences</span>
 <span class='va'>average_observed_pair_differences</span>
 </code></pre>
 </div>
 <pre><code>[1] 2.4</code></pre>
 </div>
 <p>We have already computed the permutations matrix of all treatment assignments and we load this matrix:</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># open the matrix of treatment permutations</span>
 <span class='va'>permutations_matrix</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>readRDS</a></span><span class='op'>(</span><span class='fu'>here</span><span class='fu'>::</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"inputs"</span>, <span class='st'>"1.data"</span>, <span class='st'>"3.toy_example"</span>, <span class='st'>"permutations_matrix.rds"</span><span class='op'>)</span><span class='op'>)</span>
@@ -3598,9 +3603,10 @@ X
 </div>
 </div>
 <p>We store the vector of observed pair differences :</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>observed_pair_differences</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'>%&gt;%</span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># store vector of pair differences</span>
+<span class='va'>observed_pair_differences</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'>%&gt;%</span>
   <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>pair</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>summarise</span><span class='op'>(</span>pair_difference <span class='op'>=</span> <span class='va'>y</span><span class='op'>[</span><span class='fl'>2</span><span class='op'>]</span> <span class='op'>-</span> <span class='va'>y</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>ungroup</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
@@ -3609,28 +3615,30 @@ X
 </div>
 </div>
 <p>We then create a function to compute the randomization distribution of the test statistic:</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># randomization distribution function</span>
-<span class='co'># this function takes the vector of pair differences</span>
-<span class='co'># and then compute the average pair difference according </span>
+<span class='co'># this function takes as inputs the vector of pair differences and the number of pairs</span>
+<span class='co'># and then compute the average pair difference according</span>
 <span class='co'># to the permuted treatment assignment</span>
-<span class='va'>function_randomization_distribution</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>vector_pair_difference</span>, <span class='va'>n_pairs</span><span class='op'>)</span> <span class='op'>{</span>
-  <span class='va'>randomization_distribution</span> <span class='op'>=</span> <span class='cn'>NULL</span>
-  <span class='va'>n_columns</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/dim.html'>dim</a></span><span class='op'>(</span><span class='va'>permutations_matrix</span><span class='op'>)</span><span class='op'>[</span><span class='fl'>2</span><span class='op'>]</span>
-  <span class='kw'>for</span> <span class='op'>(</span><span class='va'>i</span> <span class='kw'>in</span> <span class='fl'>1</span><span class='op'>:</span><span class='va'>n_columns</span><span class='op'>)</span> <span class='op'>{</span>
-    <span class='va'>randomization_distribution</span><span class='op'>[</span><span class='va'>i</span><span class='op'>]</span> <span class='op'>=</span>  <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>vector_pair_difference</span> <span class='op'>*</span> <span class='va'>permutations_matrix</span><span class='op'>[</span>, <span class='va'>i</span><span class='op'>]</span><span class='op'>)</span> <span class='op'>/</span> <span class='va'>n_pairs</span>
+<span class='va'>function_randomization_distribution</span> <span class='op'>&lt;-</span>
+  <span class='kw'>function</span><span class='op'>(</span><span class='va'>vector_pair_difference</span>, <span class='va'>n_pairs</span><span class='op'>)</span> <span class='op'>{</span>
+    <span class='va'>randomization_distribution</span> <span class='op'>=</span> <span class='cn'>NULL</span>
+    <span class='va'>n_columns</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/dim.html'>dim</a></span><span class='op'>(</span><span class='va'>permutations_matrix</span><span class='op'>)</span><span class='op'>[</span><span class='fl'>2</span><span class='op'>]</span>
+    <span class='kw'>for</span> <span class='op'>(</span><span class='va'>i</span> <span class='kw'>in</span> <span class='fl'>1</span><span class='op'>:</span><span class='va'>n_columns</span><span class='op'>)</span> <span class='op'>{</span>
+      <span class='va'>randomization_distribution</span><span class='op'>[</span><span class='va'>i</span><span class='op'>]</span> <span class='op'>=</span>  <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>vector_pair_difference</span> <span class='op'>*</span> <span class='va'>permutations_matrix</span><span class='op'>[</span>, <span class='va'>i</span><span class='op'>]</span><span class='op'>)</span> <span class='op'>/</span> <span class='va'>n_pairs</span>
+    <span class='op'>}</span>
+    <span class='kw'><a href='https://rdrr.io/r/base/function.html'>return</a></span><span class='op'>(</span><span class='va'>randomization_distribution</span><span class='op'>)</span>
   <span class='op'>}</span>
-  <span class='kw'><a href='https://rdrr.io/r/base/function.html'>return</a></span><span class='op'>(</span><span class='va'>randomization_distribution</span><span class='op'>)</span>
-<span class='op'>}</span>
 </code></pre>
 </div>
 </div>
-<p>We run this function:</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<p>We run the function:</p>
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># get the distribution of permuted test statistics</span>
-<span class='va'>distribution_test_statistics</span> <span class='op'>&lt;-</span> <span class='fu'>function_randomization_distribution</span><span class='op'>(</span>vector_pair_difference <span class='op'>=</span> <span class='va'>observed_pair_differences</span>, n_pairs <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span>
+<span class='va'>distribution_test_statistics</span> <span class='op'>&lt;-</span>
+  <span class='fu'>function_randomization_distribution</span><span class='op'>(</span>vector_pair_difference <span class='op'>=</span> <span class='va'>observed_pair_differences</span>, n_pairs <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span>
 </code></pre>
 </div>
 </div>
@@ -3638,13 +3646,16 @@ X
 <div class="layout-chunk" data-layout="l-body-outset">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># make the graph</span>
-<span class='va'>graph_distribution_test_statistic</span> <span class='op'>&lt;-</span> <span class='fu'>tibble</span><span class='op'>(</span>distribution_test_statistics <span class='op'>=</span> <span class='va'>distribution_test_statistics</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+<span class='va'>graph_distribution_test_statistic</span> <span class='op'>&lt;-</span>
+  <span class='fu'>tibble</span><span class='op'>(</span>distribution_test_statistics <span class='op'>=</span> <span class='va'>distribution_test_statistics</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>ggplot</span><span class='op'>(</span><span class='va'>.</span>, <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>distribution_test_statistics</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'>geom_histogram</span><span class='op'>(</span>colour <span class='op'>=</span> <span class='st'>"white"</span>, fill <span class='op'>=</span> <span class='va'>my_blue</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'>geom_vline</span><span class='op'>(</span>xintercept <span class='op'>=</span> <span class='va'>average_observed_pair_differences</span>, size <span class='op'>=</span> <span class='fl'>1.2</span>, colour <span class='op'>=</span> <span class='va'>my_orange</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>geom_vline</span><span class='op'>(</span>xintercept <span class='op'>=</span> <span class='va'>average_observed_pair_differences</span>,
+             size <span class='op'>=</span> <span class='fl'>1.2</span>,
+             colour <span class='op'>=</span> <span class='va'>my_orange</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'>xlab</span><span class='op'>(</span><span class='st'>"Permuted Test Statistics"</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"Counts"</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'>theme_tufte</span><span class='op'>(</span><span class='op'>)</span>
-  
+
 <span class='co'># display the graph</span>
 <span class='va'>graph_distribution_test_statistic</span>
 </code></pre>
@@ -3652,41 +3663,56 @@ X
 <img src="3_toy_example_randomization_inference_files/figure-html5/unnamed-chunk-11-1.png" width="3000" />
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># save the graph</span>
-<span class='fu'>ggsave</span><span class='op'>(</span><span class='va'>graph_distribution_test_statistic</span>, filename <span class='op'>=</span> <span class='fu'>here</span><span class='fu'>::</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"inputs"</span>, <span class='st'>"3.outputs"</span>, <span class='st'>"3.toy_example"</span>, <span class='st'>"distribution_test_statistic_sharp_null.pdf"</span><span class='op'>)</span>, 
-       width <span class='op'>=</span> <span class='fl'>40</span>, height <span class='op'>=</span> <span class='fl'>20</span>, units <span class='op'>=</span> <span class='st'>"cm"</span>, device <span class='op'>=</span> <span class='va'>cairo_pdf</span><span class='op'>)</span>
+<span class='fu'>ggsave</span><span class='op'>(</span>
+  <span class='va'>graph_distribution_test_statistic</span>,
+  filename <span class='op'>=</span> <span class='fu'>here</span><span class='fu'>::</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span>
+    <span class='st'>"inputs"</span>,
+    <span class='st'>"3.outputs"</span>,
+    <span class='st'>"3.toy_example"</span>,
+    <span class='st'>"distribution_test_statistic_sharp_null.pdf"</span>
+  <span class='op'>)</span>,
+  width <span class='op'>=</span> <span class='fl'>20</span>,
+  height <span class='op'>=</span> <span class='fl'>10</span>,
+  units <span class='op'>=</span> <span class='st'>"cm"</span>,
+  device <span class='op'>=</span> <span class='va'>cairo_pdf</span>
+<span class='op'>)</span>
 </code></pre>
 </div>
 </div>
 <h3 id="computing-the-two-sided-p-value">Computing the Two-Sided P-Value</h3>
 <p>To compute a two-sided <em>p</em>-value, we again follow the explanations provided by Paul Rosenbaum in the chapter II of his textbook:</p>
 <ol type="1">
-<li>We first compute both the proportions of permuted test statistics that are lower or higher than the observed test statistic.</li>
+<li>We first compute the proportions of permuted test statistics that are lower and higher than the observed test statistic.</li>
 <li>We then double the smallest proportion.</li>
-<li>We take the minimum of its value and one.</li>
+<li>We take the minimum of its value and one. This give us the two-sided <span class="math inline">\(p\)</span>-value.</li>
 </ol>
 <p>We implement this procedure as follows:</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># number of permutations</span>
 <span class='va'>n_permutations</span> <span class='op'>&lt;-</span> <span class='fl'>1024</span>
 
 <span class='co'># compute upper proportion</span>
-<span class='va'>upper_p_value</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>distribution_test_statistics</span> <span class='op'>&gt;=</span> <span class='va'>average_observed_pair_differences</span><span class='op'>)</span><span class='op'>/</span><span class='va'>n_permutations</span>
+<span class='va'>upper_p_value</span> <span class='op'>&lt;-</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>distribution_test_statistics</span> <span class='op'>&gt;=</span> <span class='va'>average_observed_pair_differences</span><span class='op'>)</span> <span class='op'>/</span>
+  <span class='va'>n_permutations</span>
 
 <span class='co'># compute lower proportion</span>
-<span class='va'>lower_p_value</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>distribution_test_statistics</span> <span class='op'>&lt;=</span> <span class='va'>average_observed_pair_differences</span><span class='op'>)</span><span class='op'>/</span><span class='va'>n_permutations</span>
+<span class='va'>lower_p_value</span> <span class='op'>&lt;-</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>distribution_test_statistics</span> <span class='op'>&lt;=</span> <span class='va'>average_observed_pair_differences</span><span class='op'>)</span> <span class='op'>/</span>
+  <span class='va'>n_permutations</span>
 
 <span class='co'># double the smallest proportion</span>
-<span class='va'>double_smallest_proprotion</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>upper_p_value</span>, <span class='va'>lower_p_value</span><span class='op'>)</span><span class='op'>)</span><span class='op'>*</span><span class='fl'>2</span>
+<span class='va'>double_smallest_proprotion</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>upper_p_value</span>, <span class='va'>lower_p_value</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>*</span> <span class='fl'>2</span>
 
 <span class='co'># take the minimum of this proportion and one</span>
 <span class='va'>p_value</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>double_smallest_proprotion</span>, <span class='fl'>1</span><span class='op'>)</span>
 </code></pre>
 </div>
 </div>
-<p>The two-sided <em>p</em>-value for the sharp null hypothesis of no effect is equal to 0.55.</p>
-<h1 id="computing-a-95-fisherian-intervals-for-sharp-null-hypotheses">Computing a 95% Fisherian Intervals For Sharp Null Hypotheses</h1>
-<p>We follow here the explanations provided by Tirthankar Dasguspta and Donald B. Rubin in their forthcoming textbook on experimental design: <em>Experimental Design: A Randomization-Based Perspective</em>.</p>
+<p>The two-sided <em>p</em>-value for the sharp null hypothesis of no effect is equal to 0.55. We fail to reject the sharp null hypothesis of no effect, despite having simulated a true constant effect of +3 <span class="math inline">\(\mu g/m^{3}\)</span>.</p>
+<h1 id="computing-a-95-fisherian-intervals-for-a-range-of-sharp-null-hypotheses">Computing a 95% Fisherian Intervals for a Range of Sharp Null Hypotheses</h1>
+<p>In addition to computing the sharp null hypothesis of no effect, we can make the randomization inference procedure more informative by computing also the range of constant effects consistent with the data (i.e., a Fisherian interval). We follow again the explanations provided by Tirthankar Dasguspta and Donald B. Rubin in their forthcoming textbook on experimental design: <em>Experimental Design: A Randomization-Based Perspective</em>.</p>
 <h3 id="steps-of-the-procedure">Steps of the Procedure</h3>
 <p>Instead of gauging a null effect for all units, we test a set of  sharp null hypotheses <span class="math inline">\(H_{0}^{k}\)</span>: Y<span class="math inline">\(_{i,j}\)</span>(1) = Y<span class="math inline">\(_{i,j}\)</span>(0) + <span class="math inline">\(\tau_{k}\)</span> for <em>k</em> =1,<span class="math inline">\(\ldots\)</span>,  and where <span class="math inline">\(\tau_{k}\)</span> represents a constant unit-level treatment effect size.</p>
 <p>We must therefore choose of set of constant treatment effects that we would like to test. Here, we test a set of 81 sharp null hypotheses of constant treatment effects ranging from -20  to +20  with increments of 0.5.</p>
@@ -3694,9 +3720,9 @@ X
 <p>To test each hypothesis, we compute the distribution of the test statistic. The sequence of  hypotheses <span class="math inline">\(H_{0}^{k}\)</span>: Y<span class="math inline">\(_{i,j}\)</span>(1) - Y<span class="math inline">\(_{i,j}\)</span>(0) <span class="math inline">\(&gt;\)</span> <span class="math inline">\(\tau_{k}\)</span> forms an upper -value function of <span class="math inline">\(\tau\)</span>, <span class="math inline">\(p^{+}(\tau)\)</span>, while the sequence of alternative hypotheses <span class="math inline">\(H_{0}^{k}\)</span>: Y<span class="math inline">\(_{i,j}\)</span>(1) - Y<span class="math inline">\(_{i,j}\)</span>(0) <span class="math inline">\(&lt;\)</span> <span class="math inline">\(\tau_{k}\)</span> makes a lower -value function, <span class="math inline">\(\tau\)</span>, <span class="math inline">\(p^{-}(\tau)\)</span>. To compute the bounds of the 100(1-<span class="math inline">\(\alpha\)</span>)% Fisherian interval, we solve <span class="math inline">\(p^{+}(\tau) = \frac{\alpha}{2}\)</span> for <span class="math inline">\(\tau\)</span> to get the lower limit and <span class="math inline">\(p^{-}(\tau) = \frac{\alpha}{2}\)</span> for the upper limit. We set our <span class="math inline">\(\alpha\)</span> significance level to 0.05 and thus compute 95% Fisherian intervals. This procedure allows us to get the range of  treatment effects consistent with our data.</p>
 <p>As a point estimate of a Fisherian interval, we take the observed value of our test statistic which is the average of pair differences in a pollutant concentration. <strong>For avoiding confusion, it is very important to note that our test statistic is an estimate for the individual-level treatment effect of an hypothetical experiment and not for the average treatment effect.</strong></p>
 <h3 id="computational-shortcut">Computational Shortcut</h3>
-<p>For each hypothesis, we could impute the missing potential outcomes. Then, we would randomly allocate the treatment, express the observed outcome and finally compute the average of pair differences. Again, this is a cumbersome way to proceed. Instead, we use again a computional shortcut provided by Paul Rosenbaum in his textbook.</p>
+<p>For each hypothesis, we could impute the missing potential outcomes. Then, we would randomly allocate the treatment, express the observed outcome and finally compute the average of pair differences. Again, this is a cumbersome way to proceed. Instead, we use the computional shortcut provided by Paul Rosenbaum in his textbook.</p>
 <ul>
-<li>We start by making a sharp hypothesis of a constant treatment effect <span class="math inline">\(\tau\)</span> such that <span class="math inline">\(Y_{i,j}(1) = Y_{i,j}(0) + \tau\)</span>.</li>
+<li>We start by making a sharp null hypothesis of a constant treatment effect <span class="math inline">\(\tau\)</span> such that <span class="math inline">\(Y_{i,j}(1) = Y_{i,j}(0) + \tau\)</span>.</li>
 <li>For a pair <em>i</em>, recall that the observed pair difference in outcomes is <span class="math inline">\(D_{i} = (W_{i,1} - W_{i,2})(Y_{i,1} - Y_{i,2})\)</span>.</li>
 <li>Under the sharp hypothesis, we have <span class="math inline">\(D_{i} = (W_{i,1} - W_{i,2})((Y_{i,1} + \tau W_{i,1}) - (Y_{i,2} + \tau W_{i,2}))\)</span>.</li>
 <li>We rearrange the right-hand side expression and find that <span class="math inline">\(D_{i} = \tau + (W_{i,1} - W_{i,2})(Y_{i,1}(0) - Y_{i,2}(0))\)</span></li>
@@ -3704,12 +3730,13 @@ X
 </ul>
 <h3 id="implementation-in-r">Implementation in R</h3>
 <p>We start by creating a nested tibble of our vector of observed pair differences with the set of constant treatment effect sizes we want to test:</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># create a nested dataframe with </span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># create a nested dataframe with</span>
 <span class='co'># the set of constant treatment effect sizes</span>
 <span class='co'># and the vector of observed pair differences</span>
-<span class='va'>ri_data_fi</span> <span class='op'>&lt;-</span> <span class='fu'>tibble</span><span class='op'>(</span>observed_pair_differences <span class='op'>=</span> <span class='va'>observed_pair_differences</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+<span class='va'>ri_data_fi</span> <span class='op'>&lt;-</span>
+  <span class='fu'>tibble</span><span class='op'>(</span>observed_pair_differences <span class='op'>=</span> <span class='va'>observed_pair_differences</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>summarise</span><span class='op'>(</span>data_observed_pair_differences <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>observed_pair_differences</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>data_observed_pair_differences</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>expand</span><span class='op'>(</span>effect <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span>from <span class='op'>=</span> <span class='op'>-</span><span class='fl'>20</span>, to <span class='op'>=</span> <span class='fl'>20</span>, by <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
@@ -3735,17 +3762,24 @@ X
 # ... with 71 more rows</code></pre>
 </div>
 <p>We then subtract for each pair difference the hypothetical constant effect:</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># function to get the observed statistic</span>
-<span class='va'>adjusted_pair_difference_function</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>data_observed_pair_differences</span>, <span class='va'>effect</span><span class='op'>)</span><span class='op'>{</span>
-  <span class='va'>adjusted_pair_difference</span> <span class='op'>&lt;-</span> <span class='va'>data_observed_pair_differences</span><span class='op'>-</span><span class='va'>effect</span>
-  <span class='kw'><a href='https://rdrr.io/r/base/function.html'>return</a></span><span class='op'>(</span><span class='va'>adjusted_pair_difference</span><span class='op'>)</span>
-<span class='op'>}</span> 
+<span class='va'>adjusted_pair_difference_function</span> <span class='op'>&lt;-</span>
+  <span class='kw'>function</span><span class='op'>(</span><span class='va'>data_observed_pair_differences</span>, <span class='va'>effect</span><span class='op'>)</span> <span class='op'>{</span>
+    <span class='va'>adjusted_pair_difference</span> <span class='op'>&lt;-</span> <span class='va'>data_observed_pair_differences</span> <span class='op'>-</span> <span class='va'>effect</span>
+    <span class='kw'><a href='https://rdrr.io/r/base/function.html'>return</a></span><span class='op'>(</span><span class='va'>adjusted_pair_difference</span><span class='op'>)</span>
+  <span class='op'>}</span>
 
 <span class='co'># compute the adjusted pair differences</span>
 <span class='va'>ri_data_fi</span> <span class='op'>&lt;-</span> <span class='va'>ri_data_fi</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>data_adjusted_pair_difference <span class='op'>=</span> <span class='fu'>map2</span><span class='op'>(</span><span class='va'>data_observed_pair_differences</span>, <span class='va'>effect</span>, <span class='op'>~</span> <span class='fu'>adjusted_pair_difference_function</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.y</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>
+    data_adjusted_pair_difference <span class='op'>=</span> <span class='fu'>map2</span><span class='op'>(</span>
+      <span class='va'>data_observed_pair_differences</span>,
+      <span class='va'>effect</span>,
+      <span class='op'>~</span> <span class='fu'>adjusted_pair_difference_function</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.y</span><span class='op'>)</span>
+    <span class='op'>)</span>
+  <span class='op'>)</span>
 
 <span class='co'># display the table</span>
 <span class='va'>ri_data_fi</span>
@@ -3767,7 +3801,7 @@ X
 # ... with 71 more rows</code></pre>
 </div>
 <p>We compute the observed mean of adjusted pair differences:</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># compute the observed mean of adjusted pair differences</span>
 <span class='va'>ri_data_fi</span> <span class='op'>&lt;-</span> <span class='va'>ri_data_fi</span> <span class='op'>%&gt;%</span>
@@ -3795,30 +3829,36 @@ X
 10  -15.5 &lt;dbl [10]&gt;                                        17.9
 # ... with 71 more rows</code></pre>
 </div>
-<p>We use the same <code>function_randomization_distribution</code> to compute the randomization distribution of the test statistic for each hypothesized constant effect:</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<p>We use the same <code>function_randomization_distribution()</code> to compute the randomization distribution of the test statistic for each hypothesized constant effect:</p>
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># randomization distribution function</span>
-<span class='co'># this function takes the vector of pair differences</span>
-<span class='co'># and then compute the average pair difference according </span>
+<span class='co'># this function takes as inputs the vector of pair differences and the number of pairs</span>
+<span class='co'># and then compute the average pair difference according</span>
 <span class='co'># to the permuted treatment assignment</span>
-<span class='va'>function_randomization_distribution</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>data_adjusted_pair_difference</span>, <span class='va'>n_pairs</span><span class='op'>)</span> <span class='op'>{</span>
-  <span class='va'>randomization_distribution</span> <span class='op'>=</span> <span class='cn'>NULL</span>
-  <span class='va'>n_columns</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/dim.html'>dim</a></span><span class='op'>(</span><span class='va'>permutations_matrix</span><span class='op'>)</span><span class='op'>[</span><span class='fl'>2</span><span class='op'>]</span>
-  <span class='kw'>for</span> <span class='op'>(</span><span class='va'>i</span> <span class='kw'>in</span> <span class='fl'>1</span><span class='op'>:</span><span class='va'>n_columns</span><span class='op'>)</span> <span class='op'>{</span>
-    <span class='va'>randomization_distribution</span><span class='op'>[</span><span class='va'>i</span><span class='op'>]</span> <span class='op'>=</span>  <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>data_adjusted_pair_difference</span> <span class='op'>*</span> <span class='va'>permutations_matrix</span><span class='op'>[</span>, <span class='va'>i</span><span class='op'>]</span><span class='op'>)</span> <span class='op'>/</span> <span class='va'>n_pairs</span>
+<span class='va'>function_randomization_distribution</span> <span class='op'>&lt;-</span>
+  <span class='kw'>function</span><span class='op'>(</span><span class='va'>data_adjusted_pair_difference</span>, <span class='va'>n_pairs</span><span class='op'>)</span> <span class='op'>{</span>
+    <span class='va'>randomization_distribution</span> <span class='op'>=</span> <span class='cn'>NULL</span>
+    <span class='va'>n_columns</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/dim.html'>dim</a></span><span class='op'>(</span><span class='va'>permutations_matrix</span><span class='op'>)</span><span class='op'>[</span><span class='fl'>2</span><span class='op'>]</span>
+    <span class='kw'>for</span> <span class='op'>(</span><span class='va'>i</span> <span class='kw'>in</span> <span class='fl'>1</span><span class='op'>:</span><span class='va'>n_columns</span><span class='op'>)</span> <span class='op'>{</span>
+      <span class='va'>randomization_distribution</span><span class='op'>[</span><span class='va'>i</span><span class='op'>]</span> <span class='op'>=</span>  <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>data_adjusted_pair_difference</span> <span class='op'>*</span> <span class='va'>permutations_matrix</span><span class='op'>[</span>, <span class='va'>i</span><span class='op'>]</span><span class='op'>)</span> <span class='op'>/</span> <span class='va'>n_pairs</span>
+    <span class='op'>}</span>
+    <span class='kw'><a href='https://rdrr.io/r/base/function.html'>return</a></span><span class='op'>(</span><span class='va'>randomization_distribution</span><span class='op'>)</span>
   <span class='op'>}</span>
-  <span class='kw'><a href='https://rdrr.io/r/base/function.html'>return</a></span><span class='op'>(</span><span class='va'>randomization_distribution</span><span class='op'>)</span>
-<span class='op'>}</span>
 </code></pre>
 </div>
 </div>
 <p>We run the function:</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># compute the test statistic distribution</span>
 <span class='va'>ri_data_fi</span> <span class='op'>&lt;-</span> <span class='va'>ri_data_fi</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>randomization_distribution <span class='op'>=</span> <span class='fu'>map</span><span class='op'>(</span><span class='va'>data_adjusted_pair_difference</span>, <span class='op'>~</span> <span class='fu'>function_randomization_distribution</span><span class='op'>(</span><span class='va'>.</span>, n_pairs <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>
+    randomization_distribution <span class='op'>=</span> <span class='fu'>map</span><span class='op'>(</span>
+      <span class='va'>data_adjusted_pair_difference</span>,
+      <span class='op'>~</span> <span class='fu'>function_randomization_distribution</span><span class='op'>(</span><span class='va'>.</span>, n_pairs <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span>
+    <span class='op'>)</span>
+  <span class='op'>)</span>
 
 <span class='co'># display the table</span>
 <span class='va'>ri_data_fi</span>
@@ -3839,22 +3879,36 @@ X
 10  -15.5 &lt;dbl [10]&gt;                          17.9 &lt;dbl [1,024]&gt;      
 # ... with 71 more rows</code></pre>
 </div>
-<p>We compute the lower and upper <em>p</em>-values functions. From these functions, we retrieve the lower and upper bound of the 95% Fisherian intervals:</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<p>We compute the lower and upper <em>p</em>-values functions:</p>
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># define the p-values functions</span>
-<span class='va'>function_fisher_upper_p_value</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>observed_mean_difference</span>, <span class='va'>randomization_distribution</span><span class='op'>)</span><span class='op'>{</span>
-  <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>randomization_distribution</span> <span class='op'>&gt;=</span> <span class='va'>observed_mean_difference</span><span class='op'>)</span><span class='op'>/</span><span class='va'>n_permutations</span>
-<span class='op'>}</span>
+<span class='va'>function_fisher_upper_p_value</span> <span class='op'>&lt;-</span>
+  <span class='kw'>function</span><span class='op'>(</span><span class='va'>observed_mean_difference</span>,
+           <span class='va'>randomization_distribution</span><span class='op'>)</span> <span class='op'>{</span>
+    <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>randomization_distribution</span> <span class='op'>&gt;=</span> <span class='va'>observed_mean_difference</span><span class='op'>)</span> <span class='op'>/</span> <span class='va'>n_permutations</span>
+  <span class='op'>}</span>
 
-<span class='va'>function_fisher_lower_p_value</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>observed_mean_difference</span>, <span class='va'>randomization_distribution</span><span class='op'>)</span><span class='op'>{</span>
-  <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>randomization_distribution</span> <span class='op'>&lt;=</span> <span class='va'>observed_mean_difference</span><span class='op'>)</span><span class='op'>/</span><span class='va'>n_permutations</span>
-<span class='op'>}</span>
+<span class='va'>function_fisher_lower_p_value</span> <span class='op'>&lt;-</span>
+  <span class='kw'>function</span><span class='op'>(</span><span class='va'>observed_mean_difference</span>,
+           <span class='va'>randomization_distribution</span><span class='op'>)</span> <span class='op'>{</span>
+    <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>randomization_distribution</span> <span class='op'>&lt;=</span> <span class='va'>observed_mean_difference</span><span class='op'>)</span> <span class='op'>/</span> <span class='va'>n_permutations</span>
+  <span class='op'>}</span>
 
 <span class='co'># compute the lower and upper one-sided p-values</span>
 <span class='va'>ri_data_fi</span> <span class='op'>&lt;-</span> <span class='va'>ri_data_fi</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>p_value_upper <span class='op'>=</span> <span class='fu'>map2_dbl</span><span class='op'>(</span><span class='va'>observed_mean_difference</span>, <span class='va'>randomization_distribution</span>, <span class='op'>~</span> <span class='fu'>function_fisher_upper_p_value</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.y</span><span class='op'>)</span><span class='op'>)</span>,
-         p_value_lower <span class='op'>=</span> <span class='fu'>map2_dbl</span><span class='op'>(</span><span class='va'>observed_mean_difference</span>, <span class='va'>randomization_distribution</span>, <span class='op'>~</span> <span class='fu'>function_fisher_lower_p_value</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.y</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>
+    p_value_upper <span class='op'>=</span> <span class='fu'>map2_dbl</span><span class='op'>(</span>
+      <span class='va'>observed_mean_difference</span>,
+      <span class='va'>randomization_distribution</span>,
+      <span class='op'>~</span> <span class='fu'>function_fisher_upper_p_value</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.y</span><span class='op'>)</span>
+    <span class='op'>)</span>,
+    p_value_lower <span class='op'>=</span> <span class='fu'>map2_dbl</span><span class='op'>(</span>
+      <span class='va'>observed_mean_difference</span>,
+      <span class='va'>randomization_distribution</span>,
+      <span class='op'>~</span> <span class='fu'>function_fisher_lower_p_value</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.y</span><span class='op'>)</span>
+    <span class='op'>)</span>
+  <span class='op'>)</span>
 </code></pre>
 </div>
 </div>
@@ -3862,82 +3916,352 @@ X
 <div class="layout-chunk" data-layout="l-body-outset">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># make the graph</span>
-<span class='va'>graph_p_value_functions</span> <span class='op'>&lt;-</span> <span class='va'>ri_data_fi</span> <span class='op'>%&gt;%</span>
+<span class='va'>graph_p_value_functions_sharp_nulls</span> <span class='op'>&lt;-</span> <span class='va'>ri_data_fi</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span><span class='va'>effect</span>, <span class='va'>p_value_upper</span>, <span class='va'>p_value_lower</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>rename</span><span class='op'>(</span><span class='st'>"Upper p-value Function"</span> <span class='op'>=</span> <span class='va'>p_value_upper</span>, <span class='st'>"Lower p-value Function"</span> <span class='op'>=</span> <span class='va'>p_value_lower</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>pivot_longer</span><span class='op'>(</span>cols <span class='op'>=</span> <span class='op'>-</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>effect</span><span class='op'>)</span>, names_to <span class='op'>=</span> <span class='st'>"lower_upper"</span>, values_to <span class='op'>=</span> <span class='st'>"p_value"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>rename</span><span class='op'>(</span><span class='st'>"Upper p-value Function"</span> <span class='op'>=</span> <span class='va'>p_value_upper</span>,
+         <span class='st'>"Lower p-value Function"</span> <span class='op'>=</span> <span class='va'>p_value_lower</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>pivot_longer</span><span class='op'>(</span>cols <span class='op'>=</span> <span class='op'>-</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>effect</span><span class='op'>)</span>,
+               names_to <span class='op'>=</span> <span class='st'>"lower_upper"</span>,
+               values_to <span class='op'>=</span> <span class='st'>"p_value"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>ggplot</span><span class='op'>(</span><span class='va'>.</span>, <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>effect</span>, y <span class='op'>=</span> <span class='va'>p_value</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'>geom_hline</span><span class='op'>(</span>yintercept <span class='op'>=</span> <span class='fl'>0.025</span>, colour <span class='op'>=</span> <span class='va'>my_orange</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'>geom_line</span><span class='op'>(</span>colour <span class='op'>=</span> <span class='va'>my_blue</span>, size <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'>facet_wrap</span><span class='op'>(</span><span class='op'>~</span> <span class='fu'>fct_rev</span><span class='op'>(</span><span class='va'>lower_upper</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'>xlab</span><span class='op'>(</span><span class='st'>"τ"</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"p-value"</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>geom_line</span><span class='op'>(</span>colour <span class='op'>=</span> <span class='va'>my_blue</span>, size <span class='op'>=</span> <span class='fl'>1.2</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>facet_wrap</span><span class='op'>(</span> <span class='op'>~</span> <span class='fu'>fct_rev</span><span class='op'>(</span><span class='va'>lower_upper</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>xlab</span><span class='op'>(</span><span class='st'>"Hypothetical Constant Treatment Effects"</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"p-value"</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'>theme_tufte</span><span class='op'>(</span><span class='op'>)</span>
 
 <span class='co'># display the graph</span>
-<span class='va'>graph_p_value_functions</span>
+<span class='va'>graph_p_value_functions_sharp_nulls</span>
 </code></pre>
 </div>
 <img src="3_toy_example_randomization_inference_files/figure-html5/unnamed-chunk-19-1.png" width="3000" />
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># save the graph</span>
-<span class='fu'>ggsave</span><span class='op'>(</span><span class='va'>graph_p_value_functions</span>, filename <span class='op'>=</span> <span class='fu'>here</span><span class='fu'>::</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"inputs"</span>, <span class='st'>"3.outputs"</span>, <span class='st'>"3.toy_example"</span>, <span class='st'>"graph_p_value_functions.pdf"</span><span class='op'>)</span>, 
-       width <span class='op'>=</span> <span class='fl'>40</span>, height <span class='op'>=</span> <span class='fl'>20</span>, units <span class='op'>=</span> <span class='st'>"cm"</span>, device <span class='op'>=</span> <span class='va'>cairo_pdf</span><span class='op'>)</span>
+<span class='fu'>ggsave</span><span class='op'>(</span>
+  <span class='va'>graph_p_value_functions_sharp_nulls</span>,
+  filename <span class='op'>=</span> <span class='fu'>here</span><span class='fu'>::</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span>
+    <span class='st'>"inputs"</span>,
+    <span class='st'>"3.outputs"</span>,
+    <span class='st'>"3.toy_example"</span>,
+    <span class='st'>"graph_p_value_functions_sharp_nulls.pdf"</span>
+  <span class='op'>)</span>,
+  width <span class='op'>=</span> <span class='fl'>20</span>,
+  height <span class='op'>=</span> <span class='fl'>10</span>,
+  units <span class='op'>=</span> <span class='st'>"cm"</span>,
+  device <span class='op'>=</span> <span class='va'>cairo_pdf</span>
+<span class='op'>)</span>
 </code></pre>
 </div>
 </div>
 <p>The orange line represents the alpha significance level, set at 5%, divided by two. We then retrieve the lower and upper bound of the 95% Fisherian interval:</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># retrieve the constant effects with the p-values equal or the closest to 0.025</span>
 <span class='va'>ri_data_fi</span> <span class='op'>&lt;-</span> <span class='va'>ri_data_fi</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>p_value_upper <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>abs</a></span><span class='op'>(</span><span class='va'>p_value_upper</span> <span class='op'>-</span> <span class='fl'>0.025</span><span class='op'>)</span>,
-         p_value_lower <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>abs</a></span><span class='op'>(</span><span class='va'>p_value_lower</span> <span class='op'>-</span> <span class='fl'>0.025</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>p_value_upper</span> <span class='op'>==</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>p_value_upper</span><span class='op'>)</span> <span class='op'>|</span> <span class='va'>p_value_lower</span> <span class='op'>==</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>p_value_lower</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-<span class='co'># in case two effect sizes have a p-value equal to 0.025, we take the effect size</span>
-<span class='co'># that make the Fisherian interval wider to be conservative</span>
-  <span class='fu'>summarise</span><span class='op'>(</span>lower_fi <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>effect</span><span class='op'>)</span>,
-            upper_fi <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>max</a></span><span class='op'>(</span><span class='va'>effect</span><span class='op'>)</span><span class='op'>)</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>
+    p_value_upper <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>abs</a></span><span class='op'>(</span><span class='va'>p_value_upper</span> <span class='op'>-</span> <span class='fl'>0.025</span><span class='op'>)</span>,
+    p_value_lower <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>abs</a></span><span class='op'>(</span><span class='va'>p_value_lower</span> <span class='op'>-</span> <span class='fl'>0.025</span><span class='op'>)</span>
+  <span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>p_value_upper</span> <span class='op'>==</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>p_value_upper</span><span class='op'>)</span> <span class='op'>|</span>
+           <span class='va'>p_value_lower</span> <span class='op'>==</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>p_value_lower</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='co'># in case two effect sizes have a p-value equal to 0.025, we take the effect size</span>
+  <span class='co'># that make the Fisherian interval wider to be conservative</span>
+  <span class='fu'>summarise</span><span class='op'>(</span>fi_lower_95 <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>effect</span><span class='op'>)</span>,
+            fi_upper_95 <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>max</a></span><span class='op'>(</span><span class='va'>effect</span><span class='op'>)</span><span class='op'>)</span>
 </code></pre>
 </div>
 </div>
 <p>As a point estimate, we take the value of the observed average of pair differences, that is to say 2.4. For this imaginary experiment, our point estimate is close to the true constant effect but the 95% Fisherian interval is wide: [-7, 11.5]. The data are consistent with both large negative and positive constant treatment effects.</p>
-<h1 id="computing-a-95-fisherian-intervals-for-weak-null-hypotheses">Computing a 95% Fisherian Intervals For Weak Null Hypotheses</h1>
 <h1 id="comparison-with-neymans-approach">Comparison with Neyman’s Approach</h1>
-<p>In Neyman’s approach, the inference procedure is built to target the average causal effect. We can estimate <span class="math inline">\(\tau_{\text{fs}}\)</span> with the average of observed pair differences <span class="math inline">\(\hat{\tau}\)</span>:</p>
+<p>We can compare the result of the randomization inference procedure with the one we would obtain with Neyman’s approach. In that case, the inference procedure is built to target the average causal effect and the source of inference is both the randomization of the treatment and the sampling from a population. We can estimate the finite sample average effect, <span class="math inline">\(\tau_{\text{fs}}\)</span>, with the average of observed pair differences <span class="math inline">\(\hat{\tau}\)</span>:</p>
 <p><span class="math display">\[\begin{equation*}
-  \hat{\tau} = \frac{1}{J}\sum_{j=1}^J(Y^{\text{obs}}_{\text{t},j}-Y^{\text{obs}}_{\text{c},j}) = \overline{Y}^{\text{obs}}_{\text{t}} - \overline{Y}^{\text{obs}}_{\text{c}}
+  \hat{\tau} = \frac{1}{I}\sum_{i=1}^J(Y^{\text{obs}}_{\text{t},i}-Y^{\text{obs}}_{\text{c},i}) = \overline{Y}^{\text{obs}}_{\text{t}} - \overline{Y}^{\text{obs}}_{\text{c}}
 \end{equation*}\]</span></p>
-<p>Here, the subscripts <span class="math inline">\(t\)</span> and <span class="math inline">\(c\)</span> respectively indicate if the unit in a given pair is treated or not. <span class="math inline">\(J\)</span> is the number of pairs. Since there are only one treated and one control unit within each pair, the standard estimate for the sampling variance of the average of pair differences is not defined. We can however compute a conservative estimate of the variance, as explained in chapter 10 of <a href="https://www.cambridge.org/core/books/causal-inference-for-statistics-social-and-biomedical-sciences/71126BE90C58F1A431FE9B2DD07938AB">Imbens and Rubin (2015)</a>:</p>
+<p>Here, the subscripts <span class="math inline">\(t\)</span> and <span class="math inline">\(c\)</span> respectively indicate if the unit in a given pair is treated or not. <span class="math inline">\(I\)</span> is the number of pairs. Since there are only one treated and one control unit within each pair, the standard estimate for the sampling variance of the average of pair differences is not defined. We can however compute a conservative estimate of the variance, as explained in chapter 10 of <a href="https://www.cambridge.org/core/books/causal-inference-for-statistics-social-and-biomedical-sciences/71126BE90C58F1A431FE9B2DD07938AB">Imbens and Rubin (2015)</a>:</p>
 <p><span class="math display">\[\begin{equation*}
-  \hat{\mathbb{V}}(\hat{\tau}) = \frac{1}{J(J-1)}\sum_{j=1}^J(Y^{\text{obs}}_{\text{t},j}-Y^{\text{obs}}_{\text{c},j} - \hat{\tau})^{2}
+  \hat{\mathbb{V}}(\hat{\tau}) = \frac{1}{I(I-1)}\sum_{I=1}^I(Y^{\text{obs}}_{\text{t},i}-Y^{\text{obs}}_{\text{c},i} - \hat{\tau})^{2}
 \end{equation*}\]</span></p>
 <p>We finally compute an asymptotic 95% confidence interval using a Gaussian distribution approximation:</p>
 <p><span class="math display">\[\begin{equation*}
 \text{CI}_{0.95}(\tau_{\text{fs}}) =\Big( \hat{\tau} - 1.96\times \sqrt{\hat{\mathbb{V}}(\hat{\tau})},\; \hat{\tau} + 1.96\times \sqrt{\hat{\mathbb{V}}(\hat{\tau})}\Big)
 \end{equation*}\]</span></p>
-<p>As</p>
-<p>one may wish to use a confidence interval based on the t-distribution with degrees of freedom equal to N/2 − 1 = 7, with 0.975 quantile equal to 2.365, leading to a slightly wider confidence interval</p>
-<div class="layout-chunk" data-layout="l-body-outset">
+<p>As in the example of <a href="https://www.cambridge.org/core/books/causal-inference-for-statistics-social-and-biomedical-sciences/71126BE90C58F1A431FE9B2DD07938AB">Imbens and Rubin (2015)</a>, we only have here 10 pairs. To build the 95% confidence interval, we use a <span class="math inline">\(t\)</span>-distribution with degrees of freedom equal to I/2-1=9. The 0.975 quantile is equal to 2.262. We compute the 95% confidence interval with the following code:</p>
+<div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># we store the number of pairs</span>
 <span class='va'>n_pairs</span> <span class='op'>&lt;-</span> <span class='fl'>10</span>
-  
-<span class='co'># compute the standard error</span>
-<span class='va'>squared_difference</span> <span class='op'>&lt;-</span> <span class='op'>(</span><span class='va'>observed_pair_differences</span> <span class='op'>-</span> <span class='va'>average_observed_pair_differences</span><span class='op'>)</span><span class='op'>^</span><span class='fl'>2</span>
 
 <span class='co'># compute the standard error</span>
-<span class='va'>standard_error</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>/</span><span class='op'>(</span><span class='va'>n_pairs</span><span class='op'>*</span><span class='op'>(</span><span class='va'>n_pairs</span><span class='op'>-</span><span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span><span class='op'>*</span><span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>squared_difference</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>squared_difference</span> <span class='op'>&lt;-</span>
+  <span class='op'>(</span><span class='va'>observed_pair_differences</span> <span class='op'>-</span> <span class='va'>average_observed_pair_differences</span><span class='op'>)</span> <span class='op'>^</span> <span class='fl'>2</span>
 
 <span class='co'># compute the standard error</span>
-<span class='va'>ci_lower_95</span> <span class='op'>&lt;-</span> <span class='va'>average_observed_pair_differences</span> <span class='op'>-</span> <span class='fu'><a href='https://rdrr.io/r/stats/TDist.html'>qt</a></span><span class='op'>(</span><span class='fl'>0.975</span>, <span class='fl'>9</span><span class='op'>)</span><span class='op'>*</span><span class='va'>standard_error</span>
-<span class='va'>ci_upper_95</span> <span class='op'>&lt;-</span> <span class='va'>average_observed_pair_differences</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/stats/TDist.html'>qt</a></span><span class='op'>(</span><span class='fl'>0.975</span>, <span class='fl'>9</span><span class='op'>)</span><span class='op'>*</span><span class='va'>standard_error</span>
+<span class='va'>standard_error</span> <span class='op'>&lt;-</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span><span class='op'>(</span><span class='fl'>1</span> <span class='op'>/</span> <span class='op'>(</span><span class='va'>n_pairs</span> <span class='op'>*</span> <span class='op'>(</span><span class='va'>n_pairs</span> <span class='op'>-</span> <span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>*</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>squared_difference</span><span class='op'>)</span><span class='op'>)</span>
+
+<span class='co'># compute the standard error</span>
+<span class='va'>ci_lower_95</span> <span class='op'>&lt;-</span>
+  <span class='va'>average_observed_pair_differences</span> <span class='op'>-</span> <span class='fu'><a href='https://rdrr.io/r/stats/TDist.html'>qt</a></span><span class='op'>(</span><span class='fl'>0.975</span>, <span class='fl'>9</span><span class='op'>)</span> <span class='op'>*</span> <span class='va'>standard_error</span>
+<span class='va'>ci_upper_95</span> <span class='op'>&lt;-</span>
+  <span class='va'>average_observed_pair_differences</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/stats/TDist.html'>qt</a></span><span class='op'>(</span><span class='fl'>0.975</span>, <span class='fl'>9</span><span class='op'>)</span> <span class='op'>*</span> <span class='va'>standard_error</span>
 
 <span class='co'># store results</span>
-<span class='va'>neyman_data_ci</span> <span class='op'>&lt;-</span> <span class='fu'>tibble</span><span class='op'>(</span>ci_lower_95 <span class='op'>=</span> <span class='va'>ci_lower_95</span>, ci_upper_95 <span class='op'>=</span> <span class='va'>ci_upper_95</span><span class='op'>)</span>
+<span class='va'>neyman_data_ci</span> <span class='op'>&lt;-</span>
+  <span class='fu'>tibble</span><span class='op'>(</span>ci_lower_95 <span class='op'>=</span> <span class='va'>ci_lower_95</span>, ci_upper_95 <span class='op'>=</span> <span class='va'>ci_upper_95</span><span class='op'>)</span>
 </code></pre>
 </div>
 </div>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<p>The 95% confidence interval is equal to [-6.303999, 11.103999], which is very similar to the one found with randomization inference. However, the interpretation of the two intervals is different: in the randomization inference procedure,</p>
+<h1 id="computing-a-95-fisherian-intervals-for-weak-null-hypotheses">Computing a 95% Fisherian Intervals For Weak Null Hypotheses</h1>
+<p>Finally, many researchers restrain from using randomization inference as a mode of inference since it assumes that treatment effects are constant across units. In most applications, this is arguably an unrealistic assumption. To overcome this limit, <a href="https://www.tandfonline.com/doi/abs/10.1080/01621459.2020.1750415">Jason Wu &amp; Peng Ding (2021)</a> propose to adopt a studentized test statistic that is finite-sample exact under sharp null hypotheses but also asymptotically conservative for the weak null hypothesis.</p>
+<p>In the case of our toy example, this studentized test statistic is equal to the observed average of pair differences divided by the standard error of a pairwise experiment. We therefore just follow the same previous procedure but use the studentized statistic proposed by <a href="https://www.tandfonline.com/doi/abs/10.1080/01621459.2020.1750415">Jason Wu &amp; Peng Ding (2021)</a>.</p>
+<p>First, we create the data for testing a range of weak null hypotheses with the randomization inference:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># create a nested dataframe with </span>
+<span class='co'># the set of constant treatment effect sizes</span>
+<span class='co'># and the vector of observed pair differences</span>
+<span class='va'>ri_data_fi_weak</span> <span class='op'>&lt;-</span> <span class='fu'>tibble</span><span class='op'>(</span>observed_pair_differences <span class='op'>=</span> <span class='va'>observed_pair_differences</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>summarise</span><span class='op'>(</span>data_observed_pair_differences <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>observed_pair_differences</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>data_observed_pair_differences</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>expand</span><span class='op'>(</span>effect <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span>from <span class='op'>=</span> <span class='op'>-</span><span class='fl'>20</span>, to <span class='op'>=</span> <span class='fl'>20</span>, by <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>ungroup</span><span class='op'>(</span><span class='op'>)</span>
+
+<span class='co'># display the nested table</span>
+<span class='va'>ri_data_fi_weak</span>
+</code></pre>
+</div>
+<pre><code># A tibble: 81 x 2
+   data_observed_pair_differences effect
+   &lt;list&gt;                          &lt;dbl&gt;
+ 1 &lt;dbl [10]&gt;                      -20  
+ 2 &lt;dbl [10]&gt;                      -19.5
+ 3 &lt;dbl [10]&gt;                      -19  
+ 4 &lt;dbl [10]&gt;                      -18.5
+ 5 &lt;dbl [10]&gt;                      -18  
+ 6 &lt;dbl [10]&gt;                      -17.5
+ 7 &lt;dbl [10]&gt;                      -17  
+ 8 &lt;dbl [10]&gt;                      -16.5
+ 9 &lt;dbl [10]&gt;                      -16  
+10 &lt;dbl [10]&gt;                      -15.5
+# ... with 71 more rows</code></pre>
+</div>
+<p>We then subtract for each pair difference the hypothetical constant effect using the previously used <code>adjusted_pair_difference_function()</code>:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># compute the adjusted pair differences</span>
+<span class='va'>ri_data_fi_weak</span> <span class='op'>&lt;-</span> <span class='va'>ri_data_fi_weak</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>data_adjusted_pair_difference <span class='op'>=</span> <span class='fu'>map2</span><span class='op'>(</span><span class='va'>data_observed_pair_differences</span>, <span class='va'>effect</span>, <span class='op'>~</span> <span class='fu'>adjusted_pair_difference_function</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.y</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+
+<span class='co'># display the table</span>
+<span class='va'>ri_data_fi_weak</span>
+</code></pre>
+</div>
+<pre><code># A tibble: 81 x 3
+   data_observed_pair_differences effect data_adjusted_pair_difference
+   &lt;list&gt;                          &lt;dbl&gt; &lt;list&gt;                       
+ 1 &lt;dbl [10]&gt;                      -20   &lt;dbl [10]&gt;                   
+ 2 &lt;dbl [10]&gt;                      -19.5 &lt;dbl [10]&gt;                   
+ 3 &lt;dbl [10]&gt;                      -19   &lt;dbl [10]&gt;                   
+ 4 &lt;dbl [10]&gt;                      -18.5 &lt;dbl [10]&gt;                   
+ 5 &lt;dbl [10]&gt;                      -18   &lt;dbl [10]&gt;                   
+ 6 &lt;dbl [10]&gt;                      -17.5 &lt;dbl [10]&gt;                   
+ 7 &lt;dbl [10]&gt;                      -17   &lt;dbl [10]&gt;                   
+ 8 &lt;dbl [10]&gt;                      -16.5 &lt;dbl [10]&gt;                   
+ 9 &lt;dbl [10]&gt;                      -16   &lt;dbl [10]&gt;                   
+10 &lt;dbl [10]&gt;                      -15.5 &lt;dbl [10]&gt;                   
+# ... with 71 more rows</code></pre>
+</div>
+<p>We then compute the observed studentized statistics:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># function to compute neyman t-statistic</span>
+<span class='va'>function_neyman_t_stat</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>pair_differences</span>, <span class='va'>n_pairs</span><span class='op'>)</span> <span class='op'>{</span>
+  <span class='co'># compute the average of pair differences</span>
+  <span class='va'>average_pair_difference</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>pair_differences</span><span class='op'>)</span>
+  <span class='co'># compute the standard error</span>
+  <span class='va'>squared_difference</span> <span class='op'>&lt;-</span>
+    <span class='op'>(</span><span class='va'>pair_differences</span> <span class='op'>-</span> <span class='va'>average_pair_difference</span><span class='op'>)</span> <span class='op'>^</span> <span class='fl'>2</span>
+  <span class='co'># compute the standard error</span>
+  <span class='va'>standard_error</span> <span class='op'>&lt;-</span>
+    <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span><span class='op'>(</span><span class='fl'>1</span> <span class='op'>/</span> <span class='op'>(</span><span class='va'>n_pairs</span> <span class='op'>*</span> <span class='op'>(</span><span class='va'>n_pairs</span> <span class='op'>-</span> <span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>*</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>squared_difference</span><span class='op'>)</span><span class='op'>)</span>
+  <span class='co'># compute neyman t-statistic</span>
+  <span class='va'>neyman_t_stat</span> <span class='op'>&lt;-</span> <span class='va'>average_pair_difference</span> <span class='op'>/</span> <span class='va'>standard_error</span>
+  <span class='kw'><a href='https://rdrr.io/r/base/function.html'>return</a></span><span class='op'>(</span><span class='va'>neyman_t_stat</span><span class='op'>)</span>
+<span class='op'>}</span>
+
+
+<span class='co'># compute the observed mean of adjusted pair differences</span>
+<span class='va'>ri_data_fi_weak</span> <span class='op'>&lt;-</span> <span class='va'>ri_data_fi_weak</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>
+    observed_neyman_t_stat <span class='op'>=</span> <span class='fu'>map</span><span class='op'>(</span>
+      <span class='va'>data_adjusted_pair_difference</span>,
+      <span class='op'>~</span> <span class='fu'>function_neyman_t_stat</span><span class='op'>(</span><span class='va'>.</span>, n_pairs <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span>
+    <span class='op'>)</span>
+  <span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>unnest</span><span class='op'>(</span>cols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>observed_neyman_t_stat</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>select</span><span class='op'>(</span><span class='op'>-</span><span class='va'>data_observed_pair_differences</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>ungroup</span><span class='op'>(</span><span class='op'>)</span>
+
+<span class='co'># display the table</span>
+<span class='va'>ri_data_fi_weak</span>
+</code></pre>
+</div>
+<pre><code># A tibble: 81 x 3
+   effect data_adjusted_pair_difference observed_neyman_t_stat
+    &lt;dbl&gt; &lt;list&gt;                                         &lt;dbl&gt;
+ 1  -20   &lt;dbl [10]&gt;                                      5.82
+ 2  -19.5 &lt;dbl [10]&gt;                                      5.69
+ 3  -19   &lt;dbl [10]&gt;                                      5.56
+ 4  -18.5 &lt;dbl [10]&gt;                                      5.43
+ 5  -18   &lt;dbl [10]&gt;                                      5.30
+ 6  -17.5 &lt;dbl [10]&gt;                                      5.17
+ 7  -17   &lt;dbl [10]&gt;                                      5.04
+ 8  -16.5 &lt;dbl [10]&gt;                                      4.91
+ 9  -16   &lt;dbl [10]&gt;                                      4.78
+10  -15.5 &lt;dbl [10]&gt;                                      4.65
+# ... with 71 more rows</code></pre>
+</div>
+<p>We create a function to carry out the randomization inference with the studentized test statistic:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># randomization distribution function</span>
+<span class='co'># this function takes the vector of pair differences</span>
+<span class='co'># and then compute the average pair difference according</span>
+<span class='co'># to the permuted treatment assignment</span>
+<span class='va'>function_randomization_distribution_t_stat</span> <span class='op'>&lt;-</span>
+  <span class='kw'>function</span><span class='op'>(</span><span class='va'>data_adjusted_pair_difference</span>, <span class='va'>n_pairs</span><span class='op'>)</span> <span class='op'>{</span>
+    <span class='va'>randomization_distribution</span> <span class='op'>=</span> <span class='cn'>NULL</span>
+    <span class='va'>n_columns</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/dim.html'>dim</a></span><span class='op'>(</span><span class='va'>permutations_matrix</span><span class='op'>)</span><span class='op'>[</span><span class='fl'>2</span><span class='op'>]</span>
+    <span class='kw'>for</span> <span class='op'>(</span><span class='va'>i</span> <span class='kw'>in</span> <span class='fl'>1</span><span class='op'>:</span><span class='va'>n_columns</span><span class='op'>)</span> <span class='op'>{</span>
+      <span class='co'># compute the average of pair differences</span>
+      <span class='va'>average_pair_difference</span> <span class='op'>&lt;-</span>
+        <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>data_adjusted_pair_difference</span> <span class='op'>*</span> <span class='va'>permutations_matrix</span><span class='op'>[</span>, <span class='va'>i</span><span class='op'>]</span><span class='op'>)</span> <span class='op'>/</span> <span class='va'>n_pairs</span>
+      <span class='co'># compute the standard error</span>
+      <span class='va'>squared_difference</span> <span class='op'>&lt;-</span>
+        <span class='op'>(</span><span class='va'>data_adjusted_pair_difference</span> <span class='op'>-</span> <span class='va'>average_pair_difference</span><span class='op'>)</span> <span class='op'>^</span> <span class='fl'>2</span>
+      <span class='co'># compute the standard error</span>
+      <span class='va'>standard_error</span> <span class='op'>&lt;-</span>
+        <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span><span class='op'>(</span><span class='fl'>1</span> <span class='op'>/</span> <span class='op'>(</span><span class='va'>n_pairs</span> <span class='op'>*</span> <span class='op'>(</span><span class='va'>n_pairs</span> <span class='op'>-</span> <span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>*</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>squared_difference</span><span class='op'>)</span><span class='op'>)</span>
+      <span class='co'># compute neyman t-statistic</span>
+      <span class='va'>randomization_distribution</span><span class='op'>[</span><span class='va'>i</span><span class='op'>]</span> <span class='op'>=</span> <span class='va'>average_pair_difference</span> <span class='op'>/</span> <span class='va'>standard_error</span>
+    <span class='op'>}</span>
+    <span class='kw'><a href='https://rdrr.io/r/base/function.html'>return</a></span><span class='op'>(</span><span class='va'>randomization_distribution</span><span class='op'>)</span>
+  <span class='op'>}</span>
+</code></pre>
+</div>
+</div>
+<p>We run the function:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># compute the test statistic distribution</span>
+<span class='va'>ri_data_fi_weak</span> <span class='op'>&lt;-</span> <span class='va'>ri_data_fi_weak</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>
+    randomization_distribution <span class='op'>=</span> <span class='fu'>map</span><span class='op'>(</span>
+      <span class='va'>data_adjusted_pair_difference</span>,
+      <span class='op'>~</span> <span class='fu'>function_randomization_distribution_t_stat</span><span class='op'>(</span><span class='va'>.</span>, n_pairs <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span>
+    <span class='op'>)</span>
+  <span class='op'>)</span>
+
+<span class='co'># display the table</span>
+<span class='va'>ri_data_fi_weak</span>
+</code></pre>
+</div>
+<pre><code># A tibble: 81 x 4
+   effect data_adjusted_pair_d~ observed_neyman_t~ randomization_dist~
+    &lt;dbl&gt; &lt;list&gt;                             &lt;dbl&gt; &lt;list&gt;             
+ 1  -20   &lt;dbl [10]&gt;                          5.82 &lt;dbl [1,024]&gt;      
+ 2  -19.5 &lt;dbl [10]&gt;                          5.69 &lt;dbl [1,024]&gt;      
+ 3  -19   &lt;dbl [10]&gt;                          5.56 &lt;dbl [1,024]&gt;      
+ 4  -18.5 &lt;dbl [10]&gt;                          5.43 &lt;dbl [1,024]&gt;      
+ 5  -18   &lt;dbl [10]&gt;                          5.30 &lt;dbl [1,024]&gt;      
+ 6  -17.5 &lt;dbl [10]&gt;                          5.17 &lt;dbl [1,024]&gt;      
+ 7  -17   &lt;dbl [10]&gt;                          5.04 &lt;dbl [1,024]&gt;      
+ 8  -16.5 &lt;dbl [10]&gt;                          4.91 &lt;dbl [1,024]&gt;      
+ 9  -16   &lt;dbl [10]&gt;                          4.78 &lt;dbl [1,024]&gt;      
+10  -15.5 &lt;dbl [10]&gt;                          4.65 &lt;dbl [1,024]&gt;      
+# ... with 71 more rows</code></pre>
+</div>
+<p>We compute the lower and upper <em>p</em>-values functions:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># define the p-values functions</span>
+<span class='va'>function_fisher_upper_p_value</span> <span class='op'>&lt;-</span>
+  <span class='kw'>function</span><span class='op'>(</span><span class='va'>observed_neyman_t_stat</span>,
+           <span class='va'>randomization_distribution</span><span class='op'>)</span> <span class='op'>{</span>
+    <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>randomization_distribution</span> <span class='op'>&gt;=</span> <span class='va'>observed_neyman_t_stat</span><span class='op'>)</span> <span class='op'>/</span> <span class='va'>n_permutations</span>
+  <span class='op'>}</span>
+
+<span class='va'>function_fisher_lower_p_value</span> <span class='op'>&lt;-</span>
+  <span class='kw'>function</span><span class='op'>(</span><span class='va'>observed_neyman_t_stat</span>,
+           <span class='va'>randomization_distribution</span><span class='op'>)</span> <span class='op'>{</span>
+    <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>randomization_distribution</span> <span class='op'>&lt;=</span> <span class='va'>observed_neyman_t_stat</span><span class='op'>)</span> <span class='op'>/</span> <span class='va'>n_permutations</span>
+  <span class='op'>}</span>
+
+<span class='co'># compute the lower and upper one-sided p-values</span>
+<span class='va'>ri_data_fi_weak</span> <span class='op'>&lt;-</span> <span class='va'>ri_data_fi_weak</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>
+    p_value_upper <span class='op'>=</span> <span class='fu'>map2_dbl</span><span class='op'>(</span>
+      <span class='va'>observed_neyman_t_stat</span>,
+      <span class='va'>randomization_distribution</span>,
+      <span class='op'>~</span> <span class='fu'>function_fisher_upper_p_value</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.y</span><span class='op'>)</span>
+    <span class='op'>)</span>,
+    p_value_lower <span class='op'>=</span> <span class='fu'>map2_dbl</span><span class='op'>(</span>
+      <span class='va'>observed_neyman_t_stat</span>,
+      <span class='va'>randomization_distribution</span>,
+      <span class='op'>~</span> <span class='fu'>function_fisher_lower_p_value</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.y</span><span class='op'>)</span>
+    <span class='op'>)</span>
+  <span class='op'>)</span>
+</code></pre>
+</div>
+</div>
+<p>We plot below the lower and upper <em>p</em>-values functions:</p>
+<div class="layout-chunk" data-layout="l-body-outset">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># make the graph</span>
+<span class='va'>graph_p_value_functions_weak_nulls</span> <span class='op'>&lt;-</span> <span class='va'>ri_data_fi_weak</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>select</span><span class='op'>(</span><span class='va'>effect</span>, <span class='va'>p_value_upper</span>, <span class='va'>p_value_lower</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>rename</span><span class='op'>(</span><span class='st'>"Upper p-value Function"</span> <span class='op'>=</span> <span class='va'>p_value_upper</span>, <span class='st'>"Lower p-value Function"</span> <span class='op'>=</span> <span class='va'>p_value_lower</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>pivot_longer</span><span class='op'>(</span>cols <span class='op'>=</span> <span class='op'>-</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>effect</span><span class='op'>)</span>, names_to <span class='op'>=</span> <span class='st'>"lower_upper"</span>, values_to <span class='op'>=</span> <span class='st'>"p_value"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>ggplot</span><span class='op'>(</span><span class='va'>.</span>, <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>effect</span>, y <span class='op'>=</span> <span class='va'>p_value</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>geom_hline</span><span class='op'>(</span>yintercept <span class='op'>=</span> <span class='fl'>0.025</span>, colour <span class='op'>=</span> <span class='va'>my_orange</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>geom_line</span><span class='op'>(</span>colour <span class='op'>=</span> <span class='va'>my_blue</span>, size <span class='op'>=</span> <span class='fl'>1.2</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>facet_wrap</span><span class='op'>(</span><span class='op'>~</span> <span class='fu'>fct_rev</span><span class='op'>(</span><span class='va'>lower_upper</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>xlab</span><span class='op'>(</span><span class='st'>"Hypothetical Constant Treatment Effects"</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"p-value"</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>theme_tufte</span><span class='op'>(</span><span class='op'>)</span>
+
+<span class='co'># display the graph</span>
+<span class='va'>graph_p_value_functions_weak_nulls</span>
+</code></pre>
+</div>
+<img src="3_toy_example_randomization_inference_files/figure-html5/unnamed-chunk-28-1.png" width="3000" />
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># save the graph</span>
+<span class='fu'>ggsave</span><span class='op'>(</span><span class='va'>graph_p_value_functions_weak_nulls</span>, filename <span class='op'>=</span> <span class='fu'>here</span><span class='fu'>::</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"inputs"</span>, <span class='st'>"3.outputs"</span>, <span class='st'>"3.toy_example"</span>, <span class='st'>"graph_p_value_functions_weak_nulls.pdf"</span><span class='op'>)</span>, 
+       width <span class='op'>=</span> <span class='fl'>20</span>, height <span class='op'>=</span> <span class='fl'>10</span>, units <span class='op'>=</span> <span class='st'>"cm"</span>, device <span class='op'>=</span> <span class='va'>cairo_pdf</span><span class='op'>)</span>
+</code></pre>
+</div>
+</div>
+<p>The orange line represents the alpha significance level, set at 5%, divided by two. We then retrieve the lower and upper bound of the 95% Fisherian interval:</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># retrieve the constant effects with the p-values equal or the closest to 0.025</span>
+<span class='va'>ri_data_fi_weak</span> <span class='op'>&lt;-</span> <span class='va'>ri_data_fi_weak</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>
+    p_value_upper <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>abs</a></span><span class='op'>(</span><span class='va'>p_value_upper</span> <span class='op'>-</span> <span class='fl'>0.025</span><span class='op'>)</span>,
+    p_value_lower <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>abs</a></span><span class='op'>(</span><span class='va'>p_value_lower</span> <span class='op'>-</span> <span class='fl'>0.025</span><span class='op'>)</span>
+  <span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>p_value_upper</span> <span class='op'>==</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>p_value_upper</span><span class='op'>)</span> <span class='op'>|</span>
+           <span class='va'>p_value_lower</span> <span class='op'>==</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>p_value_lower</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='co'># in case two effect sizes have a p-value equal to 0.025, we take the effect size</span>
+  <span class='co'># that make the Fisherian interval wider to be conservative</span>
+  <span class='fu'>summarise</span><span class='op'>(</span>fi_lower_95 <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>effect</span><span class='op'>)</span>,
+            fi_upper_95 <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>max</a></span><span class='op'>(</span><span class='va'>effect</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+</div>
+<p>The 95% Fisherian interval is equal to [-7, 11.5]. It is the same interval found with the randomization inference procedure based on average of pair differences test statistic. It is also very similar to the interval found with Neyman’s approach.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>
