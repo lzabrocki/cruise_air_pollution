@@ -1,0 +1,22 @@
+---
+title: "Estimating the Local Air Pollution Impacts of Cruise Traffic"
+image: 
+links:
+  - label: <i id="icons" class="fas fa-envelope big-icon"></i>
+    url: "mailto:leo.zabrocki@gmail.com"
+  - label: <i id="icons" class="fab fa-github big-icon"></i>
+    url: "https://github.com/lzabrocki"
+output:
+  postcards::trestles
+site: distill::distill_website
+---
+
+
+Hello and welcome!
+
+This website gathers all the materials for the paper *Estimating the Local Air Pollution Impacts of Cruise Traffic: A Principled Approach for Observational Data* by [Léo Zabrocki](https://lzabrocki.github.io/), [Marion Leroutier](https://marionleroutier.weebly.com/) and [Marie-Abèle Bind](https://biostatistics.massgeneral.org/faculty/marie-abele-bind-phd/).
+
+
+
+
+

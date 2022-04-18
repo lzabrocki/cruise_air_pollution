@@ -1,0 +1,16 @@
+name: "."
+title: "Estimating the Local Air Pollution Impacts of Cruise Traffic"
+theme: theme.css
+base_url: 
+repository_url: https://github.com/lzabrocki/cruise_air_pollution.git
+description: |
+  Website of the Project
+output_dir: "docs"
+navbar:
+  search: false
+  source_url: true
+  right:
+    - text: "Home"
+      href: index.html
+    - text: "Article"
+output: distill::distill_article
