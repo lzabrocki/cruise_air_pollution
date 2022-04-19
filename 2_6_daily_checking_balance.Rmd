@@ -27,6 +27,17 @@ body {
 text-align: justify}
 </style>
 
+```{r setup, include=FALSE}
+# code chunk option
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  dev = "CairoPNG",
+  dpi = 600
+)
+```
+
 In this document, we take great care providing all steps and R codes required to check whether our most matching procedure achieved balance. We compare days where:
 
 * treated units are days with cruise traffic in *t*.
@@ -47,7 +58,7 @@ To reproduce exactly the `2_6_daily_checking_balance.html` document, we first ne
 
 Once everything is set up, we have to load the following packages:
 
-```{r, echo = TRUE, message = FALSE, warning = FALSE}
+```{r}
 # load required packages
 library(knitr) # for creating the R Markdown document
 library(here) # for files paths organization
@@ -74,7 +85,7 @@ my_orange <- "#fb8500"
 
 We load the matched data:
 
-```{R, echo = TRUE}
+```{r}
 # load matched data
 data_matched <-
   readRDS(
@@ -527,6 +538,10 @@ ggsave(
   device = cairo_pdf
 )
 ```
+
+
+
+
 
 
 
