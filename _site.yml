@@ -16,11 +16,11 @@ navbar:
     - text: "Data"
       menu: 
         - text: "Daily Data Wrangling"
-          href: 2_daily_data_wrangling.html
+          href: 2_1_daily_data_wrangling.html
     - text: "Daily Matching"
       menu: 
         - text: "Daily Data Procedure"
-          href: 2_daily_matching_procedure.html      
+          href: 2_3_daily_matching_procedure.html      
     - text: "Tutorial Randomization Inference"
       href: 3_toy_example_randomization_inference.html
 output: distill::distill_article

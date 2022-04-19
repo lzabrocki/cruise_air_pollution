@@ -1,5 +1,5 @@
 ---
-title: "Comparing the Matched Data to the Initial Data - Cruise Experiment"
+title: "Comparing the Matched Data to the Initial Data"
 description: |
   Comparing days with cruise traffic to days without. Adjusting for calendar and weather indicators.
 author:
