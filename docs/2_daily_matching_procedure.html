@@ -2180,6 +2180,16 @@ Data
 <a href="2_daily_data_wrangling.html">Daily Data Wrangling</a>
 </div>
 </div>
+<div class="nav-dropdown">
+<button class="nav-dropbtn">
+Daily Matching
+ 
+<span class="down-arrow">&#x25BE;</span>
+</button>
+<div class="nav-dropdown-content">
+<a href="2_daily_matching_procedure.html">Daily Data Procedure</a>
+</div>
+</div>
 <a href="3_toy_example_randomization_inference.html">Tutorial Randomization Inference</a>
 <a href="https://github.com/lzabrocki/cruise_air_pollution.git" aria-label="Link to source">
 <i class="fab fa-github" aria-hidden="true"></i>
@@ -2419,7 +2429,7 @@ text-align: justify}
 <span class='co'># create the leads</span>
 <span class='kw'>for</span> <span class='op'>(</span><span class='va'>i</span> <span class='kw'>in</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>{</span>
   <span class='va'>leads_list</span><span class='op'>[[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='va'>processed_data_leads</span> <span class='op'>%&gt;%</span>
-    <span class='fu'>mutate_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='op'>-</span><span class='va'>date</span><span class='op'>)</span>, <span class='op'>~</span>  <span class='fu'>lead</span><span class='op'>(</span><span class='va'>.</span>, n <span class='op'>=</span> <span class='va'>i</span>, order_by <span class='op'>=</span> <span class='va'>date</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+    <span class='fu'>mutate_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='op'>-</span><span class='va'>date</span><span class='op'>)</span>, <span class='op'>~</span>  <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/shift.html'>lead</a></span><span class='op'>(</span><span class='va'>.</span>, n <span class='op'>=</span> <span class='va'>i</span>, order_by <span class='op'>=</span> <span class='va'>date</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
     <span class='fu'>rename_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='op'>-</span><span class='va'>date</span><span class='op'>)</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
       <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='st'>"_lead_"</span>, <span class='va'>i</span><span class='op'>)</span><span class='op'>)</span>
 <span class='op'>}</span>
@@ -2444,7 +2454,7 @@ text-align: justify}
 <span class='co'># create the lags</span>
 <span class='kw'>for</span> <span class='op'>(</span><span class='va'>i</span> <span class='kw'>in</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>{</span>
   <span class='va'>lags_list</span><span class='op'>[[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='va'>processed_data_lags</span> <span class='op'>%&gt;%</span>
-    <span class='fu'>mutate_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='op'>-</span><span class='va'>date</span><span class='op'>)</span>, <span class='op'>~</span>  <span class='fu'><a href='https://rdrr.io/r/stats/lag.html'>lag</a></span><span class='op'>(</span><span class='va'>.</span>, n <span class='op'>=</span> <span class='va'>i</span>, order_by <span class='op'>=</span> <span class='va'>date</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+    <span class='fu'>mutate_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='op'>-</span><span class='va'>date</span><span class='op'>)</span>, <span class='op'>~</span>  <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/shift.html'>lag</a></span><span class='op'>(</span><span class='va'>.</span>, n <span class='op'>=</span> <span class='va'>i</span>, order_by <span class='op'>=</span> <span class='va'>date</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
     <span class='fu'>rename_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='op'>-</span><span class='va'>date</span><span class='op'>)</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
       <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='st'>"_lag_"</span>, <span class='va'>i</span><span class='op'>)</span><span class='op'>)</span>
 <span class='op'>}</span>
@@ -2479,15 +2489,15 @@ text-align: justify}
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># construct treatment assigment variable</span>
 <span class='va'>processed_data</span> <span class='op'>&lt;-</span> <span class='va'>processed_data</span> <span class='op'>%&gt;%</span>
   <span class='fu'>mutate</span><span class='op'>(</span>is_treated <span class='op'>=</span> <span class='cn'>NA</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>is_treated <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>total_gross_tonnage_cruise</span> <span class='op'>&gt;</span> <span class='fl'>0</span>, <span class='cn'>TRUE</span>, <span class='va'>is_treated</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>is_treated <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>total_gross_tonnage_cruise</span> <span class='op'>==</span> <span class='fl'>0</span> , <span class='cn'>FALSE</span>, <span class='va'>is_treated</span><span class='op'>)</span><span class='op'>)</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>is_treated <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>total_gross_tonnage_cruise</span> <span class='op'>&gt;</span> <span class='fl'>0</span>, <span class='cn'>TRUE</span>, <span class='va'>is_treated</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>is_treated <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>total_gross_tonnage_cruise</span> <span class='op'>==</span> <span class='fl'>0</span> , <span class='cn'>FALSE</span>, <span class='va'>is_treated</span><span class='op'>)</span><span class='op'>)</span>
 
 <span class='co'># remove the days for which assignment is undefined</span>
 <span class='va'>matching_data</span> <span class='op'>=</span> <span class='va'>processed_data</span><span class='op'>[</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>processed_data</span><span class='op'>$</span><span class='va'>is_treated</span><span class='op'>)</span>, <span class='op'>]</span>
 
 <span class='co'># susbet treated and control units</span>
-<span class='va'>treated_units</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/subset.html'>subset</a></span><span class='op'>(</span><span class='va'>matching_data</span>, <span class='va'>is_treated</span><span class='op'>)</span>
-<span class='va'>control_units</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/subset.html'>subset</a></span><span class='op'>(</span><span class='va'>matching_data</span>, <span class='op'>!</span><span class='va'>is_treated</span><span class='op'>)</span>
+<span class='va'>treated_units</span> <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/subset.data.table.html'>subset</a></span><span class='op'>(</span><span class='va'>matching_data</span>, <span class='va'>is_treated</span><span class='op'>)</span>
+<span class='va'>control_units</span> <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/subset.data.table.html'>subset</a></span><span class='op'>(</span><span class='va'>matching_data</span>, <span class='op'>!</span><span class='va'>is_treated</span><span class='op'>)</span>
 <span class='va'>N_treated</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>treated_units</span><span class='op'>)</span>
 <span class='va'>N_control</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>control_units</span><span class='op'>)</span>
 </code></pre>
@@ -2502,7 +2512,7 @@ Please show me the code!
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># make stripes graph</span>
 <span class='va'>graph_stripes_daily_experiment</span> <span class='op'>&lt;-</span> <span class='va'>matching_data</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>is_treated <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>is_treated</span> <span class='op'>==</span> <span class='st'>"TRUE"</span>, <span class='st'>"Treated"</span>, <span class='st'>"Control"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>is_treated <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>is_treated</span> <span class='op'>==</span> <span class='st'>"TRUE"</span>, <span class='st'>"Treated"</span>, <span class='st'>"Control"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>ggplot</span><span class='op'>(</span><span class='va'>.</span>, <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>date</span>, y <span class='op'>=</span> <span class='fl'>1</span>, fill <span class='op'>=</span> <span class='va'>is_treated</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'>geom_tile</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'>scale_x_date</span><span class='op'>(</span>breaks <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='fu'><a href='https://scales.r-lib.org/reference/breaks_pretty.html'>pretty_breaks</a></span><span class='op'>(</span>n <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
@@ -2638,7 +2648,7 @@ Please show me the code!
 <span class='op'>)</span>
 
 <span class='co'># get list of matched  treated-control groups</span>
-<span class='va'>groups_labels</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='va'>matched_groups</span><span class='op'>[</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>matched_groups</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span>
+<span class='va'>groups_labels</span> <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/duplicated.html'>unique</a></span><span class='op'>(</span><span class='va'>matched_groups</span><span class='op'>[</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>matched_groups</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span>
 <span class='va'>groups_list</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='op'>)</span>
 <span class='kw'>for</span> <span class='op'>(</span><span class='va'>i</span> <span class='kw'>in</span> <span class='fl'>1</span><span class='op'>:</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>groups_labels</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>{</span>
   <span class='va'>IDs</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>matched_groups</span><span class='op'>)</span><span class='op'>[</span><span class='op'>(</span><span class='va'>matched_groups</span> <span class='op'>==</span> <span class='va'>groups_labels</span><span class='op'>[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>)</span><span class='op'>]</span>
@@ -2724,9 +2734,9 @@ Please show me the code!
   <span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>drop_na</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='co'># select pair according to the criteria</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>day_criteria <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>difference_days</span> <span class='op'>&lt;</span> <span class='va'>threshold_day</span>, <span class='fl'>1</span>, <span class='fl'>0</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>day_criteria <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>difference_days</span> <span class='op'>&lt;</span> <span class='va'>threshold_day</span>, <span class='fl'>1</span>, <span class='fl'>0</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>mutate</span><span class='op'>(</span>
-    month_criteria <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span>
+    month_criteria <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span>
       <span class='va'>difference_month</span> <span class='op'>&gt;</span> <span class='va'>threshold_month_low</span> <span class='op'>&amp;</span>
         <span class='va'>difference_month</span> <span class='op'>&lt;</span> <span class='va'>threshold_month_high</span>,
       <span class='fl'>1</span>,

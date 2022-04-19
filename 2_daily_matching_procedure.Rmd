@@ -46,7 +46,7 @@ In this document, we provide all steps required to reproduce our matching proced
 
 We adjust for calendar calendar indicator and weather confounding factors.
 
-**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@psemail.eu.**
+**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@hhs.se.**
 
 # Required Packages
 

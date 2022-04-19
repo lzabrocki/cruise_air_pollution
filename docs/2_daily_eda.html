@@ -2180,6 +2180,16 @@ Data
 <a href="2_daily_data_wrangling.html">Daily Data Wrangling</a>
 </div>
 </div>
+<div class="nav-dropdown">
+<button class="nav-dropbtn">
+Daily Matching
+ 
+<span class="down-arrow">&#x25BE;</span>
+</button>
+<div class="nav-dropdown-content">
+<a href="2_daily_matching_procedure.html">Daily Data Procedure</a>
+</div>
+</div>
 <a href="3_toy_example_randomization_inference.html">Tutorial Randomization Inference</a>
 <a href="https://github.com/lzabrocki/cruise_air_pollution.git" aria-label="Link to source">
 <i class="fab fa-github" aria-hidden="true"></i>
@@ -2661,7 +2671,7 @@ Please show me the code!
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># create the wind direction proportion data</span>
 <span class='va'>data_polar_plot_wind_direction</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span><span class='va'>wind_direction</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>wind_direction <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>wind_direction</span> <span class='op'>==</span> <span class='fl'>360</span>, <span class='fl'>0</span>, <span class='va'>wind_direction</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>wind_direction <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>wind_direction</span> <span class='op'>==</span> <span class='fl'>360</span>, <span class='fl'>0</span>, <span class='va'>wind_direction</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>wind_direction</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='co'># compute the number of observations</span>
   <span class='fu'>summarise</span><span class='op'>(</span>n <span class='op'>=</span> <span class='fu'>n</span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
@@ -2757,7 +2767,7 @@ Please show me the code!
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># distribution of road traffic by month</span>
 <span class='va'>graph_distribution_road_traffic_month</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'>%&gt;%</span>
   <span class='fu'>pivot_longer</span><span class='op'>(</span>cols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>road_traffic_flow_all</span>, <span class='va'>road_occupancy_rate</span><span class='op'>)</span>, names_to <span class='op'>=</span> <span class='st'>"traffic_measure"</span>, values_to <span class='op'>=</span> <span class='st'>"value"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>traffic_measure <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>traffic_measure</span> <span class='op'>==</span> <span class='st'>"road_occupancy_rate"</span>, <span class='st'>"Occupancy Rate (%)"</span>, <span class='st'>"Traffic Flow (N. of Vehicles)"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>traffic_measure <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>traffic_measure</span> <span class='op'>==</span> <span class='st'>"road_occupancy_rate"</span>, <span class='st'>"Occupancy Rate (%)"</span>, <span class='st'>"Traffic Flow (N. of Vehicles)"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>ggplot</span><span class='op'>(</span><span class='va'>.</span>, <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>value</span>, y <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/reorder.factor.html'>reorder</a></span><span class='op'>(</span><span class='va'>month</span>, <span class='fu'>desc</span><span class='op'>(</span><span class='va'>month</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'>geom_boxplot</span><span class='op'>(</span>colour <span class='op'>=</span> <span class='va'>my_blue</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'>scale_x_continuous</span><span class='op'>(</span>breaks <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='fu'><a href='https://scales.r-lib.org/reference/breaks_pretty.html'>pretty_breaks</a></span><span class='op'>(</span>n <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span>, labels <span class='op'>=</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='fu'><a href='https://rdrr.io/r/base/format.html'>format</a></span><span class='op'>(</span><span class='va'>x</span>, big.mark <span class='op'>=</span> <span class='st'>" "</span>, scientific <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>  
@@ -2794,7 +2804,7 @@ Please show me the code!
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># density of road traffic by day of the week</span>
 <span class='va'>graph_distribution_tonnage_weekday</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'>%&gt;%</span>
   <span class='fu'>pivot_longer</span><span class='op'>(</span>cols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>road_traffic_flow_all</span>, <span class='va'>road_occupancy_rate</span><span class='op'>)</span>, names_to <span class='op'>=</span> <span class='st'>"traffic_measure"</span>, values_to <span class='op'>=</span> <span class='st'>"value"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>traffic_measure <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>traffic_measure</span> <span class='op'>==</span> <span class='st'>"road_occupancy_rate"</span>, <span class='st'>"Occupancy Rate (%)"</span>, <span class='st'>"Traffic Flow (N. of Vehicles)"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>traffic_measure <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>traffic_measure</span> <span class='op'>==</span> <span class='st'>"road_occupancy_rate"</span>, <span class='st'>"Occupancy Rate (%)"</span>, <span class='st'>"Traffic Flow (N. of Vehicles)"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>ggplot</span><span class='op'>(</span><span class='va'>.</span>, <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>value</span>, y <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/reorder.factor.html'>reorder</a></span><span class='op'>(</span><span class='va'>weekday</span>, <span class='fu'>desc</span><span class='op'>(</span><span class='va'>weekday</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'>geom_boxplot</span><span class='op'>(</span>colour <span class='op'>=</span> <span class='va'>my_blue</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'>scale_x_continuous</span><span class='op'>(</span>
