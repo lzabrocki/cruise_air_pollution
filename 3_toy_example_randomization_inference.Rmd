@@ -117,7 +117,8 @@ science_table %>%
     "$\\tau$" = tau,
     "Y$^{obs}$" = y
   ) %>%
-  kable(align = c(rep("c", 6)))
+  kable(align = c(rep("c", 6))) %>%
+  kable_styling(position = "center")
 ```
 
 ### Observed Data
@@ -132,7 +133,8 @@ data <- science_table %>%
 # display observed data
 data %>%
   rename(Pair = pair, "Unit Index" = unit, W = w, "Y$^{obs}$" = y) %>%
-  kable(align = c(rep("c", 4)))
+  kable(align = c(rep("c", 4))) %>%
+  kable_styling(position = "center")
 ```
 
 Before moving to the inference, we need to:
@@ -152,7 +154,8 @@ data %>%
   mutate("Y(0)" = y,
          "Y(1)" = y) %>%
   rename(Pair = pair, "Unit Index" = unit, W = w, "Y$^{obs}$" = y) %>%
-  kable(align = c(rep("c", 6)))
+  kable(align = c(rep("c", 6))) %>%
+  kable_styling(position = "center")
 ```
 
 
