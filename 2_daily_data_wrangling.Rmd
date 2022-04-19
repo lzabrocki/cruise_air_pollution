@@ -1212,6 +1212,7 @@ data_test <- data %>%
     rainfall_height:humidity_average,
     # vessel and road traffic variables
     total_gross_tonnage,
+    road_traffic_flow_all,
     road_occupancy_rate
   ) %>%
   # drop rows with at least a missing value
@@ -1308,7 +1309,7 @@ rmarkdown::paged_table(no2_comparison_df)
 
 The absolute average difference is `r round(mean(no2_comparison_df$Difference),1)`. Given that the daily NO2 average is `r round(mean(data$mean_no2_l, na.rm = TRUE),1)`, we think it is a fair imputation result. We plot below the distribution of the true PM2.5 concentrations and the ones imputed:
 
-```{r, fig.width=20, fig.height=12}
+```{r, fig.width=10, fig.height=6, code_folding="Please show me the code!"}
 # true pm2.5 at Longchamp station
 true_pm25_l <- data_test %>%
   filter(week %in% weeks_selected) %>%
@@ -1322,28 +1323,37 @@ imputed_pm25_l <- data_test_imputed %>%
   rename("Imputed PM2.5 at Longchamp" = mean_pm25_l)
 
 # combining true and imputed pm2.5 values together
-pm25_comparison_df <- left_join(true_pm25_l, imputed_pm25_l, by = "id") 
+pm25_comparison_df <-
+  left_join(true_pm25_l, imputed_pm25_l, by = "id")
 
 # plotting density distributions
 pm25_comparison_df %>%
-  gather(., key = "variable", value = "value", -id) %>%
-  ggplot(.,  aes(x = value, colour = variable, fill = variable)) +
+  gather(., key = "variable", value = "value",-id) %>%
+  ggplot(.,  aes(x = value, colour = variable)) +
   geom_density(alpha = 0.2) +
-  scale_color_manual(name = "Observations:", labels = c("True PM2.5 at Longchamp", "Imputed PM2.5 at Longchamp"), values=c(my_blue, my_orange)) +
-  scale_fill_manual(name = "Observations:", labels = c("True PM2.5 at Longchamp", "Imputed PM2.5 at Longchamp"), values=c(my_blue, my_orange)) +
+  scale_color_manual(
+    name = "Observations:",
+    labels = c("True PM2.5 at Longchamp", "Imputed PM2.5 at Longchamp"),
+    values = c(my_blue, my_orange)
+  ) +
   scale_y_continuous(labels = scales::comma) +
   ylab("Density") +
-  xlab("Daily Mean PM2.5") + 
+  xlab("Daily Mean PM2.5") +
   labs(colour = "Observations:") +
   theme_tufte() +
-  theme(legend.position = "top", legend.justification = "left", legend.direction = "horizontal")
+  theme(
+    legend.position = "top",
+    legend.justification = "left",
+    legend.direction = "horizontal"
+  )
 ```
 
 The overlap of the two densities is again not perfect but seems decent. We show below the table of the true and imputed values for each observation and the absolute difference:
 
-```{r}
+```{r, code_folding="Please show me the code!"}
 # joining the true and imputed values together and computing the difference
-pm25_comparison_df <- left_join(true_pm25_l, imputed_pm25_l, by = "id") %>%
+pm25_comparison_df <-
+  left_join(true_pm25_l, imputed_pm25_l, by = "id") %>%
   mutate(Difference = abs(`True PM2.5 at Longchamp` - `Imputed PM2.5 at Longchamp`)) %>%
   rename("Observation Id" = id)
 
@@ -1352,7 +1362,7 @@ rmarkdown::paged_table(pm25_comparison_df)
 
 The absolute average difference is `r round(mean(pm25_comparison_df$Difference),1)`. Given that the daily average of PM2.5 is `r round(mean(data$mean_pm25_l, na.rm = TRUE),1)`, this is again a fair imputation error but it happens that the imputation error can be large for several days.
 
-It seems therefore that the imputation algorithm works fine in this small simulation exerise. Yet, we should keep in mind that if many weather variables or co-pollutants were happened to be missing at the same time of a monitoring station's failure, the algorithm would have troubles correctly predicting its values.
+It seems therefore that the imputation algorithm works fine in this small simulation exercise. Yet, we should keep in mind that if many weather variables or co-pollutants were happened to be missing at the same time of a monitoring station's failure, the algorithm would have troubles correctly predicting its values.
 
 ### Imputation Procedure
 
@@ -1363,10 +1373,11 @@ data <- missRanger::missRanger(
   data,
   # variables to impute
   mean_no2_sl + mean_no2_l + mean_pm10_sl + mean_pm10_l + mean_pm25_l + mean_so2_l + mean_o3_l + rainfall_height + rainfall_duration + temperature_average + wind_speed + wind_direction + humidity_average ~
-  # variables used for the imputation
-  mean_no2_sl + mean_no2_l + mean_pm10_sl + mean_pm10_l + mean_pm25_l + mean_so2_l + mean_o3_l + rainfall_height + rainfall_duration + temperature_average + wind_speed + wind_direction + humidity_average + total_gross_tonnage + road_traffic_flow + weekday + holidays_dummy + bank_day_dummy + month + year,
+    # variables used for the imputation
+    mean_no2_sl + mean_no2_l + mean_pm10_sl + mean_pm10_l + mean_pm25_l + mean_so2_l + mean_o3_l + rainfall_height + rainfall_duration + temperature_average + wind_speed + wind_direction + humidity_average + total_gross_tonnage + road_traffic_flow_all + road_occupancy_rate + weekday + holidays_dummy + bank_day_dummy + month + year,
   pmm.k = 10,
-  num.trees = 100
+  num.trees = 100,
+  seed = 42
 )
 ``` 
 
@@ -1380,7 +1391,7 @@ We create a dummy for the `rainfall_height` variable to know if for a given day 
 ```{r}
 # create u and v components of the wind vector
 data <- data %>%
-  mutate(rainfall_height_dummy = ifelse(rainfall_height>0, 1, 0))
+  mutate(rainfall_height_dummy = ifelse(rainfall_height > 0, 1, 0))
 ```
 
 We can also sort the wind direction into four main directions (North-East, South-East, South-West, North-West):
@@ -1388,11 +1399,20 @@ We can also sort the wind direction into four main directions (North-East, South
 ```{r}
 # create u and v components of the wind vector
 data <- data %>%
-  mutate(wind_direction_categories = cut(wind_direction, breaks = seq(0, 360, by  = 90), include.lowest = TRUE) %>%
-           recode(., "[0,90]" = "North-East",
-                  "(90,180]" = "South-East",
-                  "(180,270]" = "South-West",
-                  "(270,360]" = "North-West")) 
+  mutate(
+    wind_direction_categories = cut(
+      wind_direction,
+      breaks = seq(0, 360, by  = 90),
+      include.lowest = TRUE
+    ) %>%
+      recode(
+        .,
+        "[0,90]" = "North-East",
+        "(90,180]" = "South-East",
+        "(180,270]" = "South-West",
+        "(270,360]" = "North-West"
+      )
+  ) 
 ```
 
 We also also sort the wind direction into two main directions (East and West) as they are two broad directions that could matter to bring or chase pollution emitted by vessels:
@@ -1400,9 +1420,15 @@ We also also sort the wind direction into two main directions (East and West) as
 ```{r}
 # create u and v components of the wind vector
 data <- data %>%
-  mutate(wind_direction_east_west= cut(wind_direction, breaks = seq(0, 360, by  = 180), include.lowest = TRUE) %>%
-           recode(., "[0,180]" = "East",
-                  "(180,360]" = "West")) 
+  mutate(
+    wind_direction_east_west = cut(
+      wind_direction,
+      breaks = seq(0, 360, by  = 180),
+      include.lowest = TRUE
+    ) %>%
+      recode(., "[0,180]" = "East",
+             "(180,360]" = "West")
+  ) 
 ```
 
 ### Saving the Data
@@ -1426,12 +1452,12 @@ data <- data %>%
          total_gross_tonnage_entry, total_gross_tonnage_entry_cruise, total_gross_tonnage_entry_ferry, total_gross_tonnage_entry_other_boat,
          total_gross_tonnage_exit, total_gross_tonnage_exit_cruise, total_gross_tonnage_exit_ferry, total_gross_tonnage_exit_other_boat,
          # road traffic variable
-         road_traffic_flow)
+         road_traffic_flow_all, road_occupancy_rate)
 ```
 
 **The data are now ready to be analyzed**. Below is the table of the dataframe:
 
-```{r}
+```{r, code_folding="Please show me the code!"}
 rmarkdown::paged_table(data)
 ```
 
