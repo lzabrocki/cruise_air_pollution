@@ -34,7 +34,7 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = FALSE,
   dev = "CairoPNG",
-  dpi = 600
+  dpi = 300
 )
 ```
 
@@ -68,6 +68,7 @@ library(randChecks) # for randomization check
 library(ggridges) # for ridge density plots
 library(Cairo) # for printing custom police of graphs
 library(patchwork) # combining plots
+library(kableExtra) # for table formatting
 ```
 
 We finally load our custom `ggplot2` theme for graphs:
@@ -1050,6 +1051,27 @@ ggsave(
 )
 ```
 
+
+
+
+And we compute the overall figures for imbalance before and after matching:
+
+```{r, code_folding="Please show me the code!"}
+# compute average imbalance before and after matching
+data_categorical_love <- data_categorical_love %>%
+  mutate(Type = "Categorical (Difference in Percentage Points)") %>%
+  rename(standardized_difference = abs_difference)
+  
+data_continuous_love %>%
+  mutate(Type = "Continuous (Standardized Difference)") %>%
+  bind_rows(data_categorical_love) %>%
+  group_by(Type, dataset) %>%
+  summarise("Mean Imbalance" = round(mean(standardized_difference), 2)) %>%
+  rename(Dataset = dataset) %>%
+  knitr::kable(., align = c("l", "l", "c")) %>%
+  kable_styling(position = "center")
+```
+
 # Randomization Check for Covariate Balance
 
 Finally, we implement the procedure of Zach Branson (2021) to carry out a randomization check to test whether daily observations are as-if randomized according to observed covariates.
@@ -1103,7 +1125,7 @@ asIfRandPlot(
 )
 ```
 
-```{r, echo = FALSE, out.width = "500%", fig.align = "center"}
+```{r, echo = FALSE, out.width = "800%", fig.align = "center"}
 knitr::include_graphics(
     here::here("inputs",
     "3.outputs",
