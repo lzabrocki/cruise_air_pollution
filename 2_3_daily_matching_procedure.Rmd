@@ -389,7 +389,10 @@ thresholds$bank_day_dummy = 0
 thresholds$bank_day_dummy_lag_1 = 0
 
 # threshold for distance in julian days
-thresholds$julian_date = 730
+thresholds$julian_date = 1095
+
+# threshold for month
+thresholds$month = 0
 
 # thresholds for average temperature
 thresholds$temperature_average = 4

@@ -2605,7 +2605,10 @@ Please show me the code!
 <span class='va'>thresholds</span><span class='op'>$</span><span class='va'>bank_day_dummy_lag_1</span> <span class='op'>=</span> <span class='fl'>0</span>
 
 <span class='co'># threshold for distance in julian days</span>
-<span class='va'>thresholds</span><span class='op'>$</span><span class='va'>julian_date</span> <span class='op'>=</span> <span class='fl'>730</span>
+<span class='va'>thresholds</span><span class='op'>$</span><span class='va'>julian_date</span> <span class='op'>=</span> <span class='fl'>1095</span>
+
+<span class='co'># threshold for month</span>
+<span class='va'>thresholds</span><span class='op'>$</span><span class='va'>month</span> <span class='op'>=</span> <span class='fl'>0</span>
 
 <span class='co'># thresholds for average temperature</span>
 <span class='va'>thresholds</span><span class='op'>$</span><span class='va'>temperature_average</span> <span class='op'>=</span> <span class='fl'>4</span>
@@ -2713,7 +2716,7 @@ Please show me the code!
 </code></pre>
 </div>
 </div>
-<p>The hypothetical experiment we set up had 2485 treated units and 1532 control units. The matching procedure results in 349 matched treated units. We remove pairs separated by less than 7 days to avoid spillover effects:</p>
+<p>The hypothetical experiment we set up had 2485 treated units and 1532 control units. The matching procedure results in 189 matched treated units. We remove pairs separated by less than 7 days to avoid spillover effects:</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># define distance for days</span>
@@ -2753,7 +2756,7 @@ Please show me the code!
 </code></pre>
 </div>
 </div>
-<p>Our final number of matched treated days is therefore 285. We finally merge the <code>matched_pairs</code> with the <code>matching_matching_data</code> to retrieve covariate values for the matched pairs and save the data:</p>
+<p>Our final number of matched treated days is therefore 189. We finally merge the <code>matched_pairs</code> with the <code>matching_matching_data</code> to retrieve covariate values for the matched pairs and save the data:</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># select the matched data for the analysis</span>

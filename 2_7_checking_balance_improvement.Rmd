@@ -63,6 +63,8 @@ Once everything is set up, we have to load the following packages:
 library(knitr) # for creating the R Markdown document
 library(here) # for files paths organization
 library(tidyverse) # for data manipulation and visualization
+library(dtplyr) # to speed up to dplyr
+library(randChecks) # for randomization check
 library(ggridges) # for ridge density plots
 library(Cairo) # for printing custom police of graphs
 library(patchwork) # combining plots
@@ -903,7 +905,7 @@ ggsave(
 
 # Overall Balance Improvement
 
-We finally plot the distribution of standardized mean differences for continuous covariates or the absolute percentage points differences for categorical covariates between treated and control units before and after matching.
+We plot the distribution of standardized mean differences for continuous covariates or the absolute percentage points differences for categorical covariates between treated and control units before and after matching.
 
 ### Continuous Covariates
 
@@ -938,7 +940,7 @@ data_continuous_love <-
 graph_boxplot_continuous_balance_improvement <-
   ggplot(data_continuous_love,
          aes(x = dataset, y = standardized_difference)) +
-  geom_boxplot(colour = my_blue, size = 1.2) +
+  geom_boxplot(colour = my_blue) +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
   xlab("Dataset") +
   ylab("Standardized Mean Differences") +
@@ -991,7 +993,7 @@ data_categorical_love <-
 # create the graph
 graph_boxplot_categorical_balance_improvement <-
   ggplot(data_categorical_love, aes(x = dataset, y = abs_difference)) +
-  geom_boxplot(colour = my_blue, size = 1.2) +
+  geom_boxplot(colour = my_blue) +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
   xlab("Dataset") +
   ylab("Absolute Difference \nin Percentage Points") +
@@ -1018,3 +1020,112 @@ ggsave(
   device = cairo_pdf
 )
 ```
+
+
+We combine the two previous plots in a single figure:
+
+```{r, code_folding="Please show me the code!"}
+# combine plots
+graph_overall_balance <-
+  graph_boxplot_continuous_balance_improvement /graph_boxplot_categorical_balance_improvement +
+  plot_annotation(tag_levels = 'A') &
+  theme(plot.tag = element_text(size = 30, face = "bold"))
+
+# save the plot
+ggsave(
+  graph_overall_balance,
+  filename = here::here(
+    "inputs",
+    "3.outputs",
+    "2.daily_analysis",
+    "2.analysis_pollution",
+    "1.cruise_experiment",
+    "1.checking_matching_procedure",
+    "graph_overall_balance.pdf"
+  ),
+  width = 20,
+  height = 20,
+  units = "cm",
+  device = cairo_pdf
+)
+```
+
+# Randomization Check for Covariate Balance
+
+Finally, we implement the procedure of Zach Branson (2021) to carry out a randomization check to test whether daily observations are as-if randomized according to observed covariates.
+
+```{r, eval = FALSE}
+# we select covariates
+data_covs <- data_matched %>%
+  select(
+    pair_number,
+    is_treated,
+    year,
+    month,
+    holidays_dummy,
+    bank_day_dummy,
+    total_gross_tonnage_ferry:total_gross_tonnage_other_boat,
+    temperature_average:wind_speed,
+    wind_direction_east_west,
+    holidays_dummy_lag_1,
+    bank_day_dummy_lag_1,
+    total_gross_tonnage_cruise_lag_1:total_gross_tonnage_other_boat_lag_1,
+    temperature_average_lag_1:wind_speed_lag_1,
+    wind_direction_east_west_lag_1,
+    mean_no2_l_lead_1:mean_o3_l_lead_1
+  )
+
+# recode some variables
+data_covs <- data_covs %>%
+  mutate(is_treated = ifelse(is_treated == TRUE, 1, 0)) %>%
+  mutate_at(
+    vars(wind_direction_east_west , wind_direction_east_west_lag_1),
+    ~ ifelse(. == "West", 1, 0)
+  ) %>%
+  fastDummies::dummy_cols(., select_columns = c("year", "month")) %>%
+  select(-c("year", "month"))
+
+# format data for asIfRandPlot() function
+pair_number <- as.numeric(data_covs$pair_number)
+is_treated <- data_covs$is_treated
+
+data_covs <- data_covs %>%
+  select(-pair_number,-is_treated) %>%
+  select(-year_2018, - month_December, -bank_day_dummy, - bank_day_dummy_lag_1) 
+
+# run balance check
+asIfRandPlot(
+  X.matched = data_covs,
+  indicator.matched = is_treated,
+  assignment = c("complete", "blocked"),
+  subclass = pair_number,
+  perms = 100
+)
+```
+
+```{r, echo = FALSE, out.width = "500%", fig.align = "center"}
+knitr::include_graphics(
+    here::here("inputs",
+    "3.outputs",
+    "2.daily_analysis",
+    "2.analysis_pollution",
+    "1.cruise_experiment",
+    "1.checking_matching_procedure",
+    "ri_balance_check.png"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
