@@ -491,10 +491,10 @@ data_tonnage <-  data %>%
       ifelse(str_detect(variable, "ferry"), "Ferry", .) %>%
       ifelse(str_detect(variable, "other_boat"), "Other Types of Vessels", .)
   ) %>%
-  mutate(time = NA %>%
+  mutate(time = 0 %>%
            ifelse(str_detect(variable, "lag_1"), "-1", .) %>%
            ifelse(str_detect(variable, "lead_1"), "1", .)) %>%
-  filter(!is.na(time)) %>%
+  filter(variable != "total_gross_tonnage_cruise") %>%
   select(dataset, vessel_type, is_treated, time, tonnage)
 
 data_abs_difference_tonnage <- data_tonnage %>%
