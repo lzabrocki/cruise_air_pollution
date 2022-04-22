@@ -66,6 +66,7 @@ library(tidyverse) # for data manipulation and visualization
 library(broom) # for cleaning regression outputs
 library(MatchIt) # for matching procedures
 library(cobalt) # for assessing covariates balance
+library(randChecks) # for randomization check
 library(lmtest) # for modifying regression standard errors
 library(sandwich) # for robust and cluster robust standard errors
 library(Cairo) # for printing custom police of graphs
@@ -1597,9 +1598,9 @@ data_rank_ci_wd <- data_pair_difference_pollutant_0_wd %>%
   group_by(pollutant, wind_direction_east_west) %>%
   nest() %>%
   mutate(
-    effect = map(data, ~ wilcox.test(.$difference_concentration , conf.int = TRUE)$estimate),
-    lower_ci = map(data, ~ wilcox.test(.$difference_concentration , conf.int = TRUE)$conf.int[1]),
-    upper_ci = map(data, ~ wilcox.test(.$difference_concentration , conf.int = TRUE)$conf.int[2])
+    effect = map(data, ~ wilcox.test(.$difference, conf.int = TRUE)$estimate),
+    lower_ci = map(data, ~ wilcox.test(.$difference, conf.int = TRUE)$conf.int[1]),
+    upper_ci = map(data, ~ wilcox.test(.$difference, conf.int = TRUE)$conf.int[2])
   ) %>%
   unnest(cols = c(effect, lower_ci, upper_ci)) %>%
   select(-data)
@@ -1727,18 +1728,13 @@ ggsave(
 
 We implement below a propensity score matching procedure where:
 
-* each day with an heat wave is matched to the most similar day without heat wave. This is a 1:1 nearest neighbor matching without replacement.
-* the distance metric used for the matching is the propensity score which is predicted using a logistic model where we regress the heat wave dummy on its three lags, the three lags of ozone and nitrogen dioxide, the relative humidity, the weekend, the month and the year.
+1. Each day with an heat wave is matched to the most similar day without heat wave. This is a 1:1 nearest neighbor matching without replacement.
+2. The distance metric used for the matching is the propensity score which is predicted using a logistic model where we regress the treatment indicator on a set of vessel traffic, weather and calendar variables. We choose a caliper equals to 0.01 of the standard deviation of the propensity scores.
+3. Once treated and control units are matched, we assess whether covariates balance has improved. 
+4. We finally estimate the treatment effect.
 
-We vary the matching distance to see how covariates balance change:
 
-1. We first match each treated unit to its closest control unit.
-2. We then set the maximum distance to be inferior to 0.5 propensity score standard deviation. 
-
-Once treated and control units are matched, we assess whether covariates balance has improved. 
-
-We finally estimate the treatment effect.
-
+First, we load the matching dataset:
 
 ```{r}
 # load matching data
@@ -1755,6 +1751,7 @@ data_matching <-
   )
 
 
+# select relevant covariates
 data_matching <- data_matching %>%
   select(
     contains("mean_no2_l"),
@@ -1789,7 +1786,7 @@ data_matching <- data_matching %>%
   mutate(year = as.factor(year))
 ``` 
 
-We first match each treated unit to its closest control unit using the `matchit()` function:
+We first match each treated unit to its closest control unit using the `matchit()` function and 0.01 caliper:
 
 ```{r}
 # match without caliper
@@ -1798,11 +1795,11 @@ matching_ps  <-
     is_treated ~ total_gross_tonnage_ferry + total_gross_tonnage_other_boat +
       total_gross_tonnage_ferry_lag_1 + total_gross_tonnage_other_boat_lag_1 +
       temperature_average + temperature_average_lag_1 +
-      humidity_average + humidity_average_lag_1 + 
+      humidity_average + humidity_average_lag_1 +
       rainfall_height_dummy + rainfall_height_dummy_lag_1 +
       wind_direction_east_west + wind_direction_east_west_lag_1 +
       wind_speed + wind_speed_lag_1 +
-      weekday + holidays_dummy + bank_day_dummy + month*year,
+      weekday + holidays_dummy + bank_day_dummy + month * year,
     caliper = 0.01,
     data = data_matching
   )
@@ -1811,7 +1808,8 @@ matching_ps  <-
 matching_ps
 ```
 
-The output of the matching procedure indicates us the method (1:1 nearest neighbor matching without replacement) and the distance (propensity score) we used. It also tells us how many units were matched: `r sum(matching_ps[["weights"]])`. We assess how covariates balance has improved by comparing the distribution of propensity scores before and after matching: 
+The output of the matching procedure indicates us the method (1:1 nearest neighbor matching without replacement) and the distance (propensity score) we used. It also tells that out of the `r sum(data_matching$is_treated)` units,  `r sum(matching_ps[["weights"]])` were matched to similar controls. We assess how covariates balance has improved by comparing the distribution of propensity scores before and after matching:
+
 
 ```{r, fig.width = 10, fig.height = 6, code_folding="Please show me the code!"}
 # distribution of propensity scores
@@ -1821,7 +1819,6 @@ graph_propensity_score <- bal.plot(
   which = "both",
   sample.names = c("Initial Data", "Matched Data"),
   type = "density") +
-  ggtitle("Distribution of the Propensity Score Before and After Matching") +
   xlab("Propensity Scores") +
   scale_fill_manual(
     name = "Group:",
@@ -1835,7 +1832,7 @@ graph_propensity_score
 
 # save the graph
 ggsave(
-  graph_propensity_score + labs(title = NULL),
+  graph_propensity_score,
   filename = here::here(
     "inputs",
     "3.outputs",
@@ -1852,57 +1849,81 @@ ggsave(
 )
 ```
 
-We see on this graph that propensity scores distribution for the two groups better overlap but the two density distributions are still not similar. We can also evaluate the covariates balance using the `love.plot()` function from the cobalt package and the absolute mean difference as the summary statistic. For binary variables, the absolute difference in proportion is computed. For continuous covariates, denoted with a star, the absolute standardized mean difference is computed (the difference is divided by the standard deviation of the variable for treated units before matching).
+We see on this graph that propensity scores distribution for the two groups perfectly overlap after matching. We can also evaluate the covariates balance using the `love.plot()` function from the cobalt package and the absolute mean difference as the summary statistic. For binary variables, the absolute difference in proportion is computed. For continuous covariates, denoted with a star, the absolute standardized mean difference is computed (the difference is divided by the standard deviation of the variable for treated units before matching).
 
 ```{r, fig.width = 8, fig.height = 8, code_folding="Please show me the code!"}
 # first we nicely label covariates
 cov_labels <- c(
-  heat_wave_lag_1 = "Heat Wave t-1",
-  heat_wave_lag_2 = "Heat Wave t-2",
-  heat_wave_lag_3 = "Heat Wave t-3",
-  o3_lag_1 = "O3 t-1",
-  o3_lag_2 = "O3 t-2",
-  o3_lag_3 = "O3 t-3",
-  no2_lag_1 = "NO2 t-1",
-  no2_lag_2 = "NO2 t-2",
-  no2_lag_3 = "NO2 t-3",
-  humidity_relative = "Relative Humidity",
-  weekend = "Weekend",
-  month_august = "August",
-  month_june = "June",
-  month_july = "July",
-  year_1990 = "1990",
-  year_1991 = "1991",
-  year_1992 = "1992",
-  year_1993 = "1993",
-  year_1994 = "1994",
-  year_1995 = "1995",
-  year_1996 = "1996",
-  year_1997 = "1997",
-  year_1998 = "1998",
-  year_1999 = "1999",
-  year_2000 = "2000",
-  year_2001 = "2001",
-  year_2002 = "2002",
-  year_2003 = "2003",
-  year_2004 = "2004",
-  year_2005 = "2005",
-  year_2006 = "2006",
-  year_2007 = "2007"
+  bank_day_dummy = "Bank Day Dummy in t",
+  wind_direction_east_west_lag_1_West = "Wind Direction Dummy in t-1",
+  year_2013 = "2013",
+  month_August = "August" ,
+  wind_direction_east_west_West = "Wind Direction Dummy in t",
+  year_2011 = "2011",
+  rainfall_height_dummy = "Rainfall Height Dummy in t",
+  year_2015 = "2015",
+  rainfall_height_dummy_lag_1 = "Rainfall Height Dummy in t-1",
+  year_2012 = "2012",
+  holidays_dummy = "Holidays Dummy in t",
+  month_July = "July",
+  year_2017 = "2017",
+  month_June = "June",
+   year_2014 = "2014",
+  year_2016 = "2016",
+  month_November = "November",
+  wind_speed_lag_1 = "Wind Speed in t-1*",
+  weekday_Friday = "Friday",
+  weekday_Monday = "Monday",
+  year_2010 = "2010",
+  year_2008 = "2008",
+  year_2009 = "2009",
+  year_2018 = "2018",
+  weekday_Thursday = "Thursday",
+  mean_no2_sl_lag_1 = "NO2 Saint-Louis in t-1*",
+  month_April = "April",
+  weekday_Wednesday = "Wednesday",
+  month_September = "September" ,
+  mean_so2_l_lag_1 = "SO2 Longchamp in t-1*",
+  month_March = "March",
+  month_May = "May",
+  month_December = "December",
+  month_October = "October",
+  wind_speed = "Wind Speed in t*",
+  weekday_Tuesday = "Tuesday",
+  total_gross_tonnage_other_boat = "Total Tonnage of Other Vessel Types in t*",
+  total_gross_tonnage_other_boat_lag_1 = "Total Tonnage of Other Vessel Types in t-1*",
+  month_February = "February",
+  month_January = "January",
+  weekday_Saturday = "Saturday",
+  weekday_Sunday = "Sunday",
+  mean_pm10_l_lag_1 = "PM10 Longchamp in t-1*",
+  humidity_average = "Humidity Average in t*",
+  total_gross_tonnage_ferry = "Total Tonnage Ferry in t*",
+  mean_pm10_sl_lag_1 = "PM10 Saint-Louis in t-1*",
+  humidity_average = "Relative Humidity in t*",
+  mean_pm10_sl_lag_1 = "PM10 Saint-Louis in t-1*",
+  humidity_average_lag_1 = "Relative Humidity in t-1*",
+  total_gross_tonnage_ferry_lag_1 = "Total Tonnage Ferry in t-1*",
+  mean_pm25_l_lag_1 = "PM2.5 Longchamp in t-1*",
+  mean_no2_l_lag_1 = "NO2 Longchamp in t-1*",
+  mean_o3_l_lag_1 = "O3 Longchamp in t-1*",
+  temperature_average = "Average Temperature in t*",
+  temperature_average_lag_1 = "Average Temperature in t-1*"
 )
+
 
 # make the love plot
 graph_love_plot_ps <- love.plot(
-    is_treated ~ total_gross_tonnage_ferry + total_gross_tonnage_other_boat +
-      total_gross_tonnage_ferry_lag_1 + total_gross_tonnage_other_boat_lag_1 +
-      mean_no2_l_lag_1 + mean_no2_sl_lag_1 + mean_pm10_l_lag_1 + mean_pm10_sl_lag_1 + 
-      mean_pm25_l_lag_1 + mean_so2_l_lag_1 + mean_o3_l_lag_1 +
-      temperature_average + temperature_average_lag_1 +
-      humidity_average + humidity_average_lag_1 + 
-      rainfall_height_dummy + rainfall_height_dummy_lag_1 +
-      wind_direction_east_west + wind_direction_east_west_lag_1 +
-      wind_speed + wind_speed_lag_1 +
-      weekday + holidays_dummy + bank_day_dummy + month*year,
+  is_treated ~ total_gross_tonnage_ferry + total_gross_tonnage_other_boat +
+    total_gross_tonnage_ferry_lag_1 + total_gross_tonnage_other_boat_lag_1 +
+    mean_no2_l_lag_1 + mean_no2_sl_lag_1 + mean_pm10_l_lag_1 + mean_pm10_sl_lag_1 +
+    mean_pm25_l_lag_1 + mean_so2_l_lag_1 + mean_o3_l_lag_1 +
+    temperature_average + temperature_average_lag_1 +
+    humidity_average + humidity_average_lag_1 +
+    rainfall_height_dummy + rainfall_height_dummy_lag_1 +
+    wind_direction_east_west + wind_direction_east_west_lag_1 +
+    wind_speed + wind_speed_lag_1 +
+    weekday + holidays_dummy + bank_day_dummy + month + year,
   data = data_matching,
   weights = matching_ps,
   drop.distance = TRUE,
@@ -1911,11 +1932,11 @@ graph_love_plot_ps <- love.plot(
   binary = "raw",
   s.d.denom = "treated",
   thresholds = c(m = .1),
-  #var.names = cov_labels,
+  var.names = cov_labels,
   sample.names = c("Initial Data", "Matched Data"),
   shapes = c("circle", "triangle"),
   colors = c(my_orange, my_blue),
-  stars = "std"
+  #stars = "std"
 ) +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
   xlab("Absolute Mean Differences") +
@@ -1943,7 +1964,7 @@ ggsave(
 )
 ```
 
-On this graph, we can see that, for most covariates, balance has improved after matching---yet, for few covariates, the standardized mean difference has increased. We display below the evolution of the average of standardized mean differences for continuous covariates:
+We display below the evolution of the average of standardized mean differences for continuous covariates:
 
 ```{r, code_folding="Please show me the code!"}
 graph_love_plot_ps[["data"]] %>%
@@ -1967,11 +1988,63 @@ graph_love_plot_ps[["data"]] %>%
 
 Overall, for both types of covariates, the balance has clearly improved after matching.
 
+
 We now move to the analysis of the matched datasets using a simple regression model where we first regress the YLL on the treatment indicator. We start with the matched data resulting from the propensity score without a caliper. We first retrieve the matched dataset:
 
 ```{r}
 # we retrieve the matched data
 data_ps <- match.data(matching_ps)
+```
+
+Balance check:
+
+```{r, eval = FALSE}
+# we select covariates
+data_covs <- data_ps %>%
+  select(
+    is_treated:year,
+    subclass,
+    contains("lag_1")
+  )
+
+# recode some variables
+data_covs <- data_covs %>%
+  mutate(is_treated = ifelse(is_treated == TRUE, 1, 0)) %>%
+  mutate_at(
+    vars(wind_direction_east_west , wind_direction_east_west_lag_1),
+    ~ ifelse(. == "West", 1, 0)
+  ) %>%
+  fastDummies::dummy_cols(., select_columns = c("year", "month", "weekday")) %>%
+  select(-c("year", "month", "weekday"))
+
+# format data for asIfRandPlot() function
+subclass <- as.numeric(data_covs$subclass)
+is_treated <- data_covs$is_treated
+
+data_covs <- data_covs %>%
+  select(-subclass,-is_treated) %>%
+  select(-year_2018, - month_December, -weekday_Sunday) 
+
+# run balance check
+asIfRandPlot(
+  X.matched = data_covs,
+  indicator.matched = is_treated,
+  assignment = c("complete", "blocked"),
+  subclass = subclass,
+  perms = 1000
+)
+```
+
+
+```{r, echo = FALSE, out.width = "800%", fig.align = "center"}
+knitr::include_graphics(
+    here::here("inputs",
+    "3.outputs",
+    "2.daily_analysis",
+    "2.analysis_pollution",
+    "1.cruise_experiment",
+    "2.matching_results",
+    "ri_balance_check_ps.png"))
 ```
 
 We then estimate the treatment effect of heat waves with a simple linear regression model:
@@ -2021,27 +2094,76 @@ data_ps_analysis <- data_ps_analysis %>%
 data_ps_analysis <- data_ps_analysis %>%
   mutate(result = map(data, ~ function_ps_analysis(.))) %>%
   select(-data) %>%
-  unnest()
+  unnest() %>%
+  select(-term) %>%
+  rename("mean_difference" = "estimate", "ci_lower_95" = "conf.low", "ci_upper_95" = "conf.high") %>%
+  mutate(analysis = "Propensity Score Matching")
 
+data_neyman <- data_neyman %>%
+  mutate(analysis = "Constrained Pair Matching")
 
+data_neyman_ps <- bind_rows(data_neyman, data_ps_analysis)
+
+# make the graph
+
+# create an indicator to alternate shading of confidence intervals
+data_neyman_ps <- data_neyman_ps %>%
+  arrange(pollutant, time) %>%
+  mutate(stripe = ifelse((time %% 2) == 0, "Grey", "White")) %>%
+  ungroup()
+
+# make the graph
 graph_ps_analysis <-
-  ggplot(data_ps_analysis,
-         aes(
-           x = as.factor(time),
-           y = estimate,
-           ymin = conf.low,
-           ymax = conf.high
-         )) +
+  ggplot(
+    data_neyman_ps,
+    aes(
+      x = as.factor(time),
+      y = mean_difference,
+      ymin = ci_lower_95,
+      ymax = ci_upper_95,
+      colour = analysis,
+      shape = analysis
+    )
+  ) +
+  geom_rect(
+    aes(fill = stripe),
+    xmin = as.numeric(as.factor(data_neyman_ps$time)) - 0.42,
+    xmax = as.numeric(as.factor(data_neyman_ps$time)) + 0.42,
+    ymin = -Inf,
+    ymax = Inf,
+    color = NA,
+    alpha = 0.4
+  ) +
   geom_hline(yintercept = 0, color = "black") +
-  geom_vline(xintercept = "0", color = "black") +
-  geom_pointrange(colour = my_blue, lwd = 1.2) +
-  facet_wrap( ~ pollutant, scales = "free_y", ncol = 4) +
-  xlab("Day") + ylab("Average Difference \nin Concentrations (µg/m³)")  +
+  geom_pointrange(position = position_dodge(width = 1), size = 1.2) +
+  scale_shape_manual(name = "Analysis:", values = c(16, 17)) +
+  scale_color_manual(name = "Analysis:", values = c(my_orange, my_blue)) +
+  facet_wrap( ~ pollutant, ncol = 4) +
+  scale_fill_manual(values = c('grey90', "white")) +
+  guides(fill = FALSE) +
+  ylab("Average Difference \nin Concentrations (µg/m³)") + xlab("Day") +
   theme_tufte()
 
+# display the graph
 graph_ps_analysis
 
+# save the graph
+ggsave(
+  graph_ps_analysis + labs(title = NULL),
+  filename = here::here(
+    "inputs",
+    "3.outputs",
+    "2.daily_analysis",
+    "2.analysis_pollution",
+    "1.cruise_experiment",
+    "2.matching_results",
+    "graph_ps_analysis.pdf"
+  ),
+  width = 30,
+  height = 15,
+  units = "cm",
+  device = cairo_pdf
+)
 ```
 
-We find that the average effect on the treated is equal to +`r results_ps_inf_caliper$estimate` years of life lost. The 95% confidence interval is consistent with effects ranging from +`r results_ps_inf_caliper$conf.low` YLL up to +`r results_ps_inf_caliper$conf.high` YLL. If we want to increase the precision of our estimate and remove any remaining imbalance in covariates, we can also run a multivariate regression. We adjust below for the same variables used in the estimation of the propensity scores:
 

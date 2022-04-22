@@ -1084,6 +1084,7 @@ data_covs <- data_matched %>%
     is_treated,
     year,
     month,
+    weekday,
     holidays_dummy,
     bank_day_dummy,
     total_gross_tonnage_ferry:total_gross_tonnage_other_boat,
@@ -1094,7 +1095,7 @@ data_covs <- data_matched %>%
     total_gross_tonnage_cruise_lag_1:total_gross_tonnage_other_boat_lag_1,
     temperature_average_lag_1:wind_speed_lag_1,
     wind_direction_east_west_lag_1,
-    mean_no2_l_lead_1:mean_o3_l_lead_1
+    mean_no2_l_lag_1:mean_o3_l_lag_1
   )
 
 # recode some variables
@@ -1104,8 +1105,8 @@ data_covs <- data_covs %>%
     vars(wind_direction_east_west , wind_direction_east_west_lag_1),
     ~ ifelse(. == "West", 1, 0)
   ) %>%
-  fastDummies::dummy_cols(., select_columns = c("year", "month")) %>%
-  select(-c("year", "month"))
+  fastDummies::dummy_cols(., select_columns = c("year", "month", "weekday")) %>%
+  select(-c("year", "month", "weekday"))
 
 # format data for asIfRandPlot() function
 pair_number <- as.numeric(data_covs$pair_number)
@@ -1113,7 +1114,7 @@ is_treated <- data_covs$is_treated
 
 data_covs <- data_covs %>%
   select(-pair_number,-is_treated) %>%
-  select(-year_2018, - month_December, -bank_day_dummy, - bank_day_dummy_lag_1) 
+  select(-year_2018, - month_December, -weekday_Sunday, -bank_day_dummy, - bank_day_dummy_lag_1) 
 
 # run balance check
 asIfRandPlot(
@@ -1121,7 +1122,7 @@ asIfRandPlot(
   indicator.matched = is_treated,
   assignment = c("complete", "blocked"),
   subclass = pair_number,
-  perms = 100
+  perms = 1000
 )
 ```
 
