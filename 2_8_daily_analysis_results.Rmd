@@ -1188,6 +1188,19 @@ data_neyman <-
     ci_lower_95 = mean_difference - 1.96 * standard_error,
     ci_upper_95 = mean_difference + 1.96 * standard_error
   )
+
+# we save the results to compare them with an outcome regression approach
+saveRDS(
+  data_neyman,
+  here(
+    "inputs",
+    "1.data",
+    "2.daily_data",
+    "2.data_for_analysis",
+    "1.cruise_experiment",
+    "data_neyman.rds"
+  )
+)
 ``` 
 
 We plot the the point estimates for the average treatment effects and their associated 95% confidence intervals:

@@ -1,0 +1,340 @@
+---
+title: "Exploraty Data Analysis of the Effect of Road Traffic on NO2 Concentration in Marseille"
+description: |
+  Comparing weekdays to weekend.
+author:
+  - name: Marie-Abèle Bind 
+    url: https://scholar.harvard.edu/marie-abele
+    affiliation: Biostatistics Center, Massachusetts General Hospital
+    affiliation_url: https://biostatistics.massgeneral.org/faculty/marie-abele-bind-phd/
+  - name: Marion Leroutier 
+    url: https://www.parisschoolofeconomics.eu/en/leroutier-marion/work-in-progress/
+    affiliation: Misum, Stockholm School of Economics
+    affiliation_url: https://www.hhs.se/en/persons/l/leroutier-marion/
+  - name: Léo Zabrocki 
+    url: https://lzabrocki.github.io/
+    affiliation: Paris School of Economics
+    affiliation_url: https://www.parisschoolofeconomics.eu/fr/zabrocki-leo/
+date: "`r Sys.Date()`"
+output: 
+    distill::distill_article:
+      toc: true
+      toc_depth: 3
+editor_options: 
+  chunk_output_type: console
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE}
+# code chunk option
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  dev = "CairoPNG",
+  dpi = 300
+)
+```
+
+In this document
+
+**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@hhs.se.**
+
+# Required Packages
+
+To reproduce exactly the `2_9_daily_regression_analysis.html` document, we first need to have installed:
+
+* the [R](https://www.r-project.org/) programming language on your computer 
+* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `2_9_daily_regression_analysis.Rmd` file and interact with the R code chunks
+* the [R Markdown](https://rmarkdown.rstudio.com/) package
+* and the [Distill](https://rstudio.github.io/distill/) package which provides the template of this document. 
+
+Once everything is set up, we have to load the following packages:
+
+```{r}
+# load required packages
+library(knitr) # for creating the R Markdown document
+library(here) # for files paths organization
+library(tidyverse) # for data manipulation and visualization
+library(randChecks) # for randomization check
+library(kableExtra) # for table formatting
+library(Cairo) # for printing custom police of graphs
+```
+
+We load our custom `ggplot2` theme for graphs:
+
+```{r}
+# load ggplot custom theme
+source(here::here("inputs",
+                  "2.functions",
+                  "script_theme_tufte.R"))
+# define nice colors
+my_blue <- "#0081a7"
+my_orange <- "#fb8500"
+```
+
+```{r}
+# load matching data
+data_matching <-
+  readRDS(
+    here::here(
+      "inputs",
+      "1.data",
+      "2.daily_data",
+      "2.data_for_analysis",
+      "1.cruise_experiment",
+      "matching_data.rds"
+    )
+  ) %>%
+  mutate(year = as.factor(year))
+```
+
+
+
+# Balance check
+
+```{r, eval = FALSE}
+# we select covariates
+data_covs <- data_matching %>%
+  select(
+    is_treated,
+    year,
+    month,
+    weekday,
+    holidays_dummy,
+    bank_day_dummy,
+    total_gross_tonnage_ferry:total_gross_tonnage_other_boat,
+    temperature_average:wind_speed,
+    wind_direction_east_west,
+    holidays_dummy_lag_1,
+    bank_day_dummy_lag_1,
+    total_gross_tonnage_cruise_lag_1:total_gross_tonnage_other_boat_lag_1,
+    temperature_average_lag_1:wind_speed_lag_1,
+    wind_direction_east_west_lag_1,
+    mean_no2_l_lag_1:mean_o3_l_lag_1
+  ) %>%
+  drop_na()
+
+data_covs <- data_covs %>%
+  group_by(year, month) %>%
+  mutate(year_month_block = cur_group_id())
+
+# recode some variables
+data_covs <- data_covs %>%
+  mutate(is_treated = ifelse(is_treated == TRUE, 1, 0)) %>%
+  mutate_at(
+    vars(wind_direction_east_west , wind_direction_east_west_lag_1),
+    ~ ifelse(. == "West", 1, 0)
+  ) %>%
+  fastDummies::dummy_cols(., select_columns = c("year", "month", "weekday")) %>%
+  select(-c("year", "month", "weekday"))
+
+# format data for asIfRandPlot() function
+is_treated <- data_covs$is_treated
+year_month_block <- data_covs$year_month_block
+
+data_covs <- data_covs %>%
+  select(-is_treated, -year_month_block) %>%
+  select(-year_2018,-month_December, -weekday_Sunday)
+
+# run balance check
+asIfRandPlot(
+  X.matched = data_covs,
+  indicator.matched = is_treated,
+  assignment = c("complete", "blocked"),
+  subclass = year_month_block,
+  perms = 1000
+)
+```
+
+
+```{r, echo = FALSE, out.width = "800%", fig.align = "center"}
+knitr::include_graphics(
+  here::here(
+    "inputs",
+    "3.outputs",
+    "2.daily_analysis",
+    "2.analysis_pollution",
+    "1.cruise_experiment",
+    "3.outcome_regression",
+    "ri_balance_check.png"
+  )
+)
+```
+
+
+# Regression Analysis
+
+
+
+```{r}
+function_reg_analysis <- function(data) {
+  # we fit the regression model
+  model <-
+    lm(
+      concentration ~ is_treated + total_gross_tonnage_ferry + total_gross_tonnage_other_boat +
+        total_gross_tonnage_ferry_lag_1 + total_gross_tonnage_other_boat_lag_1 +
+        temperature_average + temperature_average_lag_1 +
+        humidity_average + humidity_average_lag_1 +
+        rainfall_height_dummy + rainfall_height_dummy_lag_1 +
+        wind_direction_east_west + wind_direction_east_west_lag_1 +
+        wind_speed + wind_speed_lag_1 +
+        weekday + holidays_dummy + bank_day_dummy + month * year,
+      data = data
+    )
+  
+  # retrieve the estimate and 95% ci
+  results_reg <- tidy(coeftest(model, vcov = NeweyWest),
+                      conf.int = TRUE) %>%
+    filter(term == "is_treatedTRUE") %>%
+    select(term, estimate, conf.low, conf.high)
+  
+  # return output
+  return(results_reg)
+}
+
+
+
+
+
+  model <-
+    lm(
+      mean_no2_l ~ is_treated + total_gross_tonnage_ferry + total_gross_tonnage_other_boat +
+        total_gross_tonnage_ferry_lag_1 + total_gross_tonnage_other_boat_lag_1 +
+        temperature_average + temperature_average_lag_1 +
+        humidity_average + humidity_average_lag_1 +
+        rainfall_height_dummy + rainfall_height_dummy_lag_1 +
+        wind_direction_east_west + wind_direction_east_west_lag_1 +
+        wind_speed + wind_speed_lag_1 +
+        weekday + holidays_dummy + bank_day_dummy + month * year,
+      data = data_matching
+    )
+  
+  # retrieve the estimate and 95% ci
+  results_reg <- tidy(., conf.int = TRUE) %>%
+    filter(term == "is_treatedTRUE") %>%
+    select(term, estimate, conf.low, conf.high)
+
+
+
+
+
+# reshape in long according to pollutants
+data_reg_analysis <- data_matching %>%
+  pivot_longer(cols = c(contains("no2"), contains("o3"), contains("pm10"), contains("pm25"), contains("so2")), names_to = "variable", values_to = "concentration") %>%
+  mutate(pollutant = NA %>%
+           ifelse(str_detect(variable, "no2_l"), "NO2 Longchamp",.) %>%
+           ifelse(str_detect(variable, "no2_sl"), "NO2 Saint-Louis",.) %>%
+           ifelse(str_detect(variable, "o3"), "O3 Longchamp",.) %>%
+           ifelse(str_detect(variable, "pm10_l"), "PM10 Longchamp",.) %>%
+           ifelse(str_detect(variable, "pm10_sl"), "PM10 Saint-Louis",.) %>%
+           ifelse(str_detect(variable, "pm25"), "PM2.5 Longchamp",.) %>%
+           ifelse(str_detect(variable, "so2"), "SO2 Lonchamp",.)) %>%
+  mutate(time = 0 %>%
+           ifelse(str_detect(variable, "lag_1"), -1, .) %>%
+           ifelse(str_detect(variable, "lead_1"), 1, .)) %>%
+  select(-variable)
+
+# we nest the data by pollutant and time
+data_reg_analysis <- data_reg_analysis %>% 
+  group_by(pollutant, time) %>%
+  nest()
+
+data_reg_analysis <- data_reg_analysis %>%
+  mutate(result = map(data, ~ function_reg_analysis(.))) %>%
+  select(-data) %>%
+  unnest() %>%
+  select(-term) %>%
+  rename("mean_difference" = "estimate", "ci_lower_95" = "conf.low", "ci_upper_95" = "conf.high") %>%
+  mutate(analysis = "Outcome Regression")
+
+
+
+
+
+
+
+
+data_neyman <- data_neyman %>%
+  mutate(analysis = "Constrained Pair Matching")
+
+data_neyman_ps <- bind_rows(data_neyman, data_ps_analysis)
+
+# make the graph
+
+# create an indicator to alternate shading of confidence intervals
+data_neyman_ps <- data_neyman_ps %>%
+  arrange(pollutant, time) %>%
+  mutate(stripe = ifelse((time %% 2) == 0, "Grey", "White")) %>%
+  ungroup()
+
+# make the graph
+graph_ps_analysis <-
+  ggplot(
+    data_neyman_ps,
+    aes(
+      x = as.factor(time),
+      y = mean_difference,
+      ymin = ci_lower_95,
+      ymax = ci_upper_95,
+      colour = analysis,
+      shape = analysis
+    )
+  ) +
+  geom_rect(
+    aes(fill = stripe),
+    xmin = as.numeric(as.factor(data_neyman_ps$time)) - 0.42,
+    xmax = as.numeric(as.factor(data_neyman_ps$time)) + 0.42,
+    ymin = -Inf,
+    ymax = Inf,
+    color = NA,
+    alpha = 0.4
+  ) +
+  geom_hline(yintercept = 0, color = "black") +
+  geom_pointrange(position = position_dodge(width = 1), size = 1.2) +
+  scale_shape_manual(name = "Analysis:", values = c(16, 17)) +
+  scale_color_manual(name = "Analysis:", values = c(my_orange, my_blue)) +
+  facet_wrap( ~ pollutant, ncol = 4) +
+  scale_fill_manual(values = c('grey90', "white")) +
+  guides(fill = FALSE) +
+  ylab("Average Difference \nin Concentrations (µg/m³)") + xlab("Day") +
+  theme_tufte()
+
+# display the graph
+graph_ps_analysis
+
+# save the graph
+ggsave(
+  graph_ps_analysis + labs(title = NULL),
+  filename = here::here(
+    "inputs",
+    "3.outputs",
+    "2.daily_analysis",
+    "2.analysis_pollution",
+    "1.cruise_experiment",
+    "2.matching_results",
+    "graph_ps_analysis.pdf"
+  ),
+  width = 30,
+  height = 15,
+  units = "cm",
+  device = cairo_pdf
+)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
