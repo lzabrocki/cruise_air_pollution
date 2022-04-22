@@ -60,7 +60,10 @@ Once everything is set up, we have to load the following packages:
 library(knitr) # for creating the R Markdown document
 library(here) # for files paths organization
 library(tidyverse) # for data manipulation and visualization
+library(broom) # for cleaning regression outputs
 library(randChecks) # for randomization check
+library(lmtest) # for modifying regression standard errors
+library(sandwich) # for robust and cluster robust standard errors
 library(kableExtra) # for table formatting
 library(Cairo) # for printing custom police of graphs
 ```
@@ -90,7 +93,28 @@ data_matching <-
       "matching_data.rds"
     )
   ) %>%
-  mutate(year = as.factor(year))
+  mutate(year = as.factor(year)) %>%
+  select(
+    is_treated,
+    year,
+    month,
+    weekday,
+    holidays_dummy,
+    bank_day_dummy,
+    total_gross_tonnage_ferry:total_gross_tonnage_other_boat,
+    temperature_average:wind_speed,
+    wind_direction_east_west,
+    holidays_dummy_lag_1,
+    bank_day_dummy_lag_1,
+    total_gross_tonnage_cruise_lag_1:total_gross_tonnage_other_boat_lag_1,
+    temperature_average_lag_1:wind_speed_lag_1,
+    wind_direction_east_west_lag_1,
+    contains("no2"),
+    contains("o3"),
+    contains("pm10"),
+    contains("pm25"),
+    contains("so2")
+  )
 ```
 
 
@@ -188,7 +212,7 @@ function_reg_analysis <- function(data) {
     )
   
   # retrieve the estimate and 95% ci
-  results_reg <- tidy(coeftest(model, vcov = NeweyWest),
+  results_reg <- tidy(coeftest(model, vcov = vcovHC),
                       conf.int = TRUE) %>%
     filter(term == "is_treatedTRUE") %>%
     select(term, estimate, conf.low, conf.high)
@@ -196,31 +220,6 @@ function_reg_analysis <- function(data) {
   # return output
   return(results_reg)
 }
-
-
-
-
-
-  model <-
-    lm(
-      mean_no2_l ~ is_treated + total_gross_tonnage_ferry + total_gross_tonnage_other_boat +
-        total_gross_tonnage_ferry_lag_1 + total_gross_tonnage_other_boat_lag_1 +
-        temperature_average + temperature_average_lag_1 +
-        humidity_average + humidity_average_lag_1 +
-        rainfall_height_dummy + rainfall_height_dummy_lag_1 +
-        wind_direction_east_west + wind_direction_east_west_lag_1 +
-        wind_speed + wind_speed_lag_1 +
-        weekday + holidays_dummy + bank_day_dummy + month * year,
-      data = data_matching
-    )
-  
-  # retrieve the estimate and 95% ci
-  results_reg <- tidy(., conf.int = TRUE) %>%
-    filter(term == "is_treatedTRUE") %>%
-    select(term, estimate, conf.low, conf.high)
-
-
-
 
 
 # reshape in long according to pollutants
@@ -247,35 +246,41 @@ data_reg_analysis <- data_reg_analysis %>%
 data_reg_analysis <- data_reg_analysis %>%
   mutate(result = map(data, ~ function_reg_analysis(.))) %>%
   select(-data) %>%
-  unnest() %>%
+  unnest(cols = c(result)) %>%
   select(-term) %>%
   rename("mean_difference" = "estimate", "ci_lower_95" = "conf.low", "ci_upper_95" = "conf.high") %>%
   mutate(analysis = "Outcome Regression")
 
 
 
-
-
-
-
+data_neyman <- readRDS(
+  here(
+    "inputs",
+    "1.data",
+    "2.daily_data",
+    "2.data_for_analysis",
+    "1.cruise_experiment",
+    "data_neyman.rds"
+  )
+)
 
 data_neyman <- data_neyman %>%
   mutate(analysis = "Constrained Pair Matching")
 
-data_neyman_ps <- bind_rows(data_neyman, data_ps_analysis)
+data_neyman_reg <- bind_rows(data_neyman, data_reg_analysis)
 
 # make the graph
 
 # create an indicator to alternate shading of confidence intervals
-data_neyman_ps <- data_neyman_ps %>%
+data_neyman_reg <- data_neyman_reg %>%
   arrange(pollutant, time) %>%
   mutate(stripe = ifelse((time %% 2) == 0, "Grey", "White")) %>%
   ungroup()
 
 # make the graph
-graph_ps_analysis <-
+graph_reg_analysis <-
   ggplot(
-    data_neyman_ps,
+    data_neyman_reg,
     aes(
       x = as.factor(time),
       y = mean_difference,
@@ -287,8 +292,8 @@ graph_ps_analysis <-
   ) +
   geom_rect(
     aes(fill = stripe),
-    xmin = as.numeric(as.factor(data_neyman_ps$time)) - 0.42,
-    xmax = as.numeric(as.factor(data_neyman_ps$time)) + 0.42,
+    xmin = as.numeric(as.factor(data_neyman_reg$time)) - 0.42,
+    xmax = as.numeric(as.factor(data_neyman_reg$time)) + 0.42,
     ymin = -Inf,
     ymax = Inf,
     color = NA,
@@ -305,19 +310,19 @@ graph_ps_analysis <-
   theme_tufte()
 
 # display the graph
-graph_ps_analysis
+graph_reg_analysis
 
 # save the graph
 ggsave(
-  graph_ps_analysis + labs(title = NULL),
+  graph_reg_analysis + labs(title = NULL),
   filename = here::here(
     "inputs",
     "3.outputs",
     "2.daily_analysis",
     "2.analysis_pollution",
     "1.cruise_experiment",
-    "2.matching_results",
-    "graph_ps_analysis.pdf"
+    "3.outcome_regression",
+    "graph_reg_analysis.pdf"
   ),
   width = 30,
   height = 15,
