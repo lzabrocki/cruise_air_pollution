@@ -17,10 +17,26 @@ navbar:
       menu: 
         - text: "Daily Data Wrangling"
           href: 2_1_daily_data_wrangling.html
+        - text: "Daily EDA"
+          href: 2_2_daily_eda.html
     - text: "Daily Matching"
       menu: 
-        - text: "Daily Data Procedure"
+        - text: "Matching Procedure"
           href: 2_3_daily_matching_procedure.html      
+        - text: "Comparing Matching & Matched Data"
+          href: 2_4_daily_comparing_matching_matched_data.html
+        - text: "Checking Intervention"
+          href: 2_5_daily_checking_intervention.html
+        - text: "Checking Balance"
+          href: 2_6_daily_checking_balance.html
+        - text: "Checking Balance Improvement"
+          href: 2_7_daily_checking_balance_improvement.html
+        - text: "Treatment Analysis"
+          href: 2_8_daily_analysis_results.hmtl
+        - text: "Outcome Regression"
+          href: 2_9_daily_regression_analysis.html
+        - text: "Road Traffic Analysis"
+          href: 2_10_daily_road_traffic_analysis.html
     - text: "Tutorial Randomization Inference"
       href: 3_toy_example_randomization_inference.html
 output: distill::distill_article

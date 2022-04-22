@@ -2178,6 +2178,7 @@ Data
 </button>
 <div class="nav-dropdown-content">
 <a href="2_1_daily_data_wrangling.html">Daily Data Wrangling</a>
+<a href="2_2_daily_eda.html">Daily EDA</a>
 </div>
 </div>
 <div class="nav-dropdown">
@@ -2187,7 +2188,14 @@ Daily Matching
 <span class="down-arrow">&#x25BE;</span>
 </button>
 <div class="nav-dropdown-content">
-<a href="2_3_daily_matching_procedure.html">Daily Data Procedure</a>
+<a href="2_3_daily_matching_procedure.html">Matching Procedure</a>
+<a href="2_4_daily_comparing_matching_matched_data.html">Comparing Matching &amp; Matched Data</a>
+<a href="2_5_daily_checking_intervention.html">Checking Intervention</a>
+<a href="2_6_daily_checking_balance.html">Checking Balance</a>
+<a href="2_7_daily_checking_balance_improvement.html">Checking Balance Improvement</a>
+<a href="2_8_daily_analysis_results.hmtl">Treatment Analysis</a>
+<a href="2_9_daily_regression_analysis.html">Outcome Regression</a>
+<a href="2_10_daily_road_traffic_analysis.html">Road Traffic Analysis</a>
 </div>
 </div>
 <a href="3_toy_example_randomization_inference.html">Tutorial Randomization Inference</a>
@@ -2356,7 +2364,7 @@ Please show me the code!
 <span class='va'>graph_road_traffic_wd</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span><span class='va'>weekday</span>, <span class='va'>road_traffic_flow_all</span>, <span class='va'>road_occupancy_rate</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>pivot_longer</span><span class='op'>(</span>cols <span class='op'>=</span> <span class='op'>-</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>weekday</span><span class='op'>)</span>, names_to <span class='op'>=</span> <span class='st'>"traffic_variable"</span>, values_to <span class='op'>=</span> <span class='st'>"value"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>traffic_variable <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>traffic_variable</span> <span class='op'>==</span> <span class='st'>"road_traffic_flow_all"</span>, <span class='st'>"Flow of Vehicles (N)"</span>, <span class='st'>"Occupancy Rate (%)"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>traffic_variable <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>traffic_variable</span> <span class='op'>==</span> <span class='st'>"road_traffic_flow_all"</span>, <span class='st'>"Flow of Vehicles (N)"</span>, <span class='st'>"Occupancy Rate (%)"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>weekday</span>, <span class='va'>traffic_variable</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>summarise</span><span class='op'>(</span>mean_value <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>value</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>ggplot</span><span class='op'>(</span><span class='va'>.</span>, <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>weekday</span>, y <span class='op'>=</span> <span class='va'>mean_value</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
@@ -2407,8 +2415,8 @@ Please show me the code!
 <pre class="sourceCode r"><code class="sourceCode r"><span class='va'>graph_ecdf_road_traffic_we</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span><span class='va'>weekend</span>, <span class='va'>road_traffic_flow_all</span>, <span class='va'>road_occupancy_rate</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>pivot_longer</span><span class='op'>(</span>cols <span class='op'>=</span> <span class='op'>-</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>weekend</span><span class='op'>)</span>, names_to <span class='op'>=</span> <span class='st'>"traffic_variable"</span>, values_to <span class='op'>=</span> <span class='st'>"value"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>traffic_variable <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>traffic_variable</span> <span class='op'>==</span> <span class='st'>"road_traffic_flow_all"</span>, <span class='st'>"Flow of Vehicles (N)"</span>, <span class='st'>"Occupancy Rate (%)"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>weekend <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>weekend</span> <span class='op'>==</span> <span class='fl'>1</span>, <span class='st'>"Weekend"</span>, <span class='st'>"Weekday"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>traffic_variable <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>traffic_variable</span> <span class='op'>==</span> <span class='st'>"road_traffic_flow_all"</span>, <span class='st'>"Flow of Vehicles (N)"</span>, <span class='st'>"Occupancy Rate (%)"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>weekend <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>weekend</span> <span class='op'>==</span> <span class='fl'>1</span>, <span class='st'>"Weekend"</span>, <span class='st'>"Weekday"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>ggplot</span><span class='op'>(</span><span class='va'>.</span>, <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>value</span>, colour <span class='op'>=</span> <span class='va'>weekend</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'>stat_ecdf</span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>1.1</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'>scale_color_manual</span><span class='op'>(</span>values <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>my_blue</span>, <span class='va'>my_orange</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
@@ -2524,7 +2532,7 @@ Please show me the code!
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># make the graph</span>
 <span class='va'>graph_ecdf_no2_we</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span><span class='va'>weekend</span>, <span class='va'>mean_no2_l</span>, <span class='va'>mean_no2_sl</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>weekend <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>weekend</span> <span class='op'>==</span> <span class='fl'>1</span>, <span class='st'>"Weekend"</span>, <span class='st'>"Weekday"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>weekend <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>weekend</span> <span class='op'>==</span> <span class='fl'>1</span>, <span class='st'>"Weekend"</span>, <span class='st'>"Weekday"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>rename</span><span class='op'>(</span><span class='st'>"Longchamp Station"</span> <span class='op'>=</span> <span class='va'>mean_no2_l</span>,
          <span class='st'>"Saint-Louis Station"</span> <span class='op'>=</span> <span class='va'>mean_no2_sl</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>pivot_longer</span><span class='op'>(</span>cols <span class='op'>=</span> <span class='op'>-</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>weekend</span><span class='op'>)</span>,
@@ -2648,7 +2656,7 @@ Please show me the code!
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># we select control variables and store them in a long dataframe</span>
 <span class='va'>data_weather_continuous_variables</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>weekend <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>weekend</span> <span class='op'>==</span> <span class='fl'>1</span>, <span class='st'>"Weekend"</span>, <span class='st'>"Weekday"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>weekend <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>weekend</span> <span class='op'>==</span> <span class='fl'>1</span>, <span class='st'>"Weekend"</span>, <span class='st'>"Weekday"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span><span class='va'>temperature_average</span>,
          <span class='va'>humidity_average</span>,
          <span class='va'>wind_speed</span>,
@@ -2722,12 +2730,12 @@ Please show me the code!
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># we select the rainfall variables</span>
 <span class='va'>data_weather_categorical</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>weekend <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>weekend</span> <span class='op'>==</span> <span class='fl'>1</span>, <span class='st'>"Weekend"</span>, <span class='st'>"Weekday"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>weekend <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>weekend</span> <span class='op'>==</span> <span class='fl'>1</span>, <span class='st'>"Weekend"</span>, <span class='st'>"Weekday"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span><span class='va'>rainfall_height_dummy</span>,
          <span class='va'>wind_direction_categories</span>,
          <span class='va'>weekend</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>drop_na</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='va'>rainfall_height_dummy</span><span class='op'>)</span>, <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>.</span> <span class='op'>==</span> <span class='fl'>1</span>, <span class='st'>"True"</span>, <span class='st'>"False"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='va'>rainfall_height_dummy</span><span class='op'>)</span>, <span class='op'>~</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>.</span> <span class='op'>==</span> <span class='fl'>1</span>, <span class='st'>"True"</span>, <span class='st'>"False"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>mutate_all</span><span class='op'>(</span><span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/character.html'>as.character</a></span><span class='op'>(</span><span class='va'>.</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>pivot_longer</span><span class='op'>(</span>cols <span class='op'>=</span> <span class='op'>-</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>weekend</span><span class='op'>)</span>,
                names_to <span class='op'>=</span> <span class='st'>"variable"</span>,

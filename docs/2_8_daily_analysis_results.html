@@ -2180,6 +2180,7 @@ Data
 </button>
 <div class="nav-dropdown-content">
 <a href="2_1_daily_data_wrangling.html">Daily Data Wrangling</a>
+<a href="2_2_daily_eda.html">Daily EDA</a>
 </div>
 </div>
 <div class="nav-dropdown">
@@ -2189,7 +2190,14 @@ Daily Matching
 <span class="down-arrow">&#x25BE;</span>
 </button>
 <div class="nav-dropdown-content">
-<a href="2_3_daily_matching_procedure.html">Daily Data Procedure</a>
+<a href="2_3_daily_matching_procedure.html">Matching Procedure</a>
+<a href="2_4_daily_comparing_matching_matched_data.html">Comparing Matching &amp; Matched Data</a>
+<a href="2_5_daily_checking_intervention.html">Checking Intervention</a>
+<a href="2_6_daily_checking_balance.html">Checking Balance</a>
+<a href="2_7_daily_checking_balance_improvement.html">Checking Balance Improvement</a>
+<a href="2_8_daily_analysis_results.hmtl">Treatment Analysis</a>
+<a href="2_9_daily_regression_analysis.html">Outcome Regression</a>
+<a href="2_10_daily_road_traffic_analysis.html">Road Traffic Analysis</a>
 </div>
 </div>
 <a href="3_toy_example_randomization_inference.html">Tutorial Randomization Inference</a>
@@ -2326,7 +2334,7 @@ text-align: justify}
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='va'>data_matched_wide</span> <span class='op'>&lt;-</span> <span class='va'>data_matched</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>is_treated <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>is_treated</span> <span class='op'>==</span> <span class='cn'>TRUE</span>, <span class='st'>"treated"</span>, <span class='st'>"control"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>is_treated <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>is_treated</span> <span class='op'>==</span> <span class='cn'>TRUE</span>, <span class='st'>"treated"</span>, <span class='st'>"control"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span>
     <span class='va'>is_treated</span>,
     <span class='va'>pair_number</span>,
@@ -2345,17 +2353,17 @@ text-align: justify}
   <span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>mutate</span><span class='op'>(</span>
     pollutant <span class='op'>=</span> <span class='cn'>NA</span> <span class='op'>%&gt;%</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"no2_l"</span><span class='op'>)</span>, <span class='st'>"NO2 Longchamp"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"no2_sl"</span><span class='op'>)</span>, <span class='st'>"NO2 Saint-Louis"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"o3"</span><span class='op'>)</span>, <span class='st'>"O3 Longchamp"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm10_l"</span><span class='op'>)</span>, <span class='st'>"PM10 Longchamp"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm10_sl"</span><span class='op'>)</span>, <span class='st'>"PM10 Saint-Louis"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm25"</span><span class='op'>)</span>, <span class='st'>"PM2.5 Longchamp"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"so2"</span><span class='op'>)</span>, <span class='st'>"SO2 Lonchamp"</span>, <span class='va'>.</span><span class='op'>)</span>
+      <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"no2_l"</span><span class='op'>)</span>, <span class='st'>"NO2 Longchamp"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+      <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"no2_sl"</span><span class='op'>)</span>, <span class='st'>"NO2 Saint-Louis"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+      <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"o3"</span><span class='op'>)</span>, <span class='st'>"O3 Longchamp"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+      <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm10_l"</span><span class='op'>)</span>, <span class='st'>"PM10 Longchamp"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+      <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm10_sl"</span><span class='op'>)</span>, <span class='st'>"PM10 Saint-Louis"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+      <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm25"</span><span class='op'>)</span>, <span class='st'>"PM2.5 Longchamp"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+      <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"so2"</span><span class='op'>)</span>, <span class='st'>"SO2 Lonchamp"</span>, <span class='va'>.</span><span class='op'>)</span>
   <span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>mutate</span><span class='op'>(</span>time <span class='op'>=</span> <span class='fl'>0</span> <span class='op'>%&gt;%</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"lag_1"</span><span class='op'>)</span>,<span class='op'>-</span><span class='fl'>1</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"lead_1"</span><span class='op'>)</span>, <span class='fl'>1</span>, <span class='va'>.</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"lag_1"</span><span class='op'>)</span>,<span class='op'>-</span><span class='fl'>1</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"lead_1"</span><span class='op'>)</span>, <span class='fl'>1</span>, <span class='va'>.</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span><span class='op'>-</span><span class='va'>variable</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span><span class='va'>pair_number</span>, <span class='va'>is_treated</span>, <span class='va'>pollutant</span>, <span class='va'>time</span>, <span class='va'>concentration</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>pivot_wider</span><span class='op'>(</span>names_from <span class='op'>=</span> <span class='va'>is_treated</span>, values_from <span class='op'>=</span> <span class='va'>concentration</span><span class='op'>)</span>
@@ -3001,7 +3009,7 @@ Please show me the code!
 <span class='co'># create an indicator to alternate shading of confidence intervals</span>
 <span class='va'>ri_data_fi_final</span> <span class='op'>&lt;-</span> <span class='va'>ri_data_fi_final</span> <span class='op'>%&gt;%</span>
   <span class='fu'>arrange</span><span class='op'>(</span><span class='va'>pollutant</span>, <span class='va'>time</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>stripe <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='op'>(</span><span class='va'>time</span> <span class='op'>%%</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>0</span>, <span class='st'>"Grey"</span>, <span class='st'>"White"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>stripe <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='op'>(</span><span class='va'>time</span> <span class='op'>%%</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>0</span>, <span class='st'>"Grey"</span>, <span class='st'>"White"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>ungroup</span><span class='op'>(</span><span class='op'>)</span>
 
 <span class='co'># save the data</span>
@@ -3169,7 +3177,7 @@ Please show me the code!
 <span class='co'># create an indicator to alternate shading of confidence intervals</span>
 <span class='va'>data_ci</span> <span class='op'>&lt;-</span> <span class='va'>data_ci</span> <span class='op'>%&gt;%</span>
   <span class='fu'>arrange</span><span class='op'>(</span><span class='va'>pollutant</span>, <span class='va'>time</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>stripe <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='op'>(</span><span class='va'>time</span> <span class='op'>%%</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>0</span>, <span class='st'>"Grey"</span>, <span class='st'>"White"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>stripe <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='op'>(</span><span class='va'>time</span> <span class='op'>%%</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>0</span>, <span class='st'>"Grey"</span>, <span class='st'>"White"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>ungroup</span><span class='op'>(</span><span class='op'>)</span>
 
 <span class='co'># make the graph</span>
@@ -3272,14 +3280,14 @@ Please show me the code!
 <span class='co'># create the leads</span>
 <span class='kw'>for</span> <span class='op'>(</span><span class='va'>i</span> <span class='kw'>in</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>{</span>
   <span class='va'>leads_list</span><span class='op'>[[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='va'>data_marseille_raw_pollutants_leads</span> <span class='op'>%&gt;%</span>
-    <span class='fu'>mutate_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='op'>-</span><span class='va'>date</span><span class='op'>)</span>, <span class='op'>~</span>  <span class='fu'>lead</span><span class='op'>(</span><span class='va'>.</span>, n <span class='op'>=</span> <span class='va'>i</span>, order_by <span class='op'>=</span> <span class='va'>date</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+    <span class='fu'>mutate_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='op'>-</span><span class='va'>date</span><span class='op'>)</span>, <span class='op'>~</span>  <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/shift.html'>lead</a></span><span class='op'>(</span><span class='va'>.</span>, n <span class='op'>=</span> <span class='va'>i</span>, order_by <span class='op'>=</span> <span class='va'>date</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
     <span class='fu'>rename_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='op'>-</span><span class='va'>date</span><span class='op'>)</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
       <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='st'>"_lead_"</span>, <span class='va'>i</span><span class='op'>)</span><span class='op'>)</span>
 <span class='op'>}</span>
 
 <span class='co'># merge the dataframes of leads</span>
 <span class='va'>data_leads</span> <span class='op'>&lt;-</span> <span class='va'>leads_list</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>reduce</span><span class='op'>(</span><span class='va'>left_join</span>, by <span class='op'>=</span> <span class='st'>"date"</span><span class='op'>)</span>
+  <span class='fu'><a href='https://wilkelab.org/ggridges/reference/reduce.html'>reduce</a></span><span class='op'>(</span><span class='va'>left_join</span>, by <span class='op'>=</span> <span class='st'>"date"</span><span class='op'>)</span>
 
 <span class='co'># merge the leads with the data_marseille_raw_pollutants_leads</span>
 <span class='va'>data_marseille_raw_pollutants_leads</span> <span class='op'>&lt;-</span>
@@ -3297,14 +3305,14 @@ Please show me the code!
 <span class='co'># create the lags</span>
 <span class='kw'>for</span> <span class='op'>(</span><span class='va'>i</span> <span class='kw'>in</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>{</span>
   <span class='va'>lags_list</span><span class='op'>[[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='va'>data_marseille_raw_pollutants_lags</span> <span class='op'>%&gt;%</span>
-    <span class='fu'>mutate_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='op'>-</span><span class='va'>date</span><span class='op'>)</span>, <span class='op'>~</span>  <span class='fu'><a href='https://rdrr.io/r/stats/lag.html'>lag</a></span><span class='op'>(</span><span class='va'>.</span>, n <span class='op'>=</span> <span class='va'>i</span>, order_by <span class='op'>=</span> <span class='va'>date</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+    <span class='fu'>mutate_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='op'>-</span><span class='va'>date</span><span class='op'>)</span>, <span class='op'>~</span>  <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/shift.html'>lag</a></span><span class='op'>(</span><span class='va'>.</span>, n <span class='op'>=</span> <span class='va'>i</span>, order_by <span class='op'>=</span> <span class='va'>date</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
     <span class='fu'>rename_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='op'>-</span><span class='va'>date</span><span class='op'>)</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
       <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='st'>"_lag_"</span>, <span class='va'>i</span><span class='op'>)</span><span class='op'>)</span>
 <span class='op'>}</span>
 
 <span class='co'># merge the dataframes of lags</span>
 <span class='va'>data_lags</span> <span class='op'>&lt;-</span> <span class='va'>lags_list</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>reduce</span><span class='op'>(</span><span class='va'>left_join</span>, by <span class='op'>=</span> <span class='st'>"date"</span><span class='op'>)</span>
+  <span class='fu'><a href='https://wilkelab.org/ggridges/reference/reduce.html'>reduce</a></span><span class='op'>(</span><span class='va'>left_join</span>, by <span class='op'>=</span> <span class='st'>"date"</span><span class='op'>)</span>
 
 <span class='co'># merge the lags with the initial data_marseille_raw_pollutants_lags</span>
 <span class='va'>data_marseille_raw_pollutants_lags</span> <span class='op'>&lt;-</span>
@@ -3331,7 +3339,7 @@ Please show me the code!
 <span class='co'># compute pair differences</span>
 <span class='va'>data_matched_wide_raw_pollutants</span> <span class='op'>&lt;-</span>
   <span class='va'>data_matched_with_raw_pollutants</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>is_treated <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>is_treated</span> <span class='op'>==</span> <span class='cn'>TRUE</span>, <span class='st'>"treated"</span>, <span class='st'>"control"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>is_treated <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>is_treated</span> <span class='op'>==</span> <span class='cn'>TRUE</span>, <span class='st'>"treated"</span>, <span class='st'>"control"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span>
     <span class='va'>is_treated</span>,
     <span class='va'>pair_number</span>,
@@ -3350,17 +3358,17 @@ Please show me the code!
   <span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>mutate</span><span class='op'>(</span>
     pollutant <span class='op'>=</span> <span class='cn'>NA</span> <span class='op'>%&gt;%</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"no2_l"</span><span class='op'>)</span>, <span class='st'>"NO2 Longchamp"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"no2_sl"</span><span class='op'>)</span>, <span class='st'>"NO2 Saint-Louis"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"o3"</span><span class='op'>)</span>, <span class='st'>"O3 Longchamp"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm10_l"</span><span class='op'>)</span>, <span class='st'>"PM10 Longchamp"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm10_sl"</span><span class='op'>)</span>, <span class='st'>"PM10 Saint-Louis"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm25"</span><span class='op'>)</span>, <span class='st'>"PM2.5 Longchamp"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"so2"</span><span class='op'>)</span>, <span class='st'>"SO2 Lonchamp"</span>, <span class='va'>.</span><span class='op'>)</span>
+      <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"no2_l"</span><span class='op'>)</span>, <span class='st'>"NO2 Longchamp"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+      <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"no2_sl"</span><span class='op'>)</span>, <span class='st'>"NO2 Saint-Louis"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+      <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"o3"</span><span class='op'>)</span>, <span class='st'>"O3 Longchamp"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+      <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm10_l"</span><span class='op'>)</span>, <span class='st'>"PM10 Longchamp"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+      <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm10_sl"</span><span class='op'>)</span>, <span class='st'>"PM10 Saint-Louis"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+      <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm25"</span><span class='op'>)</span>, <span class='st'>"PM2.5 Longchamp"</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+      <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"so2"</span><span class='op'>)</span>, <span class='st'>"SO2 Lonchamp"</span>, <span class='va'>.</span><span class='op'>)</span>
   <span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>mutate</span><span class='op'>(</span>time <span class='op'>=</span> <span class='fl'>0</span> <span class='op'>%&gt;%</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"lag_1"</span><span class='op'>)</span>,<span class='op'>-</span><span class='fl'>1</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"lead_1"</span><span class='op'>)</span>, <span class='fl'>1</span>, <span class='va'>.</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"lag_1"</span><span class='op'>)</span>,<span class='op'>-</span><span class='fl'>1</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"lead_1"</span><span class='op'>)</span>, <span class='fl'>1</span>, <span class='va'>.</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span><span class='op'>-</span><span class='va'>variable</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span><span class='va'>pair_number</span>, <span class='va'>is_treated</span>, <span class='va'>pollutant</span>, <span class='va'>time</span>, <span class='va'>concentration</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>pivot_wider</span><span class='op'>(</span>names_from <span class='op'>=</span> <span class='va'>is_treated</span>, values_from <span class='op'>=</span> <span class='va'>concentration</span><span class='op'>)</span>
@@ -3461,7 +3469,7 @@ Please show me the code!
 <span class='co'># create an indicator to alternate shading of confidence intervals</span>
 <span class='va'>data_ci</span> <span class='op'>&lt;-</span> <span class='va'>data_ci</span> <span class='op'>%&gt;%</span>
   <span class='fu'>arrange</span><span class='op'>(</span><span class='va'>pollutant</span>, <span class='va'>time</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>stripe <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='op'>(</span><span class='va'>time</span> <span class='op'>%%</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>0</span>, <span class='st'>"Grey"</span>, <span class='st'>"White"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>stripe <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='op'>(</span><span class='va'>time</span> <span class='op'>%%</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>0</span>, <span class='st'>"Grey"</span>, <span class='st'>"White"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>ungroup</span><span class='op'>(</span><span class='op'>)</span>
 
 <span class='co'># make the graph</span>
@@ -3564,6 +3572,19 @@ Please show me the code!
     ci_lower_95 <span class='op'>=</span> <span class='va'>mean_difference</span> <span class='op'>-</span> <span class='fl'>1.96</span> <span class='op'>*</span> <span class='va'>standard_error</span>,
     ci_upper_95 <span class='op'>=</span> <span class='va'>mean_difference</span> <span class='op'>+</span> <span class='fl'>1.96</span> <span class='op'>*</span> <span class='va'>standard_error</span>
   <span class='op'>)</span>
+
+<span class='co'># we save the results to compare them with an outcome regression approach</span>
+<span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>saveRDS</a></span><span class='op'>(</span>
+  <span class='va'>data_neyman</span>,
+  <span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span>
+    <span class='st'>"inputs"</span>,
+    <span class='st'>"1.data"</span>,
+    <span class='st'>"2.daily_data"</span>,
+    <span class='st'>"2.data_for_analysis"</span>,
+    <span class='st'>"1.cruise_experiment"</span>,
+    <span class='st'>"data_neyman.rds"</span>
+  <span class='op'>)</span>
+<span class='op'>)</span>
 </code></pre>
 </div>
 </div>
@@ -3577,7 +3598,7 @@ Please show me the code!
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># create an indicator to alternate shading of confidence intervals</span>
 <span class='va'>data_neyman</span> <span class='op'>&lt;-</span> <span class='va'>data_neyman</span> <span class='op'>%&gt;%</span>
   <span class='fu'>arrange</span><span class='op'>(</span><span class='va'>pollutant</span>, <span class='va'>time</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>stripe <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='op'>(</span><span class='va'>time</span> <span class='op'>%%</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>0</span>, <span class='st'>"Grey"</span>, <span class='st'>"White"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>stripe <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='op'>(</span><span class='va'>time</span> <span class='op'>%%</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>0</span>, <span class='st'>"Grey"</span>, <span class='st'>"White"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>ungroup</span><span class='op'>(</span><span class='op'>)</span>
 
 <span class='co'># make the graph</span>
@@ -3878,7 +3899,7 @@ Please show me the code!
 <span class='co'># create an indicator to alternate shading of confidence intervals</span>
 <span class='va'>ri_data_fi_weak_final</span> <span class='op'>&lt;-</span> <span class='va'>ri_data_fi_weak_final</span> <span class='op'>%&gt;%</span>
   <span class='fu'>arrange</span><span class='op'>(</span><span class='va'>pollutant</span>, <span class='va'>time</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>stripe <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='op'>(</span><span class='va'>time</span> <span class='op'>%%</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>0</span>, <span class='st'>"Grey"</span>, <span class='st'>"White"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>stripe <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='op'>(</span><span class='va'>time</span> <span class='op'>%%</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>0</span>, <span class='st'>"Grey"</span>, <span class='st'>"White"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>ungroup</span><span class='op'>(</span><span class='op'>)</span>
 
 <span class='co'># save the data</span>
@@ -4104,7 +4125,7 @@ Please show me the code!
   <span class='fu'>rename</span><span class='op'>(</span>difference_concentration <span class='op'>=</span> <span class='va'>difference</span><span class='op'>)</span> 
 
 <span class='va'>data_matched_wide_tonnage</span> <span class='op'>&lt;-</span> <span class='va'>data_matched</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>is_treated <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>is_treated</span> <span class='op'>==</span> <span class='cn'>TRUE</span>, <span class='st'>"treated"</span>, <span class='st'>"control"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>is_treated <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>is_treated</span> <span class='op'>==</span> <span class='cn'>TRUE</span>, <span class='st'>"treated"</span>, <span class='st'>"control"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span><span class='va'>is_treated</span>,
          <span class='va'>pair_number</span>,
          <span class='fu'>contains</span><span class='op'>(</span><span class='st'>"total_gross_tonnage_cruise"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
@@ -4114,8 +4135,8 @@ Please show me the code!
     values_to <span class='op'>=</span> <span class='st'>"tonnage"</span>
   <span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>mutate</span><span class='op'>(</span>time <span class='op'>=</span> <span class='fl'>0</span> <span class='op'>%&gt;%</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"lag_1"</span><span class='op'>)</span>, <span class='op'>-</span><span class='fl'>1</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"lead_1"</span><span class='op'>)</span>, <span class='fl'>1</span>, <span class='va'>.</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"lag_1"</span><span class='op'>)</span>, <span class='op'>-</span><span class='fl'>1</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"lead_1"</span><span class='op'>)</span>, <span class='fl'>1</span>, <span class='va'>.</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>mutate</span><span class='op'>(</span>variable <span class='op'>=</span> <span class='st'>"total_gross_tonnage_cruise"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span><span class='va'>pair_number</span>, <span class='va'>is_treated</span>, <span class='va'>variable</span>, <span class='va'>time</span>, <span class='va'>tonnage</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>pivot_wider</span><span class='op'>(</span>names_from <span class='op'>=</span> <span class='va'>is_treated</span>, values_from <span class='op'>=</span> <span class='va'>tonnage</span><span class='op'>)</span>
@@ -4129,7 +4150,7 @@ Please show me the code!
   <span class='va'>data_pair_difference_tonnage</span>,
   by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"pair_number"</span>, <span class='st'>"time"</span><span class='op'>)</span>
 <span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>time <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>time</span> <span class='op'>==</span> <span class='fl'>1</span>, <span class='st'>"+1"</span>, <span class='va'>time</span><span class='op'>)</span>,
+  <span class='fu'>mutate</span><span class='op'>(</span>time <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>time</span> <span class='op'>==</span> <span class='fl'>1</span>, <span class='st'>"+1"</span>, <span class='va'>time</span><span class='op'>)</span>,
          time <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste</a></span><span class='op'>(</span><span class='st'>"Day"</span>, <span class='va'>time</span>, sep <span class='op'>=</span> <span class='st'>" "</span><span class='op'>)</span><span class='op'>)</span> 
 
 <span class='co'># make the graph</span>
@@ -4464,22 +4485,40 @@ Please show me the code!
 </details>
 <table>
 <thead>
-<tr class="header">
-<th style="text-align: left;">Sample</th>
-<th style="text-align: center;">Average of Standardized Mean Differences</th>
-<th style="text-align: left;">Std. Deviation</th>
+<tr>
+<th style="text-align:left;">
+Sample
+</th>
+<th style="text-align:center;">
+Average of Standardized Mean Differences
+</th>
+<th style="text-align:left;">
+Std. Deviation
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td style="text-align: left;">Initial Data</td>
-<td style="text-align: center;">0.24</td>
-<td style="text-align: left;">0.19</td>
+<tr>
+<td style="text-align:left;">
+Initial Data
+</td>
+<td style="text-align:center;">
+0.24
+</td>
+<td style="text-align:left;">
+0.19
+</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;">Matched Data</td>
-<td style="text-align: center;">0.05</td>
-<td style="text-align: left;">0.02</td>
+<tr>
+<td style="text-align:left;">
+Matched Data
+</td>
+<td style="text-align:center;">
+0.05
+</td>
+<td style="text-align:left;">
+0.02
+</td>
 </tr>
 </tbody>
 </table>
@@ -4502,22 +4541,40 @@ Please show me the code!
 </details>
 <table>
 <thead>
-<tr class="header">
-<th style="text-align: left;">Sample</th>
-<th style="text-align: center;">Average of Proportion Differences</th>
-<th style="text-align: left;">Std. Deviation</th>
+<tr>
+<th style="text-align:left;">
+Sample
+</th>
+<th style="text-align:center;">
+Average of Proportion Differences
+</th>
+<th style="text-align:left;">
+Std. Deviation
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td style="text-align: left;">Initial Data</td>
-<td style="text-align: center;">0.05</td>
-<td style="text-align: left;">0.04</td>
+<tr>
+<td style="text-align:left;">
+Initial Data
+</td>
+<td style="text-align:center;">
+0.05
+</td>
+<td style="text-align:left;">
+0.04
+</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;">Matched Data</td>
-<td style="text-align: center;">0.01</td>
-<td style="text-align: left;">0.00</td>
+<tr>
+<td style="text-align:left;">
+Matched Data
+</td>
+<td style="text-align:center;">
+0.01
+</td>
+<td style="text-align:left;">
+0.00
+</td>
 </tr>
 </tbody>
 </table>
@@ -4544,10 +4601,10 @@ Please show me the code!
 
 <span class='co'># recode some variables</span>
 <span class='va'>data_covs</span> <span class='op'>&lt;-</span> <span class='va'>data_covs</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>is_treated <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>is_treated</span> <span class='op'>==</span> <span class='cn'>TRUE</span>, <span class='fl'>1</span>, <span class='fl'>0</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>is_treated <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>is_treated</span> <span class='op'>==</span> <span class='cn'>TRUE</span>, <span class='fl'>1</span>, <span class='fl'>0</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>mutate_at</span><span class='op'>(</span>
     <span class='fu'>vars</span><span class='op'>(</span><span class='va'>wind_direction_east_west</span> , <span class='va'>wind_direction_east_west_lag_1</span><span class='op'>)</span>,
-    <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>.</span> <span class='op'>==</span> <span class='st'>"West"</span>, <span class='fl'>1</span>, <span class='fl'>0</span><span class='op'>)</span>
+    <span class='op'>~</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>.</span> <span class='op'>==</span> <span class='st'>"West"</span>, <span class='fl'>1</span>, <span class='fl'>0</span><span class='op'>)</span>
   <span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>fastDummies</span><span class='fu'>::</span><span class='fu'><a href='https://jacobkap.github.io/fastDummies/reference/dummy_cols.html'>dummy_cols</a></span><span class='op'>(</span><span class='va'>.</span>, select_columns <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"year"</span>, <span class='st'>"month"</span>, <span class='st'>"weekday"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span><span class='op'>-</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"year"</span>, <span class='st'>"month"</span>, <span class='st'>"weekday"</span><span class='op'>)</span><span class='op'>)</span>
@@ -4601,16 +4658,16 @@ Please show me the code!
 <span class='va'>data_ps_analysis</span> <span class='op'>&lt;-</span> <span class='va'>data_ps</span> <span class='op'>%&gt;%</span>
   <span class='fu'>pivot_longer</span><span class='op'>(</span>cols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'>contains</span><span class='op'>(</span><span class='st'>"no2"</span><span class='op'>)</span>, <span class='fu'>contains</span><span class='op'>(</span><span class='st'>"o3"</span><span class='op'>)</span>, <span class='fu'>contains</span><span class='op'>(</span><span class='st'>"pm10"</span><span class='op'>)</span>, <span class='fu'>contains</span><span class='op'>(</span><span class='st'>"pm25"</span><span class='op'>)</span>, <span class='fu'>contains</span><span class='op'>(</span><span class='st'>"so2"</span><span class='op'>)</span><span class='op'>)</span>, names_to <span class='op'>=</span> <span class='st'>"variable"</span>, values_to <span class='op'>=</span> <span class='st'>"concentration"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>mutate</span><span class='op'>(</span>pollutant <span class='op'>=</span> <span class='cn'>NA</span> <span class='op'>%&gt;%</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"no2_l"</span><span class='op'>)</span>, <span class='st'>"NO2 Longchamp"</span>,<span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"no2_sl"</span><span class='op'>)</span>, <span class='st'>"NO2 Saint-Louis"</span>,<span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"o3"</span><span class='op'>)</span>, <span class='st'>"O3 Longchamp"</span>,<span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm10_l"</span><span class='op'>)</span>, <span class='st'>"PM10 Longchamp"</span>,<span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm10_sl"</span><span class='op'>)</span>, <span class='st'>"PM10 Saint-Louis"</span>,<span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm25"</span><span class='op'>)</span>, <span class='st'>"PM2.5 Longchamp"</span>,<span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"so2"</span><span class='op'>)</span>, <span class='st'>"SO2 Lonchamp"</span>,<span class='va'>.</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"no2_l"</span><span class='op'>)</span>, <span class='st'>"NO2 Longchamp"</span>,<span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"no2_sl"</span><span class='op'>)</span>, <span class='st'>"NO2 Saint-Louis"</span>,<span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"o3"</span><span class='op'>)</span>, <span class='st'>"O3 Longchamp"</span>,<span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm10_l"</span><span class='op'>)</span>, <span class='st'>"PM10 Longchamp"</span>,<span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm10_sl"</span><span class='op'>)</span>, <span class='st'>"PM10 Saint-Louis"</span>,<span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"pm25"</span><span class='op'>)</span>, <span class='st'>"PM2.5 Longchamp"</span>,<span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"so2"</span><span class='op'>)</span>, <span class='st'>"SO2 Lonchamp"</span>,<span class='va'>.</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>mutate</span><span class='op'>(</span>time <span class='op'>=</span> <span class='fl'>0</span> <span class='op'>%&gt;%</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"lag_1"</span><span class='op'>)</span>, <span class='op'>-</span><span class='fl'>1</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"lead_1"</span><span class='op'>)</span>, <span class='fl'>1</span>, <span class='va'>.</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"lag_1"</span><span class='op'>)</span>, <span class='op'>-</span><span class='fl'>1</span>, <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+           <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>variable</span>, <span class='st'>"lead_1"</span><span class='op'>)</span>, <span class='fl'>1</span>, <span class='va'>.</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>select</span><span class='op'>(</span><span class='op'>-</span><span class='va'>variable</span><span class='op'>)</span>
 
 <span class='co'># we nest the data by pollutant and time</span>
@@ -4636,7 +4693,7 @@ Please show me the code!
 <span class='co'># create an indicator to alternate shading of confidence intervals</span>
 <span class='va'>data_neyman_ps</span> <span class='op'>&lt;-</span> <span class='va'>data_neyman_ps</span> <span class='op'>%&gt;%</span>
   <span class='fu'>arrange</span><span class='op'>(</span><span class='va'>pollutant</span>, <span class='va'>time</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>stripe <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='op'>(</span><span class='va'>time</span> <span class='op'>%%</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>0</span>, <span class='st'>"Grey"</span>, <span class='st'>"White"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>stripe <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='op'>(</span><span class='va'>time</span> <span class='op'>%%</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>0</span>, <span class='st'>"Grey"</span>, <span class='st'>"White"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>ungroup</span><span class='op'>(</span><span class='op'>)</span>
 
 <span class='co'># make the graph</span>
