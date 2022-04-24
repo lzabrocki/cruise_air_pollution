@@ -63,6 +63,8 @@ library(here) # for files paths organization
 library(tidyverse) # for data manipulation and visualization
 library(dtplyr) # to speed up to dplyr
 library(ggridges) # for density ridge plots
+library(osmdata) # for retrieving open street map data
+library(sf) # for simple features access
 library(patchwork) # for combining plots
 library(Cairo) # for printing customed police of graphs
 ```
@@ -95,7 +97,7 @@ data <- readRDS(  here::here(
   )
 ) %>%
   as.data.frame()
-````
+```
 
 # Vessel Traffic Data
 
@@ -150,7 +152,7 @@ ggsave(
   units = "cm",
   device = cairo_pdf
 )
-````
+```
 
 Mean of entering and exiting total tonnage by vessel categories and hour of the day:
 
@@ -211,7 +213,7 @@ ggsave(
   units = "cm",
   device = cairo_pdf
 )
-````
+```
 
 ### Hourly Patterns of total Gross Tonnage by Season
 
@@ -277,7 +279,7 @@ ggsave(
   units = "cm",
   device = cairo_pdf
 )
-````
+```
 
 ### Lack of Variation in Vessel Traffic
 
@@ -324,7 +326,7 @@ ggsave(
   units = "cm",
   device = cairo_pdf
 )
-````
+```
 
 # Pollution Data
 
@@ -372,7 +374,7 @@ ggsave(
   units = "cm",
   device = cairo_pdf
 )
-````
+```
 
 # Weather Data
 
@@ -424,7 +426,7 @@ ggsave(
   units = "cm",
   device = cairo_pdf
 )
-````
+```
 
 We plot the hourly distribution of wind direction categories:
 
@@ -477,7 +479,7 @@ ggsave(
   units = "cm",
   device = cairo_pdf
 )
-````
+```
 
 
 # Road Traffic Data
@@ -513,4 +515,190 @@ ggsave(
   units = "cm",
   device = cairo_pdf
 )
-````
+```
+
+
+# Map of Marseille
+
+### City's boundaries
+
+We downloaded from [data.gouv.fr](https://www.data.gouv.fr/fr/datasets/quartiers-de-marseille-1/#) a shape file of Marseille's districts. We load these data and compute the union of the districts to have the boundaries of the city:
+
+```{r, eval = FALSE}
+# load the city's boundaries
+marseille_borders <- st_read(
+  here::here(
+    "inputs",
+    "1.data",
+    "1.hourly_data",
+    "1.raw_data",
+    "6.marseille_map_data",
+    "districts_marseille.shp"
+  )
+) %>%
+  st_union()
+```
+
+### Port's boundaries
+
+Using the `osmdata` package, we retrieve the boundaries of Marseille's port:
+
+```{r, eval = FALSE}
+# building the query to get boundaries of the port
+harbour_query <- getbb("Marseille") %>%
+  opq() %>%
+  add_osm_feature("harbour")
+
+# retrieve the data
+harbour_data <- osmdata_sf(harbour_query)
+```
+
+### Roads data
+
+Using the `osmdata` package, we retrieve Marseille's network of roads. This query takes a bit of time to run:
+
+```{r, eval = FALSE}
+# building the query to get roads data
+roads_query <- getbb("Marseille") %>%
+  opq() %>%
+  add_osm_feature("highway")
+
+# retrieve the data
+roads_data <- osmdata_sf(roads_query)
+```
+
+### Air pollution measuring stations data
+
+We retrieve the coordinates of Longchamp and Saint Louis stations from [AtmoSud](https://www.atmosud.org/) website:
+
+```{r, eval = FALSE}
+# create air pollution measuring stations data
+data_stations <-
+  tibble(
+    latitude = c(43.34811,  43.30610),
+    longitude = c(5.36012, 5.39526),
+    name = c("Saint Louis", "Longchamp")
+  )
+
+# set the crs
+data_stations <- st_as_sf(data_stations,
+                          coords = c('longitude', 'latitude'),
+                          crs = "+init=epsg:4326")
+
+# retrieve station coordinates for labelling their names on the map
+stations_coordinates <-
+  as.data.frame(st_transform(data_stations, 2154) %>%
+                  st_coordinates(.))
+stations_coordinates$name <- data_stations$name
+```
+
+# Making the map
+
+```{r, eval = FALSE}
+# we first store a vector of colors to create the legend
+colors <- c("Harbour" = my_orange, "Stations" = my_blue)
+
+# make the map
+map_marseille <- ggplot() +
+    # city's boundaries
+  geom_sf(
+    data = marseille_borders,
+    colour = "black",
+    fill = "white",
+    size = 0.1
+  ) +
+  
+  # roads
+  geom_sf(data = roads_data$osm_lines,
+          colour = "gray80",
+          size = 0.2) +
+  # station coordinates
+  geom_sf(
+    data = data_stations,
+    aes(colour = "Stations"),
+    shape = 3,
+    stroke = 1,
+    size = 3, key_glyph = draw_key_label
+  ) +
+  # city's boundaries
+  geom_sf(
+    data = marseille_borders,
+    colour = "black",
+    fill = NA,
+    size = 0.1
+  ) +
+  # port's boundaries
+  geom_sf(data = harbour_data$osm_lines,
+          aes(colour = "Harbour"),
+              size = 0.3, key_glyph = draw_key_label) +
+  geom_sf(
+    data = harbour_data$osm_polygons,
+    aes(colour = "Harbour"),
+    fill = NA,
+    size = 0.3, key_glyph = draw_key_label
+  ) +
+  # station labels
+  ggrepel::geom_text_repel(
+    data = stations_coordinates,
+    aes(X, Y, label = name),
+    point.padding = 1.8,
+    segment.color = NA,
+    size = 3,
+    fontface = 'bold'
+  ) +
+  # axes labels
+  xlab('Longitude') + ylab('Latitude') +
+  # add scale
+  ggspatial::annotation_scale(
+    location = "br",
+    line_width = 0.5,
+    height = unit(0.2, "cm")
+  ) +
+  # add north arrow
+  ggspatial::annotation_north_arrow(
+    location = "tr",
+    which_north = "true",
+    height = unit(1, "cm"),
+    width = unit(1, "cm")
+  ) +
+  # zoom on the map
+  coord_sf(
+    crs = st_crs(2154),
+    xlim = c(885000, 898500),
+    ylim = c(6245000, 6254000),
+    expand = FALSE
+  ) +
+  scale_color_manual(name = "Legend:", values = colors) +
+  theme_tufte() +
+  # theme options
+  theme(
+    panel.border = element_rect(color = "black", fill = NA, size = 0.8),
+    panel.background = element_rect(fill = "aliceblue"),
+    panel.grid.major = element_blank())
+
+# save the map
+ggsave(
+  map_marseille,
+  filename = here::here(
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "1.eda",
+    "map_marseille.pdf"
+  ),
+  width = 20,
+  height = 15,
+  units = "cm",
+  device = cairo_pdf
+)
+```
+
+
+```{r, echo = FALSE, out.width = "200%", fig.align = "center"}
+knitr::include_graphics(
+    here::here(    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "1.eda",
+    "map_marseille.png"))
+```

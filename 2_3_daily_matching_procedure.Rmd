@@ -444,7 +444,7 @@ for (i in 1:length(groups_labels)) {
 }
 ```
 
-For somes cases, several controls units were matched to a treatment unit. We use the `igraph` package to force pair matching via bipartite maximal weighted matching. Below is the required code:
+For some cases, several controls units were matched to a treatment unit. We use the `igraph` package to force pair matching via bipartite maximal weighted matching. Below is the required code:
 
 ```{r}
 # we build a bipartite graph with one layer of treated nodes, and another layer of control nodes.
@@ -592,7 +592,8 @@ a<- treated_pairs %>%
   group_by(pair_number) %>%
   summarise(min_difference = min(difference)) %>%
   arrange(min_difference)
-  summarise(
+  
+summarise(
     "Mean" = round(mean(average_difference, na.rm = TRUE), 1),
     "Standard Deviation" = round(sd(average_difference, na.rm = TRUE), 1),
     "Minimum" = round(min(average_difference, na.rm = TRUE), 1),
