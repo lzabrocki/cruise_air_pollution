@@ -793,13 +793,14 @@ ri_data_fi_final %>%
   rmarkdown::paged_table(.)
 ```
 
-# Checking the Sensivity of Results
+# Checking the Robustness of Results
 
 In this section, we carry out four investigations:
 
 * We check how our results are sensitive to outliers by computing 95% fisherian intervals based on the Wilcoxon's signed rank test statistic.
 * As we imputed the missing pollutant concentrations, we also want to see how our results might for the non-missing outcomes. We compute 95% fisherian intervals based on the Wilcoxon's signed rank test statistic.
 * We compute confidence intervals for the average treatment effect using Neyman's approach.
+
 
 ### Outliers
 

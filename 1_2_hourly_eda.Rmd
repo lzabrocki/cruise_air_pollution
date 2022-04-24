@@ -1,0 +1,516 @@
+---
+title: "Exploratory Data Analysis"
+description: |
+  Hourly Level Data.
+author:
+  - name: Marie-Abèle Bind 
+    url: https://scholar.harvard.edu/marie-abele
+    affiliation: Biostatistics Center, Massachusetts General Hospital
+    affiliation_url: https://biostatistics.massgeneral.org/faculty/marie-abele-bind-phd/
+  - name: Marion Leroutier 
+    url: https://www.parisschoolofeconomics.eu/en/leroutier-marion/work-in-progress/
+    affiliation: Misum, Stockholm School of Economics
+    affiliation_url: https://www.hhs.se/en/persons/l/leroutier-marion/
+  - name: Léo Zabrocki 
+    url: https://lzabrocki.github.io/
+    affiliation: Paris School of Economics
+    affiliation_url: https://www.parisschoolofeconomics.eu/fr/zabrocki-leo/
+date: "`r Sys.Date()`"
+output: 
+    distill::distill_article:
+      toc: true
+      toc_depth: 3
+editor_options: 
+  chunk_output_type: console
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE}
+# code chunk option
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  dev = "CairoPNG",
+  dpi = 300
+)
+```
+
+In this document, we provide all steps to reproduce the exploratory analysis of our data at the hourly. 
+
+**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@hhs.se.**
+
+# Required Packages
+
+To reproduce exactly the `script_data_wrangling.hmtl` document, you first need to have installed:
+
+* the [R](https://www.r-project.org/) programming language on your computer 
+* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `script_data_wrangling.Rmd` file and interact with the R code chunks
+* the [R Markdown](https://rmarkdown.rstudio.com/) package
+* and the [Distill](https://rstudio.github.io/distill/) package which provides the template of this document. 
+
+Once everything is set up, we need to load the following packages:
+
+```{r}
+# load required packages
+library(rmarkdown) # for creating the R Markdown document
+library(knitr) # for creating the R Markdown document
+library(here) # for files paths organization
+library(tidyverse) # for data manipulation and visualization
+library(dtplyr) # to speed up to dplyr
+library(ggridges) # for density ridge plots
+library(patchwork) # for combining plots
+library(Cairo) # for printing customed police of graphs
+```
+
+We also load our custom `ggplot2` theme for graphs:
+
+```{r}
+# load ggplot custom theme
+source(here::here(
+  "inputs",
+  "2.functions",
+  "script_theme_tufte.R"
+))
+# define nice colors
+my_blue <- "#0081a7"
+my_orange <- "#fb8500"
+```
+
+Finally, we load the data: 
+
+```{r}
+# load data
+data <- readRDS(  here::here(
+    "inputs",
+    "1.data",
+    "1.hourly_data",
+    "2.data_for_analysis",
+    "0.main_data",
+    "data_for_analysis_hourly.RDS"
+  )
+) %>%
+  as.data.frame()
+````
+
+# Vessel Traffic Data
+
+We first explore the patterns of vessel traffic data at the hourly level and by vessel type (cruise, ferry and other types).
+
+### Hourly Patterns of Gross Tonnage 
+
+Mean of total tonnage by vessel categories and hour of the day:
+
+```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+# create the graph
+graph_total_tonnage_hour_vessel_type <- data %>%
+  select(
+    hour,
+    total_gross_tonnage,
+    total_gross_tonnage_cruise,
+    total_gross_tonnage_ferry,
+    total_gross_tonnage_other_vessels
+  ) %>%
+  rename(
+    "Total Tonnage" = total_gross_tonnage,
+    "Cruise Tonnage" = total_gross_tonnage_cruise,
+    "Ferry Tonnage" = total_gross_tonnage_ferry,
+    "Other Vessel Types Tonnage" = total_gross_tonnage_other_vessels
+  ) %>%
+  pivot_longer(cols = -c(hour),
+               names_to = "tonnage_type",
+               values_to = "tonnage") %>%
+  group_by(tonnage_type, hour) %>%
+  summarise(mean_tonnage = mean(tonnage) %>%
+              ifelse(is.na(.), 0, .)) %>%
+  ggplot(., aes(x = as.factor(hour), y = mean_tonnage, group = "l")) +
+  geom_line(colour = my_blue, size = 1) +
+  facet_wrap( ~ tonnage_type) +
+  xlab("Hour") + ylab("Average Gross Tonnage") +
+  theme_tufte()
+
+# display the graph
+graph_total_tonnage_hour_vessel_type
+
+ggsave(
+  graph_total_tonnage_hour_vessel_type,
+  filename = here::here(
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "1.eda",
+    "graph_total_tonnage_hour_vessel_type.pdf"
+  ),
+  width = 30,
+  height = 15,
+  units = "cm",
+  device = cairo_pdf
+)
+````
+
+Mean of entering and exiting total tonnage by vessel categories and hour of the day:
+
+```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+# create the graph
+graph_entering_exiting_total_tonnage_hour_vessel_type <- data %>%
+  select(
+    hour,
+    total_gross_tonnage_entry:total_gross_tonnage_entry_other_vessels,
+    total_gross_tonnage_exit:total_gross_tonnage_exit_other_vessels
+  ) %>%
+  pivot_longer(cols = -c(hour),
+               names_to = "tonnage_type",
+               values_to = "tonnage") %>%
+  mutate(
+    entry_exit = ifelse(str_detect(tonnage_type, "entry"), "Arrival", "Departure"),
+    vessel_type = "Total Tonnage" %>%
+      ifelse(str_detect(tonnage_type, "cruise"), "Cruise", .) %>%
+      ifelse(str_detect(tonnage_type, "ferry"), "Ferry", .) %>%
+      ifelse(str_detect(tonnage_type, "other"), "Other Vessel Types", .)
+  ) %>%
+  group_by(vessel_type, entry_exit, hour) %>%
+  summarise(mean_tonnage = mean(tonnage) %>%
+              ifelse(is.na(.), 0, .)) %>%
+  ggplot(.,
+         aes(
+           x = as.factor(hour),
+           y = mean_tonnage,
+           group = entry_exit,
+           colour = entry_exit
+         )) +
+  geom_line(size = 1) +
+  scale_colour_manual(values = c(my_blue, my_orange)) +
+  facet_wrap( ~ vessel_type) +
+  xlab("Hour") + ylab("Average Gross Tonnage") +
+  labs(colour = "Vessel Status") +
+  theme_tufte() +
+  theme(
+    legend.position = "top",
+    legend.justification = "left",
+    legend.direction = "horizontal"
+  )
+
+# display the graph
+graph_entering_exiting_total_tonnage_hour_vessel_type
+
+ggsave(
+  graph_entering_exiting_total_tonnage_hour_vessel_type,
+  filename = here::here(
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "1.eda",
+    "graph_entering_exiting_total_tonnage_hour_vessel_type.pdf"
+  ),
+  width = 45,
+  height = 20,
+  units = "cm",
+  device = cairo_pdf
+)
+````
+
+### Hourly Patterns of total Gross Tonnage by Season
+
+Mean of total tonnage by vessel categories, season and hour of the day:
+
+```{r, fig.width=40, fig.height=12, code_folding="Please show me the code!"}
+# create the graph
+graph_total_tonnage_season_hour_vessel_type <- data %>%
+  mutate(
+    season = recode(
+      season,
+      "1" = "January-March",
+      "2" = "April-June",
+      "3" = "July-September",
+      "4" = "October-December"
+    ) %>% fct_relevel(
+      .,
+      "January-March",
+      "April-June",
+      "July-September",
+      "October-December"
+    )
+  ) %>%
+  select(
+    hour,
+    season,
+    total_gross_tonnage_cruise,
+    total_gross_tonnage_ferry,
+    total_gross_tonnage_other_vessels
+  ) %>%
+  rename("Cruise" = total_gross_tonnage_cruise,
+         "Ferry" = total_gross_tonnage_ferry,
+         "Other Vessel Types" = total_gross_tonnage_other_vessels) %>%
+  pivot_longer(
+    cols = -c(hour, season),
+    names_to = "tonnage_type",
+    values_to = "tonnage"
+  ) %>%
+  group_by(tonnage_type, season, hour) %>%
+  summarise(mean_tonnage = mean(tonnage) %>%
+              ifelse(is.na(.), 0, .)) %>%
+  ggplot(., aes(x = as.factor(hour), y = mean_tonnage, group = "l")) +
+  geom_line(colour = my_blue) +
+  facet_grid(tonnage_type ~ season, scales = "free_y") +
+  xlab("Hour") + ylab("Average Gross Tonnage") +
+  theme_tufte()
+
+# display the graph
+graph_total_tonnage_season_hour_vessel_type
+
+# save the graph
+ggsave(
+  graph_total_tonnage_season_hour_vessel_type,
+  filename = here::here(
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "1.eda",
+    "graph_total_tonnage_season_hour_vessel_type.pdf"
+  ),
+  width = 90,
+  height = 36,
+  units = "cm",
+  device = cairo_pdf
+)
+````
+
+### Lack of Variation in Vessel Traffic
+
+One issue of for our matching analysis is that vessel traffic is very regular. For instance, cruise vessels dock and leave the port for specific days and hours so that it is hard to find similar pairs of hours with and without traffic. We plot below the hourly tonnage of cruise docking the port for mondays belonging to July and August months of 2012:
+
+```{r, fig.width=20, fig.height=10, code_folding="Please show me the code!"}
+# create the data
+data_tonnage_cruise_traffic_monday_season_3_2012 <- data %>%
+  filter(month %in% c("July", "August") &
+           year == 2012 & weekday == "Monday") %>%
+  mutate(julian_date = lubridate::yday(date)) %>%
+  mutate(julian_date = map(julian_date, ~ paste("Day", ., sep = " "))) %>%
+  unnest(julian_date) %>%
+  select(julian_date, hour, total_gross_tonnage_entry_cruise)
+
+# graph entering tonnage cruise
+graph_tonnage_variation_cruise <-
+  data_tonnage_cruise_traffic_monday_season_3_2012 %>%
+  ggplot(.,
+         aes(x = as.factor(hour), y = total_gross_tonnage_entry_cruise, group = julian_date)) +
+  geom_line(colour = my_blue, size = 3) +
+  facet_wrap( ~ julian_date) +
+  scale_y_continuous(
+    labels = function(x)
+      format(x, scientific = FALSE)
+  ) +
+  xlab("Hour") + ylab("Average Gross Tonnage") +
+  theme_tufte()
+
+# display the graph entering tonnage cruise
+graph_tonnage_variation_cruise
+
+ggsave(
+  graph_tonnage_variation_cruise,
+  filename = here::here(
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "1.eda",
+    "graph_tonnage_variation_cruise.pdf"
+  ),
+  width = 84,
+  height = 35,
+  units = "cm",
+  device = cairo_pdf
+)
+````
+
+# Pollution Data
+
+We explore here the hourly patterns of pollutant concentrations. We plot below the average concentration by hour for each pollutant:
+
+```{r, fig.width=20, fig.height=12, code_folding="Please show me the code!"}
+# create the graph of pollutants' concentration by hour of the day
+graph_pollutant_hour <- data %>%
+  select(hour, mean_no2_l:mean_pm10_sl) %>%
+  rename(
+    "NO2 Longchamp" = mean_no2_l,
+    "O3 Longchamp" = mean_o3_l,
+    "PM2.5 Longchamp" = mean_pm25_l,
+    "PM10 Longchamp" = mean_pm10_l,
+    "SO2 Longchamp" = mean_so2_l,
+    "NO2 Saint-Louis" = mean_no2_sl,
+    "PM10 Saint-Louis" = mean_pm10_sl
+  ) %>%
+  pivot_longer(cols = -c(hour),
+               names_to = "pollutant",
+               values_to = "concentration") %>%
+  group_by(hour, pollutant) %>%
+  summarise(mean_concentration = mean(concentration)) %>%
+  ggplot(., aes(x = as.factor(hour), y = mean_concentration, group = "l")) +
+  geom_line(colour = my_blue, size = 2) +
+  facet_wrap( ~ pollutant, scales = "free", ncol = 4) +
+  xlab("Hour") + ylab("Concentration (µg/m³)") +
+  theme_tufte()
+
+# display the graph
+graph_pollutant_hour
+
+# save the graph
+ggsave(
+  graph_pollutant_hour,
+  filename = here::here(
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "1.eda",
+    "graph_pollutant_hour.pdf"
+  ),
+  width = 100,
+  height = 30,
+  units = "cm",
+  device = cairo_pdf
+)
+````
+
+# Weather Data
+
+We explore here the hourly patterns of weather parameters. We plot the hourly distribution of weather parameters:
+
+```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+# make the graph
+graph_continuous_weather_hour <- data %>%
+  select(hour,
+         temperature_average,
+         rainfall_height_dummy,
+         wind_speed,
+         humidity_average) %>%
+  rename(
+    "Average Temperature (°C)" = temperature_average,
+    "Rainfall Dummy (%)" = rainfall_height_dummy,
+    "Wind Speed (m/s)" =          wind_speed,
+    "Average Humidity (%)" = humidity_average
+  ) %>%
+  pivot_longer(cols = -c(hour),
+               names_to = "weather_parameter",
+               values_to = "values") %>%
+  group_by(weather_parameter, hour) %>%
+  summarise(values = mean(values)) %>%
+  ungroup() %>%
+  mutate(values = ifelse(weather_parameter == "Rainfall Dummy (%)", values *
+                           100, values)) %>%
+  ggplot(., aes(x = as.factor(hour), y = values, group = "l")) +
+  geom_line(colour = my_blue, size = 1.4) +
+  facet_wrap( ~ weather_parameter, scales = "free_y") +
+  xlab("Hour") + ylab("Value") +
+  theme_tufte()
+
+# display the graph
+graph_continuous_weather_hour
+
+# save the graph
+ggsave(
+  graph_continuous_weather_hour,
+  filename = here::here(
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "1.eda",
+    "graph_continuous_weather_hour.pdf"
+  ),
+  width = 60,
+  height = 25,
+  units = "cm",
+  device = cairo_pdf
+)
+````
+
+We plot the hourly distribution of wind direction categories:
+
+```{r, fig.width=20, fig.height=15, code_folding="Please show me the code!"}
+# make the graph
+graph_wind_direction_hour <- data %>%
+  select(hour, wind_direction) %>%
+  mutate(
+    wind_direction_categories = cut(
+      wind_direction,
+      breaks = seq(0, 360, by  = 90),
+      include.lowest = TRUE
+    ) %>%
+      recode(
+        .,
+        "[0,90]" = "North-East",
+        "(90,180]" = "South-East",
+        "(180,270]" = "South-West",
+        "(270,360]" = "North-West"
+      )
+  ) %>%
+  mutate(hour = as.factor(hour)) %>%
+  group_by(hour, wind_direction_categories) %>%
+  # compute the number of observations
+  summarise(n = n()) %>%
+  # compute the proportion
+  mutate(freq = round(n / sum(n) * 100, 0)) %>%
+  ggplot(., aes(x = hour, y = freq, group = "l")) +
+  geom_line(colour = my_blue, size = 1.4) +
+  facet_wrap( ~ wind_direction_categories, ncol = 4) +
+  coord_flip() +
+  xlab("Hour") + ylab("Proportion (%)") +
+  theme_tufte()
+
+# display the graph
+graph_wind_direction_hour
+
+# save the graph
+ggsave(
+  graph_wind_direction_hour,
+  filename = here::here(
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "1.eda",
+    "graph_wind_direction_hour.pdf"
+  ),
+  width = 40,
+  height = 22,
+  units = "cm",
+  device = cairo_pdf
+)
+````
+
+
+# Road Traffic Data
+
+We explore here the hourly patterns of the flow of vehicles. We plot below the average flow of vehicles by hour of the day:
+
+```{r, fig.width=20, fig.height=8, code_folding="Please show me the code!"}
+# create the graph of the flow of vehicles by hour of the day
+graph_road_traffic_hour <- data %>%
+  group_by(hour) %>%
+  summarise(mean_road_traffic_flow = mean(road_traffic_flow, na.rm = TRUE)) %>%
+  ungroup() %>%
+  ggplot(., aes(x = as.factor(hour), y = mean_road_traffic_flow, group = "l")) +
+  geom_line(colour = my_blue, size = 2) +
+  xlab("Hour") + ylab("Average Road Traffic Flow\n (Number of Vehicles)") +
+  theme_tufte()
+
+# display the graph
+graph_road_traffic_hour
+
+# save the graph
+ggsave(
+  graph_road_traffic_hour,
+  filename = here::here(
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "1.eda",
+    "graph_road_traffic_hour.pdf"
+  ),
+  width = 30,
+  height = 15,
+  units = "cm",
+  device = cairo_pdf
+)
+````

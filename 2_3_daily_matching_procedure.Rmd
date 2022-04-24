@@ -67,6 +67,7 @@ library(tidyverse) # for data manipulation and visualization
 library(Rcpp) # for running the matching algorithm
 library(optmatch) # for matching pairs
 library(igraph) # for pair matching via bipartite maximal weighted matching
+library(kableExtra) # for table formatting
 ```
 
 We also have to load the `script_time_series_matching_function.R` which provides the functions used for matching time series:
@@ -538,7 +539,7 @@ matched_pairs <- matched_pairs %>%
 ```
 
 
-Our final number of matched treated days is therefore `r nrow(matched_pairs)/2`. We finally merge the `matched_pairs` with the `matching_matching_data` to retrieve covariate values for the matched pairs and save the data:
+Our final number of matched treated days is therefore `r nrow(matched_pairs)/2`. We merge the `matched_pairs` with the `matching_matching_data` to retrieve covariate values for the matched pairs and save the data:
 
 ```{r}
 # select the matched data for the analysis
@@ -558,10 +559,46 @@ saveRDS(
 )
 ```
 
+The distribution of difference in days within a pair is summarized below:
+
+```{r, code_folding="Please show me the code!"}
+final_data %>%
+  group_by(pair_number) %>%
+  summarise(difference_days = abs(date[1]-date[2])) %>%
+  summarise(
+    "Mean" = round(mean(difference_days, na.rm = TRUE), 1),
+    "Standard Deviation" = round(sd(difference_days, na.rm = TRUE), 1),
+    "Minimum" = round(min(difference_days, na.rm = TRUE), 1),
+    "Maximum" = round(max(difference_days, na.rm = TRUE), 1)
+  ) %>%
+  # print the table
+  kable(., align = c("l", rep("c", 4))) %>%
+  kable_styling(position = "center")
+```
 
 
+We also compute the difference between pairs:
 
+```{r, eval = FALSE, code_folding="Please show me the code!"}
+treated_pairs <- final_data %>%
+  select(pair_number, is_treated, date) %>%
+  filter(is_treated == TRUE)
 
-
-
-
+a<- treated_pairs %>% 
+  group_by(pair_number, date) %>%
+  expand(other_date = treated_pairs$date) %>%
+  filter(date!=other_date) %>%
+  mutate(difference = abs(date-other_date)) %>%
+  group_by(pair_number) %>%
+  summarise(min_difference = min(difference)) %>%
+  arrange(min_difference)
+  summarise(
+    "Mean" = round(mean(average_difference, na.rm = TRUE), 1),
+    "Standard Deviation" = round(sd(average_difference, na.rm = TRUE), 1),
+    "Minimum" = round(min(average_difference, na.rm = TRUE), 1),
+    "Maximum" = round(max(average_difference, na.rm = TRUE), 1)
+  ) %>%
+  # print the table
+  kable(., align = c("l", rep("c", 4))) %>%
+  kable_styling(position = "center")
+```
