@@ -88,7 +88,7 @@ my_orange <- "#fb8500"
 
 We explore the characteristics of the matched data by comparing the distribution of its covariates to those of the initial data. We load the two datasets and bind them in the `data_all` object:
 
-```{r, echo = TRUE}
+```{r}
 # load Initial Data
 data_matching <-
   readRDS(

@@ -328,6 +328,7 @@ ggsave(
 )
 ```
 
+
 # Pollution Data
 
 We explore here the hourly patterns of pollutant concentrations. We plot below the average concentration by hour for each pollutant:
