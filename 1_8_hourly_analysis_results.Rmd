@@ -1370,6 +1370,22 @@ data_neyman <-
     ci_lower_95 = mean_difference - 1.96 * standard_error,
     ci_upper_95 = mean_difference + 1.96 * standard_error
   )
+
+
+saveRDS(
+  data_neyman,
+  here::here(
+    "inputs",
+    "1.data",
+    "1.hourly_data",
+    "2.data_for_analysis",
+    "1.matched_data",
+    "1.experiments_cruise",
+    "1.experiment_entry_cruise",
+    "data_neyman.rds"
+  )
+)
+
 ``` 
 
 We plot the the point estimates for the average treatment effects and their associated 95% confidence intervals:

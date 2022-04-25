@@ -1,0 +1,203 @@
+---
+title: "Exploraty Data Analysis of the Effect of Road Traffic on NO2 Concentration in Marseille"
+description: |
+  Comparing weekdays to weekend.
+author:
+  - name: Marie-Abèle Bind 
+    url: https://scholar.harvard.edu/marie-abele
+    affiliation: Biostatistics Center, Massachusetts General Hospital
+    affiliation_url: https://biostatistics.massgeneral.org/faculty/marie-abele-bind-phd/
+  - name: Marion Leroutier 
+    url: https://www.parisschoolofeconomics.eu/en/leroutier-marion/work-in-progress/
+    affiliation: Misum, Stockholm School of Economics
+    affiliation_url: https://www.hhs.se/en/persons/l/leroutier-marion/
+  - name: Léo Zabrocki 
+    url: https://lzabrocki.github.io/
+    affiliation: Paris School of Economics
+    affiliation_url: https://www.parisschoolofeconomics.eu/fr/zabrocki-leo/
+date: "`r Sys.Date()`"
+output: 
+    distill::distill_article:
+      toc: true
+      toc_depth: 3
+editor_options: 
+  chunk_output_type: console
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE}
+# code chunk option
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  dev = "CairoPNG",
+  dpi = 300
+)
+```
+
+In this document
+
+**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@hhs.se.**
+
+# Required Packages
+
+To reproduce exactly the `2_9_daily_regression_analysis.html` document, we first need to have installed:
+
+* the [R](https://www.r-project.org/) programming language on your computer 
+* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `2_9_daily_regression_analysis.Rmd` file and interact with the R code chunks
+* the [R Markdown](https://rmarkdown.rstudio.com/) package
+* and the [Distill](https://rstudio.github.io/distill/) package which provides the template of this document. 
+
+Once everything is set up, we have to load the following packages:
+
+```{r}
+# load required packages
+library(knitr) # for creating the R Markdown document
+library(here) # for files paths organization
+library(tidyverse) # for data manipulation and visualization
+library(broom) # for cleaning regression outputs
+library(randChecks) # for randomization check
+library(lmtest) # for modifying regression standard errors
+library(sandwich) # for robust and cluster robust standard errors
+library(kableExtra) # for table formatting
+library(Cairo) # for printing custom police of graphs
+```
+
+We load our custom `ggplot2` theme for graphs:
+
+```{r}
+# load ggplot custom theme
+source(here::here("inputs",
+                  "2.functions",
+                  "script_theme_tufte.R"))
+# define nice colors
+my_blue <- "#0081a7"
+my_orange <- "#fb8500"
+```
+
+
+Finally, we ran a simple time-stratified regression model on the matching data to see how the results differ with those found in our matched data analysis. We only adjust for calendar indicator and weather covariates measured at time t. Again, we ran this procedure on an Amazon Web Services virtual computer (EC2 t3.2xlarge). The code we used is in the script `script_aws_regression_matching_data.R` located in the **1.experiment_entry_cruise/script_aws** folder. It takes several minutes to run.
+
+We load the outputs of the regression model and plot the 95% confidence intervals:
+
+```{r, layout="l-body-outset", fig.width=30, fig.height=12, code_folding="Please show me the code!"}
+# load regression outputs
+data_reg_analysis <- readRDS(
+  here::here(
+    "inputs",
+    "1.data",
+    "1.hourly_data",
+    "2.data_for_analysis",
+    "1.matched_data",
+    "1.experiments_cruise",
+    "1.experiment_entry_cruise",
+    "data_matching_regression.rds"
+  )
+) %>%
+  # compute 95% confidence intervals using the standard error
+  mutate(ci_lower_95 = estimate - 1.96 * std.error,
+         ci_upper_95 = estimate + 1.96 * std.error) %>%
+  select(-std.error) %>%
+  mutate(analysis = "Outcome Regression") %>%
+  rename(mean_difference = estimate)
+
+data_neyman <- readRDS(
+  here::here(
+    "inputs",
+    "1.data",
+    "1.hourly_data",
+    "2.data_for_analysis",
+    "1.matched_data",
+    "1.experiments_cruise",
+    "1.experiment_entry_cruise",
+    "data_neyman.rds"
+  )
+)
+
+data_neyman <- data_neyman %>%
+  mutate(analysis = "Constrained Pair Matching")
+
+data_neyman_reg <- bind_rows(data_neyman, data_reg_analysis)
+
+# make the graph
+
+# create an indicator to alternate shading of confidence intervals
+data_neyman_reg <- data_neyman_reg %>%
+  arrange(pollutant, time) %>%
+  mutate(stripe = ifelse((time %% 2) == 0, "Grey", "White")) %>%
+  ungroup()
+
+# make the graph
+graph_reg_analysis <-
+  ggplot(
+    data_neyman_reg,
+    aes(
+      x = as.factor(time),
+      y = mean_difference,
+      ymin = ci_lower_95,
+      ymax = ci_upper_95,
+      colour = analysis,
+      shape = analysis
+    )
+  ) +
+  geom_rect(
+    aes(fill = stripe),
+    xmin = as.numeric(as.factor(data_neyman_reg$time)) - 0.42,
+    xmax = as.numeric(as.factor(data_neyman_reg$time)) + 0.42,
+    ymin = -Inf,
+    ymax = Inf,
+    color = NA,
+    alpha = 0.4
+  ) +
+  geom_hline(yintercept = 0, color = "black") +
+  geom_pointrange(position = position_dodge(width = 1), size = 1.2) +
+  scale_shape_manual(name = "Analysis:", values = c(16, 17)) +
+  scale_color_manual(name = "Analysis:", values = c(my_orange, my_blue)) +
+  facet_wrap( ~ pollutant, ncol = 4) +
+  scale_fill_manual(values = c('grey90', "white")) +
+  guides(fill = FALSE) +
+  ylab("Average Difference \nin Concentrations (µg/m³)") + xlab("Day") +
+  theme_tufte()
+
+# display the graph
+graph_reg_analysis
+
+# save the graph
+ggsave(
+  graph_reg_analysis + labs(title = NULL),
+  filename = here::here(
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "2.experiments_cruise",
+    "1.experiment_entry_cruise",
+    "2.matching_results",
+    "graph_matching_regression.pdf"
+  ),
+  width = 30,
+  height = 15,
+  units = "cm",
+  device = cairo_pdf
+)
+```
+
+And we display below the point estimates with the 95% confidence intervals:
+
+```{r, code_folding="Please show me the code!"}
+data_reg_analysis %>%
+  select(pollutant, time, mean_difference, ci_lower_95, ci_upper_95) %>%
+  mutate_at(vars(mean_difference:ci_upper_95), ~ round(., 1)) %>%
+  rename(
+    "Pollutant" = pollutant,
+    "Time" = time,
+    "Point Estimate" = mean_difference,
+    "Lower Bound of the 95% Confidence Interval" = ci_lower_95,
+    "Upper Bound of the 95% Confidence Interval" = ci_upper_95
+  ) %>%
+  rmarkdown::paged_table(.)
+```
