@@ -272,7 +272,7 @@ data_weather_categorical <- data %>%
   select(dataset, is_treated, weather_variable, variable, values, freq) %>%
   pivot_wider(names_from = is_treated, values_from = freq) %>%
   mutate(abs_difference = abs(`True` - `False`)) %>%
-  filter(values != "False")
+  filter(values != "False" & values != "West") 
 
 # create the figure for wind direction
 graph_love_plot_wind_direction <- data_weather_categorical %>%
