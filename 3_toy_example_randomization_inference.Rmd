@@ -49,14 +49,7 @@ In this document, we explain with a toy example how to:
 
 # Required Packages
 
-To reproduce the `3_toy_example_randomization_inference.html` document, we need to have installed:
-
-* the [R](https://www.r-project.org/) programming language 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `3_toy_example_randomization_inference.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template for this document. 
-
-Once everything is set up, we load the following packages:
+We load the following packages:
 
 ```{r}
 # load required packages
@@ -125,7 +118,7 @@ science_table %>%
 
 In reality, we do not have access to the Science Table but the table below where we only have information on the pair indicator, the unit index, the treatment allocated and the observed NO$_{2}$ concentration. Our randomization inference procedure will be based only on this table.
 
-```{r, fig.align = "center"}
+```{r, fig.align = "center", code_folding="Please show me the code!"}
 # create observed data
 data <- science_table %>%
   select(pair, unit, w, y)
@@ -146,9 +139,9 @@ Before moving to the inference, we need to:
 
 ### Stating the Hypothesis
 
-The sharp null hypothesis of no treatment states that $ \forall i,j$, $H_{0}: Y_{i,j}(0) = Y_{i,j}(1)$, that is to say the treatment has no effect for each unit. With this assumption, we could impute the missing Y(1) for control units and the missing Y(0) for treated units as shown in the table below :
+The sharp null hypothesis of no treatment states that $\forall i,j$, $H_{0}: Y_{i,j}(0) = Y_{i,j}(1)$, that is to say the treatment has no effect for each unit. With this assumption, we could impute the missing Y(1) for control units and the missing Y(0) for treated units as shown in the table below :
 
-```{r, fig.align = "center"}
+```{r, fig.align = "center", code_folding="Please show me the code!"}
 # display imputed observed data
 data %>%
   mutate("Y(0)" = y,
@@ -187,12 +180,9 @@ average_observed_pair_differences <- data %>%
   ungroup() %>%
   summarise(average_pair_differences = mean(pair_difference)) %>%
   pull(average_pair_differences)
-
-# display the observed average of pair differences
-average_observed_pair_differences
 ```
 
-We have already computed the permutations matrix of all treatment assignments and we load this matrix:
+The observed average of pair differences is equal to `r average_observed_pair_differences` $\mu g/m^{3}$. We have already computed the permutations matrix of all treatment assignments and we load this matrix:
 
 ```{r}
 # open the matrix of treatment permutations
@@ -238,7 +228,7 @@ distribution_test_statistics <-
 
 We plot below the distribution of the test statistic under the sharp null hypothesis:
 
-```{r, layout="l-body-outset", fig.width=10, fig.height=5}
+```{r, layout="l-body-outset", fig.width=10, fig.height=5, code_folding="Please show me the code!"}
 # make the graph
 graph_distribution_test_statistic <-
   tibble(distribution_test_statistics = distribution_test_statistics) %>%
@@ -385,7 +375,7 @@ ri_data_fi <- ri_data_fi %>%
 ri_data_fi
 ```  
 
-We use the same `function_randomization_distribution()` to compute the randomization distribution of the test statistic for each hypothesized constant effect:
+We use the same function_randomization_distribution() to compute the randomization distribution of the test statistic for each hypothesized constant effect:
 
 ```{r}
 # randomization distribution function
@@ -453,7 +443,7 @@ ri_data_fi <- ri_data_fi %>%
 
 We plot below the lower and upper *p*-values functions:
 
-```{r, layout="l-body-outset", fig.width=10, fig.height=5}
+```{r, layout="l-body-outset", fig.width=10, fig.height=5, code_folding="Please show me the code!"}
 # make the graph
 graph_p_value_functions_sharp_nulls <- ri_data_fi %>%
   select(effect, p_value_upper, p_value_lower) %>%
@@ -505,7 +495,7 @@ ri_data_fi <- ri_data_fi %>%
             fi_upper_95 = max(effect))
 ```  
 
-As a point estimate, we take the value of the observed average of pair differences, that is to say `r average_observed_pair_differences`. For this imaginary experiment, our point estimate is close to the true constant effect but the 95% Fisherian interval is wide: [`r ri_data_fi$fi_lower_95`, `r ri_data_fi$fi_upper_95`]. The data are consistent with both large negative and positive constant treatment effects.
+As a point estimate, we take the value of the observed average of pair differences, that is to say `r average_observed_pair_differences` $\mu g/m^{3}$. For this imaginary experiment, our point estimate is close to the true constant effect but the 95% Fisherian interval is wide: [`r ri_data_fi$fi_lower_95`, `r ri_data_fi$fi_upper_95`]. The data are consistent with both large negative and positive constant treatment effects.
 
 
 # Comparison with Neyman's Approach
@@ -553,7 +543,7 @@ neyman_data_ci <-
   tibble(ci_lower_95 = ci_lower_95, ci_upper_95 = ci_upper_95)
 ```  
 
-The 95% confidence interval is equal to [`r neyman_data_ci$ci_lower_95`, `r neyman_data_ci$ci_upper_95`], which is very similar to the one found with randomization inference. However, the interpretation of the two intervals is different: in the randomization inference procedure, 
+The 95% confidence interval is equal to [`r round(neyman_data_ci$ci_lower_95,1)`, `r round(neyman_data_ci$ci_upper_95,1)`], which is very similar to the one found with randomization inference. However, this interval gives the range of **average** treatment effects consistent with the data.
 
 # Computing a 95% Fisherian Intervals For Weak Null Hypotheses
 
@@ -561,7 +551,7 @@ Finally, many researchers restrain from using randomization inference as a mode 
 
 In the case of our toy example, this studentized test statistic is equal to the observed average of pair differences divided by the standard error of a pairwise experiment. We therefore just follow the same previous procedure but use the studentized statistic proposed by [Jason Wu & Peng Ding (2021)](https://www.tandfonline.com/doi/abs/10.1080/01621459.2020.1750415).
 
-First, we create the data for testing a range of weak null hypotheses with the randomization inference:
+First, we create the data for testing a range of sharp null hypotheses:
 
 ```{r}
 # create a nested dataframe with 
@@ -577,7 +567,7 @@ ri_data_fi_weak <- tibble(observed_pair_differences = observed_pair_differences)
 ri_data_fi_weak
 ```
 
-We then subtract for each pair difference the hypothetical constant effect using the previously used `adjusted_pair_difference_function()`:
+We then subtract for each pair difference the hypothetical constant effect using the previously used adjusted_pair_difference_function():
 
 ```{r}
 # compute the adjusted pair differences
@@ -702,7 +692,7 @@ ri_data_fi_weak <- ri_data_fi_weak %>%
 
 We plot below the lower and upper *p*-values functions:
 
-```{r, layout="l-body-outset", fig.width=10, fig.height=5}
+```{r, layout="l-body-outset", fig.width=10, fig.height=5, code_folding="Please show me the code!"}
 # make the graph
 graph_p_value_functions_weak_nulls <- ri_data_fi_weak %>%
   select(effect, p_value_upper, p_value_lower) %>%
@@ -740,7 +730,7 @@ ri_data_fi_weak <- ri_data_fi_weak %>%
             fi_upper_95 = max(effect))
 ```  
 
-The 95% Fisherian interval is equal to [`r ri_data_fi_weak$fi_lower_95`, `r ri_data_fi_weak$fi_upper_95`]. It is the same interval found with the randomization inference procedure based on average of pair differences test statistic. It is also very similar to the interval found with Neyman's approach.
+The 95% Fisherian interval is equal to [`r ri_data_fi_weak$fi_lower_95`, `r ri_data_fi_weak$fi_upper_95`]. It is the same interval found with the randomization inference procedure using the average of pair differences as a test statistic. It is also very similar to the interval found with Neyman's approach.
 
 
 
