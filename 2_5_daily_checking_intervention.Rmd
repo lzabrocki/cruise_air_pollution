@@ -34,7 +34,7 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = FALSE,
   dev = "CairoPNG",
-  dpi = 600
+  dpi = 300
 )
 ```
 
@@ -43,20 +43,13 @@ In this document, we take great care providing all steps and R codes required to
 * treated units are days with cruise traffic in *t*.
 * control units are day without cruise traffic in *t*.
 
-We adjust for calendar calendar indicators and weather confouding factors.
+We adjust for calendar calendar indicators and weather confounding factors.
 
 **Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@hhs.se.**
 
 # Required Packages
 
-To reproduce exactly the `2_5_checking_intervention.html` document, we first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `2_5_checking_intervention.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template for this document. 
-
-Once everything is set up, we have to load the following packages:
+We load the following packages:
 
 ```{r}
 # load required packages
@@ -126,7 +119,7 @@ graph_tonnage_difference_density <-
   ) +
   geom_vline(
     xintercept = mean(pair_difference_tonnage_t$tonnage_difference),
-    size = 1.1,
+    size = 1,
     color = my_orange
   ) +
   scale_x_continuous(

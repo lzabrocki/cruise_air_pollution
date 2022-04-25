@@ -36,7 +36,7 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = FALSE,
   dev = "CairoPNG",
-  dpi = 600
+  dpi = 300
 )
 ```
 
@@ -51,14 +51,7 @@ We adjust for calendar indicators and weather confounding factors.
 
 # Required Packages
 
-To reproduce exactly the `2_daily_comparing_matching_matched_data.html` document, we first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `2_daily_comparing_matching_matched_data.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template for this document. 
-
-Once everything is set up, we have to load the following packages:
+We load the following packages:
 
 ```{r}
 # load required packages
@@ -67,7 +60,7 @@ library(here) # for files paths organization
 library(tidyverse) # for data manipulation and visualization
 library(ggridges) # for ridge density plots
 library(kableExtra) # for table formatting
-library(Cairo) # for printing customed police of graphs
+library(Cairo) # for printing custom police of graphs
 library(patchwork) # combining plots
 ```
 
@@ -125,7 +118,7 @@ data_all <- bind_rows(data_matching, data_matched)
 
 We plot below the density distributions of continuous weather covariates for the two datasets:
 
-```{r, fig.width=15, fig.height=8, code_folding="Please show me the code!"}
+```{r, fig.width=14, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # we select continuous weather variables and store them in a long dataframe
 data_continuous_weather_variables <- data_all %>%
   select(temperature_average, wind_speed, humidity_average, dataset) %>%
@@ -228,7 +221,7 @@ graph_categorical_weather_variables <-
   )) +
   geom_point(shape = 21,
              color = "black",
-             size = 8) +
+             size = 4) +
   scale_fill_manual(values = c(my_blue, my_orange),
                     guide = guide_legend(reverse = TRUE)) +
   facet_wrap( ~ values, scale = "free_x", ncol = 3) +
@@ -246,7 +239,7 @@ graph_categorical_weather_variables <-
 graph_categorical_weather_variables
 ```
 
-We combine the `graph_density_continuous_weather_variables` and `graph_categorical_weather_variables` :
+We combine the graph_density_continuous_weather_variables and graph_categorical_weather_variables:
 
 ```{r, code_folding="Please show me the code!"}
 # combine plots
@@ -323,7 +316,7 @@ data_bank_holidays <- data_all %>%
 # we plot the data using cleveland dot plots
 graph_bank_holidays <- ggplot(data_bank_holidays, aes(x = proportion, y = as.factor(dataset), fill = dataset)) +
   geom_segment(aes(x = 0, xend = proportion, y =  fct_rev(dataset), yend =  fct_rev(dataset))) +
-  geom_point(shape = 21, colour = "black", size = 8) +  
+  geom_point(shape = 21, colour = "black", size = 4) +  
   scale_fill_manual(values=c(my_orange, my_blue), guide = guide_legend(reverse = FALSE)) +
   facet_wrap(~ name) +
   ggtitle("Bank Days and Holidays") +

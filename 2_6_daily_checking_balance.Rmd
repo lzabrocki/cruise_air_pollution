@@ -34,7 +34,7 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = FALSE,
   dev = "CairoPNG",
-  dpi = 600
+  dpi = 300
 )
 ```
 
@@ -49,14 +49,7 @@ We adjust for calendar calendar indicator and weather confounding factors.
 
 # Required Packages
 
-To reproduce exactly the `2_6_daily_checking_balance.html` document, we first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `2_6_daily_checking_balance.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template for this document. 
-
-Once everything is set up, we have to load the following packages:
+We load the following packages:
 
 ```{r}
 # load required packages
@@ -108,7 +101,7 @@ We check whether coviariates balance was achieved with the thresholds we defined
 
 For continuous weather covariates, we draw boxplots for treated and control groups:
 
-```{r, fig.width=10, fig.height=10, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=10, layout="l-page", code_folding="Please show me the code!"}
 # we select control variables and store them in a long dataframe
 data_weather_continuous_variables <- data_matched %>%
   select(
@@ -180,7 +173,7 @@ ggsave(
 
 For the rainfall dummy and the wind direction categories, we plot the proportions:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # we select the rainfall variables
 data_weather_categorical <- data_matched %>%
   select(
@@ -284,7 +277,7 @@ ggsave(
 
 For pollutants lag 1, we draw boxplots for treated and control groups:
 
-```{r, fig.width=20, fig.height=10, code_folding="Please show me the code!"}
+```{r, fig.width=20, fig.height=10, layout="l-page", code_folding="Please show me the code!"}
 # we select control variables and store them in a long dataframe
 data_pollutant_variables <- data_matched %>%
   select(mean_no2_l_lag_1:mean_o3_l_lag_1,
@@ -347,7 +340,7 @@ ggsave(
 
 For road traffic flow and occupancy rate, we draw boxplots for treated and control groups over the 0-1 lags:
 
-```{r, fig.width=10, fig.height=10, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=10, layout="l-page", code_folding="Please show me the code!"}
 # we select control variables and store them in a long dataframe
 data_road_traffic_variables <- data_matched %>%
   select(
@@ -410,7 +403,7 @@ ggsave(
 
 For calendar variables such as the day of the week, bank days and holidays we matched strictly. We plot the proportions of observations belonging to each month by treatment status:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # compute the proportions of observations belonging to each month by treatment status
 data_month <- data_matched %>%
   mutate(is_treated = ifelse(is_treated == "TRUE", "Treated", "Control")) %>%
@@ -478,7 +471,7 @@ graph_month
 
 We plot the proportions of observations belonging to each year by treatment status:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # compute the proportions of observations belonging to each year by treatment status
 data_year <- data_matched %>%
   mutate(is_treated = ifelse(is_treated == "TRUE", "Treated", "Control")) %>%

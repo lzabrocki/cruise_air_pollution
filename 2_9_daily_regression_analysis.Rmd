@@ -1,7 +1,7 @@
 ---
-title: "Exploraty Data Analysis of the Effect of Road Traffic on NO2 Concentration in Marseille"
+title: "Outcome Regression Approach"
 description: |
-  Comparing weekdays to weekend.
+  Comparing days with cruise traffic to days without. Adjusting for calendar and weather indicators.
 author:
   - name: Marie-Abèle Bind 
     url: https://scholar.harvard.edu/marie-abele
@@ -40,20 +40,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-In this document
+In this document, we compare the results found with our matching analysis with those found with an outcome regression approach.
 
 **Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@hhs.se.**
 
-# Required Packages
+# Required Packages and Data
 
-To reproduce exactly the `2_9_daily_regression_analysis.html` document, we first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language on your computer 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `2_9_daily_regression_analysis.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template of this document. 
-
-Once everything is set up, we have to load the following packages:
+We load the following packages:
 
 ```{r}
 # load required packages
@@ -79,6 +72,8 @@ source(here::here("inputs",
 my_blue <- "#0081a7"
 my_orange <- "#fb8500"
 ```
+
+And we load the matching data:
 
 ```{r}
 # load matching data
@@ -117,9 +112,9 @@ data_matching <-
   )
 ```
 
-
-
 # Balance check
+
+We first evaluate as the overall balance of our treatment before matching by implementing the randomization inference approach proposed by [Zach Branson (2021)](https://muse.jhu.edu/article/804374/pdf):
 
 ```{r, eval = FALSE}
 # we select covariates
@@ -176,7 +171,7 @@ asIfRandPlot(
 ```
 
 
-```{r, echo = FALSE, out.width = "800%", fig.align = "center"}
+```{r, echo = FALSE, out.width = "800%", layout="l-page", fig.align = "center"}
 knitr::include_graphics(
   here::here(
     "inputs",
@@ -193,9 +188,10 @@ knitr::include_graphics(
 
 # Regression Analysis
 
+We run an outcome regression analysis where we regress the concentration of air pollutants on the treatment indiciator, measures of other vessels traffic, weather parameters and calendar indicators:
 
-
-```{r}
+```{r, fig.width = 10, fig.height = 8, layout="l-page", code_folding="Please show me the code!"}
+# define outcome regression function
 function_reg_analysis <- function(data) {
   # we fit the regression model
   model <-
@@ -221,7 +217,6 @@ function_reg_analysis <- function(data) {
   return(results_reg)
 }
 
-
 # reshape in long according to pollutants
 data_reg_analysis <- data_matching %>%
   pivot_longer(cols = c(contains("no2"), contains("o3"), contains("pm10"), contains("pm25"), contains("so2")), names_to = "variable", values_to = "concentration") %>%
@@ -243,6 +238,7 @@ data_reg_analysis <- data_reg_analysis %>%
   group_by(pollutant, time) %>%
   nest()
 
+# run outcome regression analysis
 data_reg_analysis <- data_reg_analysis %>%
   mutate(result = map(data, ~ function_reg_analysis(.))) %>%
   select(-data) %>%
@@ -251,8 +247,7 @@ data_reg_analysis <- data_reg_analysis %>%
   rename("mean_difference" = "estimate", "ci_lower_95" = "conf.low", "ci_upper_95" = "conf.high") %>%
   mutate(analysis = "Outcome Regression")
 
-
-
+# load matching results
 data_neyman <- readRDS(
   here(
     "inputs",
@@ -267,9 +262,8 @@ data_neyman <- readRDS(
 data_neyman <- data_neyman %>%
   mutate(analysis = "Constrained Pair Matching")
 
+# merge them with outcome regression results
 data_neyman_reg <- bind_rows(data_neyman, data_reg_analysis)
-
-# make the graph
 
 # create an indicator to alternate shading of confidence intervals
 data_neyman_reg <- data_neyman_reg %>%

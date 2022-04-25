@@ -156,7 +156,7 @@ data_pair_difference_pollutant <- data_matched_wide %>%
 
 Boxplots for NO2:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # create the graph for no2
 graph_boxplot_difference_pollutant_no2 <-
   data_pair_difference_pollutant %>%
@@ -194,7 +194,7 @@ ggsave(
 
 Boxplots for O3:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # create the graph for o3
 graph_boxplot_difference_pollutant_o3 <-
   data_pair_difference_pollutant %>%
@@ -231,7 +231,7 @@ ggsave(
 
 Boxplots for PM10:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # create the graph for pm10
 graph_boxplot_difference_pollutant_pm10 <-
   data_pair_difference_pollutant %>%
@@ -269,7 +269,7 @@ ggsave(
 
 Boxplots for PM2.5:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # create the graph for pm2.5
 graph_boxplot_difference_pollutant_pm25 <-
   data_pair_difference_pollutant %>%
@@ -306,7 +306,7 @@ ggsave(
 
 Boxplots for SO2:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # create the graph for so2
 graph_boxplot_difference_pollutant_so2 <-
   data_pair_difference_pollutant %>%
@@ -452,7 +452,7 @@ ri_data_sharp_null <- ri_data_sharp_null %>%
 
 We plot below the two-sided p-values for the sharp null hypothesis for each pollutant:
 
-```{r, fig.width=15, fig.height=8, layout="l-body-outset", code_folding="Please show me the code!"}
+```{r, fig.width=15, fig.height=8, layout="l-page", code_folding="Please show me the code!"}
 # make the graph
 graph_p_values <- ri_data_sharp_null %>%
   ggplot(., aes(x = as.factor(time), y = two_sided_p_value)) +
@@ -711,7 +711,7 @@ tictoc::toc()
 
 We plot below the 95% Fisherian intervals:
 
-```{r, fig.width=12, fig.height=6, layout="l-body-outset", code_folding="Please show me the code!"}
+```{r, fig.width=12, fig.height=6, layout="l-page", code_folding="Please show me the code!"}
 # read the data on 95% fisherian intervals
 ri_data_fi_final <-
   readRDS(
@@ -799,14 +799,14 @@ In this section, we carry out four investigations:
 
 * We check how our results are sensitive to outliers by computing 95% fisherian intervals based on the Wilcoxon's signed rank test statistic.
 * As we imputed the missing pollutant concentrations, we also want to see how our results might for the non-missing outcomes. We compute 95% fisherian intervals based on the Wilcoxon's signed rank test statistic.
-* We compute confidence intervals for the average treatment effect using Neyman's approach.
+* We compute confidence intervals for the average treatment effect using Neyman's approach and a randomization inference procedure based on a studentized test statistic.
 
 
 ### Outliers
 
 To gauge how sensitive our results are to outliers, we use a Wilcoxon signed rank test statistic and compute 95% fisherian intervals using the `wilcox.test()` function.
 
-```{r, fig.width=12, fig.height=6, layout="l-body-outset", code_folding="Please show me the code!"}
+```{r, fig.width=12, fig.height=6, layout="l-page", code_folding="Please show me the code!"}
 # carry out the wilcox.test
 data_rank_ci <- data_pair_difference_pollutant %>%
   select(-pair_number) %>%
@@ -1025,7 +1025,7 @@ data_raw_pair_difference_pollutant <-
 
 We display below the number of missing differences by pollutant and day:
 
-```{r, fig.width=12, fig.height=6, layout="l-body-outset", code_folding="Please show me the code!"}
+```{r, fig.width=12, fig.height=6, layout="l-page", code_folding="Please show me the code!"}
 # make the graph
 graph_missing_pollutants <- data_raw_pair_difference_pollutant %>%
   group_by(pollutant, time) %>%
@@ -1071,7 +1071,7 @@ ggsave(
 
 As we have `r nrow(data_matched)/2` pairs, up to 21% of the pairs can have missing pollutant concentrations. We compute below the 95% fisherian intervals for pairs without missing concentrations and compare the results to those found with the imputed dataset:
 
-```{r, fig.width=12, fig.height=6, layout="l-body-outset", code_folding="Please show me the code!"}
+```{r, fig.width=12, fig.height=6, layout="l-page", code_folding="Please show me the code!"}
 # carry out the wilcox.test
 data_raw_rank_ci <- data_raw_pair_difference_pollutant %>%
   drop_na() %>%
@@ -1206,7 +1206,7 @@ saveRDS(
 
 We plot the the point estimates for the average treatment effects and their associated 95% confidence intervals:
 
-```{r, fig.width=12, fig.height=6, layout="l-body-outset", code_folding="Please show me the code!"}
+```{r, fig.width=12, fig.height=6, layout="l-page", code_folding="Please show me the code!"}
 # create an indicator to alternate shading of confidence intervals
 data_neyman <- data_neyman %>%
   arrange(pollutant, time) %>%
@@ -1507,7 +1507,7 @@ saveRDS(
 
 We plot below the 95% Fisherian intervals:
 
-```{r, fig.width=12, fig.height=6, layout="l-body-outset", code_folding="Please show me the code!"}
+```{r, fig.width=12, fig.height=6, layout="l-page", code_folding="Please show me the code!"}
 # read the data on 95% fisherian intervals
 ri_data_fi_weak_final <-
   readRDS(
@@ -1592,7 +1592,9 @@ ri_data_fi_weak_final %>%
 
 # Heterogeneity Analysis
 
-```{r, fig.width=12, fig.height=6, layout="l-body-outset", code_folding="Please show me the code!"}
+We display below the estimated effects by wind direction:
+
+```{r, fig.width=12, fig.height=6, layout="l-page", code_folding="Please show me the code!"}
 # prepare data on pair differences in concentration and wind direction
 data_pair_difference_pollutant_0 <-
   data_pair_difference_pollutant %>%
@@ -1665,7 +1667,9 @@ ggsave(
 ```
 
 
-```{r, fig.width=10, fig.height=5, layout="l-body-outset", code_folding="Please show me the code!"}
+And the relationship between pair differences in pollutant concentrations and the difference in cruise tonnage:
+
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # joint concentration differences with tonnage differences
 data_pair_difference_pollutant <- data_pair_difference_pollutant %>%
   rename(difference_concentration = difference) 
@@ -1747,7 +1751,6 @@ We implement below a propensity score matching procedure where:
 3. Once treated and control units are matched, we assess whether covariates balance has improved. 
 4. We finally estimate the treatment effect.
 
-
 First, we load the matching dataset:
 
 ```{r}
@@ -1825,7 +1828,7 @@ matching_ps
 The output of the matching procedure indicates us the method (1:1 nearest neighbor matching without replacement) and the distance (propensity score) we used. It also tells that out of the `r sum(data_matching$is_treated)` units,  `r sum(matching_ps[["weights"]])` were matched to similar controls. We assess how covariates balance has improved by comparing the distribution of propensity scores before and after matching:
 
 
-```{r, fig.width = 10, fig.height = 6, code_folding="Please show me the code!"}
+```{r, fig.width = 10, fig.height = 6, layout="l-page", code_folding="Please show me the code!"}
 # distribution of propensity scores
 graph_propensity_score <- bal.plot(
   matching_ps,
@@ -1865,7 +1868,7 @@ ggsave(
 
 We see on this graph that propensity scores distribution for the two groups perfectly overlap after matching. We can also evaluate the covariates balance using the `love.plot()` function from the cobalt package and the absolute mean difference as the summary statistic. For binary variables, the absolute difference in proportion is computed. For continuous covariates, denoted with a star, the absolute standardized mean difference is computed (the difference is divided by the standard deviation of the variable for treated units before matching).
 
-```{r, fig.width = 8, fig.height = 8, code_folding="Please show me the code!"}
+```{r, fig.width = 8, fig.height = 8, layout="l-page", code_folding="Please show me the code!"}
 # first we nicely label covariates
 cov_labels <- c(
   bank_day_dummy = "Bank Day Dummy in t",
@@ -2000,17 +2003,14 @@ graph_love_plot_ps[["data"]] %>%
   kable(align = c("l", "c"))
 ```
 
-Overall, for both types of covariates, the balance has clearly improved after matching.
-
-
-We now move to the analysis of the matched datasets using a simple regression model where we first regress the YLL on the treatment indicator. We start with the matched data resulting from the propensity score without a caliper. We first retrieve the matched dataset:
+Overall, for both types of covariates, the balance has clearly improved after matching. We can also as the overall balance using the randomization inference approach proposed by [Zach Branson (2021)](https://muse.jhu.edu/article/804374/pdf). We retrieve the matched dataset:
 
 ```{r}
 # we retrieve the matched data
 data_ps <- match.data(matching_ps)
 ```
 
-Balance check:
+And implement the balance check:
 
 ```{r, eval = FALSE}
 # we select covariates
@@ -2050,7 +2050,7 @@ asIfRandPlot(
 ```
 
 
-```{r, echo = FALSE, out.width = "800%", fig.align = "center"}
+```{r, echo = FALSE, out.width = "800%", layout="l-page", fig.align = "center"}
 knitr::include_graphics(
     here::here("inputs",
     "3.outputs",
@@ -2061,9 +2061,9 @@ knitr::include_graphics(
     "ri_balance_check_ps.png"))
 ```
 
-We then estimate the treatment effect of heat waves with a simple linear regression model:
+We finally move to the analysis of the matched dataset using a simple regression model where we regress the concentration of an air pollutant on the treatment indicator.
 
-```{r}
+```{r, fig.width = 8, fig.height = 8, layout="l-page", code_folding="Please show me the code!"}
 function_ps_analysis <- function(data) {
   
   # we fit the regression model
@@ -2105,6 +2105,7 @@ data_ps_analysis <- data_ps_analysis %>%
   group_by(pollutant, time) %>%
   nest()
 
+# we run the analysis
 data_ps_analysis <- data_ps_analysis %>%
   mutate(result = map(data, ~ function_ps_analysis(.))) %>%
   select(-data) %>%
@@ -2113,12 +2114,12 @@ data_ps_analysis <- data_ps_analysis %>%
   rename("mean_difference" = "estimate", "ci_lower_95" = "conf.low", "ci_upper_95" = "conf.high") %>%
   mutate(analysis = "Propensity Score Matching")
 
+# we combine the results with the ones
+# obtained with neyman's approach
 data_neyman <- data_neyman %>%
   mutate(analysis = "Constrained Pair Matching")
 
 data_neyman_ps <- bind_rows(data_neyman, data_ps_analysis)
-
-# make the graph
 
 # create an indicator to alternate shading of confidence intervals
 data_neyman_ps <- data_neyman_ps %>%

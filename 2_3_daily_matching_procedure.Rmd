@@ -35,7 +35,7 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = FALSE,
   dev = "CairoPNG",
-  dpi = 600
+  dpi = 300
 )
 ```
 
@@ -50,14 +50,7 @@ We adjust for calendar calendar indicator and weather confounding factors.
 
 # Required Packages
 
-To reproduce exactly the `2_daily_matching_procedure.html` document, we first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language on your computer 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `2_daily_matching_procedure.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template of this document. 
-
-Once everything is set up, we have to load the following packages:
+We load the following packages:
 
 ```{r}
 # load required packages
@@ -499,7 +492,7 @@ matched_pairs <- enframe(pairs_list) %>%
          date = value)
 ```
 
-The hypothetical experiment we set up had `r N_treated` treated units and `r N_control` control units. The matching procedure results in `r N_matched` matched treated units. We remove pairs separated by less than 7 days to avoid spillover effects:
+The hypothetical experiment we set up had `r N_treated` treated units and `r N_control` control units. The matching procedure results in `r N_matched` matched treated units. We remove pairs separated by less than 7 days to avoid spillover effects **within** a pair:
 
 ```{r}
 # define distance for days
@@ -539,27 +532,15 @@ matched_pairs <- matched_pairs %>%
 ```
 
 
-Our final number of matched treated days is therefore `r nrow(matched_pairs)/2`. We merge the `matched_pairs` with the `matching_matching_data` to retrieve covariate values for the matched pairs and save the data:
+We then merge the `matched_pairs` with the `matching_matching_data` to retrieve covariate values for the matched pairs:
 
 ```{r}
 # select the matched data for the analysis
 final_data <- left_join(matched_pairs, matching_data, by = "date")
-
-# save the matched data
-saveRDS(
-  final_data,
-  here::here(
-    "inputs",
-    "1.data",
-    "2.daily_data",
-    "2.data_for_analysis",
-    "1.cruise_experiment",
-    "matched_data.RDS"
-  )
-)
 ```
 
-The distribution of difference in days within a pair is summarized below:
+
+Our final number of matched treated days is therefore `r nrow(final_data)/2`. The distribution of difference in days within a pair is summarized below:
 
 ```{r, code_folding="Please show me the code!"}
 final_data %>%
@@ -577,29 +558,46 @@ final_data %>%
 ```
 
 
-We also compute the difference between pairs:
+In the match dataset, there could however be spillover **between** pairs. For example, the first lead of a treated pollutant concentration could be used as a control in another pair. We first compute below the minimum of the distance of each treated unit with all other control units and then retrieve the proportion of treated units for which the minimum distance with a control unit in another pair is equal to 1 day.
 
-```{r, eval = FALSE, code_folding="Please show me the code!"}
+```{r, code_folding="Please show me the code!"}
+# retrieve dates of treated units
 treated_pairs <- final_data %>%
   select(pair_number, is_treated, date) %>%
   filter(is_treated == TRUE)
 
-a<- treated_pairs %>% 
+# retrieve dates of controls
+control_pairs <- final_data %>%
+  select(pair_number, is_treated, date) %>%
+  filter(is_treated == FALSE)
+
+# compute proportion for which the distance is 1
+distance_1_day <- treated_pairs %>% 
   group_by(pair_number, date) %>%
-  expand(other_date = treated_pairs$date) %>%
+  expand(other_date = control_pairs$date) %>%
   filter(date!=other_date) %>%
   mutate(difference = abs(date-other_date)) %>%
   group_by(pair_number) %>%
   summarise(min_difference = min(difference)) %>%
-  arrange(min_difference)
-  
-summarise(
-    "Mean" = round(mean(average_difference, na.rm = TRUE), 1),
-    "Standard Deviation" = round(sd(average_difference, na.rm = TRUE), 1),
-    "Minimum" = round(min(average_difference, na.rm = TRUE), 1),
-    "Maximum" = round(max(average_difference, na.rm = TRUE), 1)
-  ) %>%
-  # print the table
-  kable(., align = c("l", rep("c", 4))) %>%
-  kable_styling(position = "center")
+  arrange(min_difference) %>%
+  summarise(sum(min_difference<=1)/n()*100)
+```
+
+`r round(distance_1_day, 1)`% of pairs could suffer from a between spillover effect. For the moment, we do not drop these pairs but we certainly should find a way to take into account this issue.
+
+We finally save the data:
+
+```{r}
+# save the matched data
+saveRDS(
+  final_data,
+  here::here(
+    "inputs",
+    "1.data",
+    "2.daily_data",
+    "2.data_for_analysis",
+    "1.cruise_experiment",
+    "matched_data.RDS"
+  )
+)
 ```

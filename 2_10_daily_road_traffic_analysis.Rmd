@@ -52,14 +52,7 @@ In the following sections, we proceed as follows:
 
 # Required Packages
 
-To reproduce exactly the `2_10_daily_road_traffic_analysis.html` document, we first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language on your computer 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `2_10_daily_road_traffic_analysis.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template of this document. 
-
-Once everything is set up, we have to load the following packages:
+We load the following packages:
 
 ```{r}
 # load required packages
@@ -81,7 +74,6 @@ source(here::here("inputs",
 my_blue <- "#0081a7"
 my_orange <- "#fb8500"
 ```
-
 
 # Data Loading and Formatting
 
@@ -145,7 +137,7 @@ We explore the patterns of road traffic. It is important to keep in mind that:
 
 We first plot the average road traffic flow and occupancy rate by day of the week :
 
-```{r, fig.width=10, fig.height=4, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=4, layout="l-page", code_folding="Please show me the code!"}
 # make the graph
 graph_road_traffic_wd <- data %>%
   select(weekday, road_traffic_flow_all, road_occupancy_rate) %>%
@@ -183,7 +175,7 @@ ggsave(
 
 We then plot the empirical cumulative distribution of road traffic by weekdays and weekend:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 graph_ecdf_road_traffic_we <- data %>%
   select(weekend, road_traffic_flow_all, road_occupancy_rate) %>%
   pivot_longer(cols = -c(weekend), names_to = "traffic_variable", values_to = "value") %>%
@@ -222,7 +214,7 @@ ggsave(
 
 We plot the average NO2 concentration by day of the week:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # make the graph
 graph_no2_wd <- data %>%
   select(weekday, mean_no2_l, mean_no2_sl) %>%
@@ -274,7 +266,7 @@ ggsave(
 
 We also plot the empirical cumulative distribution of NO$_{2}$ concentration by weekdays and weekend:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # make the graph
 graph_ecdf_no2_we <- data %>%
   select(weekend, mean_no2_l, mean_no2_sl) %>%
@@ -322,7 +314,7 @@ ggsave(
 
 We plot the average total gross tonnage of vessels by day of the week:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 graph_gross_tonnage_cruise_wd <- data %>%
   select(weekday, total_gross_tonnage_cruise) %>%
   group_by(weekday) %>%
@@ -373,7 +365,7 @@ ggsave(
 
 We can check that the weekends and weekdays are similar for weather covariates. For continuous weather covariates, we draw boxplots for treated and control groups:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # we select control variables and store them in a long dataframe
 data_weather_continuous_variables <- data %>%
   mutate(weekend = ifelse(weekend == 1, "Weekend", "Weekday")) %>%
@@ -433,7 +425,7 @@ ggsave(
 
 For the rainfall dummy and the wind direction categories, we plot the proportions:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # we select the rainfall variables
 data_weather_categorical <- data %>%
   mutate(weekend = ifelse(weekend == 1, "Weekend", "Weekday")) %>%
@@ -519,7 +511,7 @@ diff_occupancy <- data %>%
   summarise(average_difference = mean(road_occupancy_rate[weekend == 1]) - mean(road_occupancy_rate[weekend == 0]))
 ```
 
-On average, the hourly road traffic decreases by `r diff_flow` vehicles on weekends. There is a drop of `r round(diff_occupancy, 1)` poins in the occupancy rate.
+On average, the hourly road traffic decreases by `r round(abs(diff_flow),0)` vehicles on weekends. There is a drop of `r round(diff_occupancy, 1)` poins in the occupancy rate.
 
 ### Weekend Effect on NO2 concentrations
 

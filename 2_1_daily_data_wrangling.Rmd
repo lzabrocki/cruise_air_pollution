@@ -27,8 +27,6 @@ body {
 text-align: justify}
 </style>
 
-
-
 ```{r setup, include=FALSE}
 # code chunk option
 knitr::opts_chunk$set(
@@ -47,14 +45,7 @@ In this document, we took great care providing all steps and R codes required to
 
 # Required Packages
 
-To reproduce exactly the `2_daily_data_wrangling.html` document, you first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language on your computer 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `2_daily_data_wrangling.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template of this document. 
-
-Once everything is set up, we need to load the following packages:
+We to load the following packages:
 
 ```{r,}
 # load required packages
@@ -485,9 +476,9 @@ port_data <- port_data %>%
 
 **We have now defined the three types of boats. Below are the proportions of boats belonging to each type:**
 
-* `round(mean(port_data$ferry_boat)*100,1)`% of boats are ferries
-* `round(mean(port_data$cruise_boat)*100,1)`% of boats are cruise boats
-* `round(mean(port_data$other_types)*100,1)`% of boats are of other types
+* `r round(mean(port_data$ferry_boat)*100,1)`% of boats are ferries
+* `r round(mean(port_data$cruise_boat)*100,1)`% of boats are cruise boats
+* `r round(mean(port_data$other_types)*100,1)`% of boats are of other types
 
 ### Final cleaning steps
 
@@ -685,7 +676,7 @@ data_no2 %>%
   kable_styling(position = "center")
 ```
 
-`r, round(sum(is.na(data_no2$mean_no2_l))/nrow(data_no2)*100,1)` % of the observations are missing for the Lonchamps stationa and `r, round(sum(is.na(data_no2$mean_no2_sl))/nrow(data_no2)*100,1)` % for the Saint-Louis station. Below is the dataframe for those missing observations:
+`r round(sum(is.na(data_no2$mean_no2_l))/nrow(data_no2)*100,1)` % of the observations are missing for the Lonchamps stationa and `r, round(sum(is.na(data_no2$mean_no2_sl))/nrow(data_no2)*100,1)` % for the Saint-Louis station. Below is the dataframe for those missing observations:
 
 ```{r, code_folding="Please show me the code!"}
 rmarkdown::paged_table(data_no2 %>% filter(is.na(mean_no2_l) | is.na(mean_no2_sl)))
@@ -750,7 +741,7 @@ data_pm10 %>%
   kable_styling(position = "center")
 ```
 
-`r, round(sum(is.na(data_pm10$mean_pm10_l))/nrow(data_pm10)*100,1)` % of the observations are missing for the Lonchamp station and `r, round(sum(is.na(data_pm10$mean_pm10_sl))/nrow(data_pm10)*100,1)` % for the Saint-Louis station. Below is the dataframe for those missing observations:
+`r round(sum(is.na(data_pm10$mean_pm10_l))/nrow(data_pm10)*100,1)` % of the observations are missing for the Lonchamp station and `r, round(sum(is.na(data_pm10$mean_pm10_sl))/nrow(data_pm10)*100,1)` % for the Saint-Louis station. Below is the dataframe for those missing observations:
 
 ```{r, code_folding="Please show me the code!"}
 rmarkdown::paged_table(data_pm10 %>% filter(is.na(mean_pm10_l) | is.na(mean_pm10_sl)))
@@ -802,7 +793,7 @@ data_pm25 %>%
   kable_styling(position = "center") 
 ```
 
-`r, round(sum(is.na(data_pm25$mean_pm25_l))/nrow(data_pm25)*100,1)` % of the observations are missing for the Lonchamps station. Below is the dataframe for those missing observations:
+`r round(sum(is.na(data_pm25$mean_pm25_l))/nrow(data_pm25)*100,1)` % of the observations are missing for the Lonchamps station. Below is the dataframe for those missing observations:
 
 ```{r, code_folding="Please show me the code!"}
 rmarkdown::paged_table(data_pm25 %>% filter(is.na(mean_pm25_l)))
@@ -854,7 +845,7 @@ data_so2 %>%
   kable_styling(position = "center")
 ```
 
-`r, round(sum(is.na(data_so2$mean_so2_l))/nrow(data_so2)*100,1)` % of the observations are missing for the Lonchamps station. Below is the dataframe for those missing observations:
+`r round(sum(is.na(data_so2$mean_so2_l))/nrow(data_so2)*100,1)` % of the observations are missing for the Lonchamps station. Below is the dataframe for those missing observations:
 
 ```{r, code_folding="Please show me the code!"}
 rmarkdown::paged_table(data_so2 %>% filter(is.na(mean_so2_l)))
@@ -904,7 +895,7 @@ data_o3 %>%
   kable_styling(position = "center")
 ```
 
-`r, round(sum(is.na(data_o3$mean_o3_l))/nrow(data_o3)*100,1)` % of the observations are missing for the Lonchamps station. Below is the dataframe for those missing observations:
+`r round(sum(is.na(data_o3$mean_o3_l))/nrow(data_o3)*100,1)` % of the observations are missing for the Lonchamps station. Below is the dataframe for those missing observations:
 
 ```{r, code_folding="Please show me the code!"}
 rmarkdown::paged_table(data_o3 %>% filter(is.na(mean_o3_l)))
@@ -921,7 +912,7 @@ marseille_pollutants <- data_no2 %>%
   full_join(data_o3, by = "date")
 ```
 
-We save the `marseille_pollutants` data, which are not imputed, because we will use them to see how our analysis on the matched data differs between imputed and non-imputed pollutant concentrations:
+We save the marseille_pollutants data, which are not imputed, because we will use them to see how our analysis on the matched data differs between imputed and non-imputed pollutant concentrations:
 
 ```{r}
 # save air pollutants data

@@ -46,14 +46,7 @@ In this document, we carry out an exploratory data analysis at the daily level t
 
 # Required Packages and Data Loading
 
-To reproduce exactly the `2_daily_eda.html` document, we first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language on your computer 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `2_daily_eda.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template of this document. 
-
-Once everything is set up, we have to load the following packages:
+We load the following packages:
 
 ```{r}
 # load required packages
@@ -171,7 +164,7 @@ We explore here the seasonal and long-run patterns of air pollutant concentratio
 
 We plot the daily average concentration of a pollutant for each month over the 2008-2018 period:
 
-```{r, fig.width=25, fig.height=10, layout="l-body-outset", code_folding="Please show me the code!"}
+```{r, fig.width=25, fig.height=8, layout="l-screen", code_folding="Please show me the code!"}
 # pollutant concentration - time series for all years at the month level
 data_pollutant_month_year <- data %>%
   mutate(month_year = lubridate::floor_date(date, "month")) %>%
@@ -213,7 +206,7 @@ ggsave(ts_pollutant_evolution, filename = here("inputs", "3.outputs", "2.daily_a
 
 We plot the distribution of the daily average concentration of a pollutant for each day of the week:
 
-```{r, fig.width=25, fig.height=10, layout="l-body-outset", code_folding="Please show me the code!"}
+```{r, fig.width=25, fig.height=8, layout="l-screen", code_folding="Please show me the code!"}
 # reshape data into long format
 data_pollutant_weekday <- data %>%
   select(
@@ -282,7 +275,7 @@ We explore here the seasonal patterns of weather parameters.
 
 We plot the distribution of continuous weather parameters by month:
 
-```{r, layout="l-body-outset", fig.width=25, fig.height=10, code_folding="Please show me the code!"}
+```{r, layout="l-body-outset", fig.width=10, fig.height=5, code_folding="Please show me the code!"}
 # distribution of weather parameters by month
 graph_distribution_weather_month <- data %>%
   select(
@@ -336,7 +329,7 @@ ggsave(
 
 We also plot the distribution of wind direction categories by month:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, layout="l-body-outset", fig.width=10, fig.height=5, code_folding="Please show me the code!"}
 # distribution of wind direction by month
 graph_distribution_wd_month <- data %>%
   select(month, wind_direction_categories) %>%
@@ -365,7 +358,7 @@ ggsave(graph_distribution_wd_month, filename = here("inputs", "3.outputs", "2.da
 
 We plot the polar plot of wind direction:
 
-```{r, fig.width=10, fig.height=10, code_folding="Please show me the code!"}
+```{r, fig.width=5, fig.height=5, code_folding="Please show me the code!"}
 # create the wind direction proportion data
 data_polar_plot_wind_direction <- data %>%
   select(wind_direction) %>%
@@ -445,7 +438,7 @@ We explore here the seasonal patterns of road traffic.
 
 We plot the distribution of vehicles flow and road occupancy rate by month:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, layout="l-body-outset", fig.width=10, fig.height=5, code_folding="Please show me the code!"}
 # distribution of road traffic by month
 graph_distribution_road_traffic_month <- data %>%
   pivot_longer(cols = c(road_traffic_flow_all, road_occupancy_rate), names_to = "traffic_measure", values_to = "value") %>%
@@ -469,7 +462,7 @@ ggsave(graph_distribution_road_traffic_month, filename = here("inputs", "3.outpu
 
 We plot the distribution of vehicles flow by day of the week:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, layout="l-body-outset", fig.width=10, fig.height=5, code_folding="Please show me the code!"}
 # density of road traffic by day of the week
 graph_distribution_tonnage_weekday <- data %>%
   pivot_longer(cols = c(road_traffic_flow_all, road_occupancy_rate), names_to = "traffic_measure", values_to = "value") %>%
