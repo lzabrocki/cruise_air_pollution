@@ -99,8 +99,6 @@ data_matched <-
       "1.hourly_data",
       "2.data_for_analysis",
       "1.matched_data",
-      "1.experiments_cruise",
-      "1.experiment_entry_cruise",
       "matched_data_entry_cruise.rds"
     )
   ) 
@@ -163,14 +161,14 @@ data_pair_difference_pollutant <- data_matched_wide %>%
 
 Boxplots for NO2:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # create the graph for no2
 graph_boxplot_difference_pollutant_no2 <-
   data_pair_difference_pollutant %>%
   filter(str_detect(pollutant, "NO2")) %>%
   ggplot(., aes(x = as.factor(time), y = difference)) +
   geom_boxplot(colour = my_blue) +
-  facet_wrap(~ pollutant) +
+  facet_wrap( ~ pollutant) +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   ggtitle("Distribution of Pair Difference in Concentration") +
   ylab("Pair Difference in \nConcentration (µg/m3)") + xlab("Hour") +
@@ -187,11 +185,10 @@ graph_boxplot_difference_pollutant_no2 <-
 ggsave(
   graph_boxplot_difference_pollutant_no2,
   filename = here::here(
-      "inputs",
-      "3.outputs",
-      "1.hourly_analysis",
-      "2.experiments_cruise",
-      "1.experiment_entry_cruise",
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "2.experiment_cruise",
     "2.matching_results",
     "graph_boxplot_difference_pollutant_no2.pdf"
   ),
@@ -206,7 +203,7 @@ ggsave(
 
 Boxplots for O3:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # create the graph for o3
 graph_boxplot_difference_pollutant_o3 <-
   data_pair_difference_pollutant %>%
@@ -232,8 +229,7 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
     "2.matching_results",
     "graph_boxplot_difference_pollutant_o3.pdf"
   ),
@@ -248,7 +244,7 @@ ggsave(
 
 Boxplots for PM10:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # create the graph for pm10
 graph_boxplot_difference_pollutant_pm10 <-
   data_pair_difference_pollutant %>%
@@ -256,7 +252,7 @@ graph_boxplot_difference_pollutant_pm10 <-
   ggplot(., aes(x = as.factor(time), y = difference)) +
   geom_boxplot(colour = my_blue) +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  facet_wrap( ~ pollutant) +
+  facet_wrap(~ pollutant) +
   ggtitle("Distribution of Pair Difference in Concentration") +
   ylab("Pair Difference in \nConcentration (µg/m3)") + xlab("Hour") +
   theme_tufte()
@@ -275,8 +271,7 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
     "2.matching_results",
     "graph_boxplot_difference_pollutant_pm10.pdf"
   ),
@@ -291,7 +286,7 @@ ggsave(
 
 Boxplots for PM2.5:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # create the graph for pm2.5
 graph_boxplot_difference_pollutant_pm25 <-
   data_pair_difference_pollutant %>%
@@ -317,8 +312,7 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
     "2.matching_results",
     "graph_boxplot_difference_pollutant_pm25.pdf"
   ),
@@ -333,7 +327,7 @@ ggsave(
 
 Boxplots for SO2:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # create the graph for so2
 graph_boxplot_difference_pollutant_so2 <-
   data_pair_difference_pollutant %>%
@@ -359,8 +353,7 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
     "2.matching_results",
     "graph_boxplot_difference_pollutant_so2.pdf"
   ),
@@ -460,7 +453,7 @@ ri_data_sharp_null <- ri_data_sharp_null %>%
 
 We plot below the two-sided p-values for the sharp null hypothesis for each pollutant:
 
-```{r, layout="l-body-outset", fig.width=30, fig.height=12, code_folding="Please show me the code!"}
+```{r, layout="l-page", fig.width=10, fig.height=10, layout="l-page", code_folding="Please show me the code!"}
 # make the graph
 graph_p_values <- ri_data_sharp_null %>%
   ggplot(., aes(x = as.factor(time), y = two_sided_p_value)) +
@@ -490,8 +483,8 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
+    
     "2.matching_results",
     "graph_p_values.pdf"
   ),
@@ -642,7 +635,7 @@ ri_data_fi_final <- left_join(ri_data_fi, ri_data_fi_point_estimate, by = c("pol
 
 We plot below the 95% Fisherian intervals:
 
-```{r, layout="l-body-outset", fig.width=20, fig.height=10, code_folding="Please show me the code!"}
+```{r, layout="l-page", fig.width=20, fig.height=10, code_folding="Please show me the code!"}
 # open the data on fisherian intervals
 ri_data_fi_final <-
   readRDS(
@@ -652,8 +645,6 @@ ri_data_fi_final <-
       "1.hourly_data",
       "2.data_for_analysis",
       "1.matched_data",
-      "1.experiments_cruise",
-      "1.experiment_entry_cruise",
       "ri_data_fisherian_intervals.rds"
     )
   )
@@ -678,6 +669,7 @@ graph_fisherian_intervals <-
     alpha = 0.1
   ) +
   geom_hline(yintercept = 0, color = "black") +
+  geom_vline(xintercept = c(3.6), color = "black") +
   geom_pointrange(
     aes(
       x = as.factor(time),
@@ -690,7 +682,7 @@ graph_fisherian_intervals <-
   ) +
   facet_wrap( ~ pollutant, scales = "free_y", ncol = 4) +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  scale_fill_manual(values = c("grey90", NA)) +
+  scale_fill_manual(values = c('gray80', "NA")) +
   guides(fill = FALSE) +
   ylab("Constant-Additive Increase \nin Concentrations (µg/m³)") + xlab("Hour") +
   theme_tufte()
@@ -705,8 +697,8 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
+    
     "2.matching_results",
     "graph_fisherian_intervals.pdf"
   ),
@@ -977,7 +969,7 @@ data_hidden_bias %>%
 
 To gauge how sensitive our results are to outliers, we use a Wilcoxon signed rank test statistic and compute 95% Fisherian intervals using the `wilcox.test()` function.
 
-```{r, layout="l-body-outset", fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, layout="l-page", fig.width=10, fig.height=5, code_folding="Please show me the code!"}
 # carry out the wilcox.test
 data_rank_ci <- data_pair_difference_pollutant %>%
   select(-pair_number) %>%
@@ -1028,13 +1020,14 @@ graph_ri_ci_wilcoxon <-
     alpha = 0.1
   ) +
   geom_hline(yintercept = 0, color = "black") +
+  geom_vline(xintercept = c(3.6), color = "black") +
   geom_pointrange(position = position_dodge(width = 1),
                   size = 0.8,
                   fatten = 2) +
   scale_shape_manual(name = "Test Statistic:", values = c(16, 17)) +
   scale_color_manual(name = "Test Statistic:", values = c(my_orange, my_blue)) +
   facet_wrap( ~ pollutant, scales = "free_y", ncol = 4) +
-  scale_fill_manual(values = c('grey80', NA)) +
+  scale_fill_manual(values = c('gray80', "NA")) +
   guides(fill = FALSE) +
   ylab("Constant-Additive Increase \nin Concentrations (µg/m³)") + xlab("Hour") +
   theme_tufte()
@@ -1049,8 +1042,7 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
     "2.matching_results",
     "graph_ri_ci_wilcoxon.pdf"
   ),
@@ -1205,7 +1197,7 @@ data_raw_pair_difference_pollutant <-
 
 We display below the number of missing differences by pollutant and day:
 
-```{r, layout="l-body-outset", fig.width=30, fig.height=12, code_folding="Please show me the code!"}
+```{r, layout="l-page", fig.width=10, fig.height=5, code_folding="Please show me the code!"}
 # make the graph
 graph_missing_pollutants <- data_raw_pair_difference_pollutant %>%
   group_by(pollutant, time) %>%
@@ -1237,8 +1229,7 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
     "2.matching_results",
     "graph_missing_pollutants.pdf"
   ),
@@ -1251,7 +1242,7 @@ ggsave(
 
 As we have `r nrow(data_matched)/2` pairs, up to 25% of the pairs can have missing pollutant concentrations. We compute below the 95% Fisherian intervals for pairs without missing concentrations and compare the results to those found with the imputed dataset:
 
-```{r, layout="l-body-outset", fig.width=30, fig.height=12, code_folding="Please show me the code!"}
+```{r, layout="l-page", fig.width=30, fig.height=12, code_folding="Please show me the code!"}
 # carry out the wilcox.test
 data_raw_rank_ci <- data_raw_pair_difference_pollutant %>%
   drop_na() %>%
@@ -1300,13 +1291,14 @@ graph_ri_ci_missing_concentration <-
     alpha = 0.1
   ) +
   geom_hline(yintercept = 0, color = "black") +
+  geom_vline(xintercept = c(3.6), color = "black") +
   geom_pointrange(position = position_dodge(width = 1),
                   size = 0.8,
                   fatten = 2) +
   scale_shape_manual(name = "Dataset:", values = c(16, 17)) +
   scale_color_manual(name = "Dataset:", values = c(my_orange, my_blue)) +
   facet_wrap( ~ pollutant, scales = "free_y", ncol = 4) +
-  scale_fill_manual(values = c('grey90', NA)) +
+scale_fill_manual(values = c('gray80', "NA")) +
   guides(fill = FALSE) +
   ylab("Constant-Additive Increase \nin Concentrations (µg/m³)") + xlab("Hour") +
   theme_tufte()
@@ -1321,13 +1313,12 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
     "2.matching_results",
     "graph_ri_ci_missing_concentration.pdf"
   ),
-  width = 70,
-  height = 30,
+  width = 40,
+  height = 20,
   units = "cm",
   device = cairo_pdf
 )
@@ -1371,7 +1362,7 @@ data_neyman <-
     ci_upper_95 = mean_difference + 1.96 * standard_error
   )
 
-
+# save the data
 saveRDS(
   data_neyman,
   here::here(
@@ -1380,17 +1371,14 @@ saveRDS(
     "1.hourly_data",
     "2.data_for_analysis",
     "1.matched_data",
-    "1.experiments_cruise",
-    "1.experiment_entry_cruise",
     "data_neyman.rds"
   )
 )
-
 ``` 
 
 We plot the the point estimates for the average treatment effects and their associated 95% confidence intervals:
 
-```{r, layout="l-body-outset", fig.width=30, fig.height=8, code_folding="Please show me the code!"}
+```{r, layout="l-page", fig.width=30, fig.height=8, code_folding="Please show me the code!"}
 # create an indicator to alternate shading of confidence intervals
 data_neyman <- data_neyman %>%
   arrange(pollutant, time) %>%
@@ -1410,7 +1398,7 @@ graph_neyman_ci <-
     alpha = 0.1
   ) +
   geom_hline(yintercept = 0, color = "black") +
-  geom_vline(xintercept = "0", color = "black") +
+  geom_vline(xintercept = c(3.6), color = "black") +
   geom_pointrange(
     aes(
       x = as.factor(time),
@@ -1422,7 +1410,7 @@ graph_neyman_ci <-
     lwd = 0.8
   ) +
   facet_wrap(~ pollutant, scales = "free_y", ncol = 4) +
-  scale_fill_manual(values = c('grey90', NA)) +
+  scale_fill_manual(values = c('gray80', "NA")) +
   guides(fill = FALSE) +
   ylab("Average Pair Difference \nin Concentrations (µg/m³)") + xlab("Hour") +
   theme_tufte()
@@ -1437,13 +1425,12 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
     "2.matching_results",
     "graph_ci_neyman.pdf"
   ),
-  width = 70,
-  height = 30,
+  width = 40,
+  height = 20,
   units = "cm",
   device = cairo_pdf
 )
@@ -1492,7 +1479,7 @@ data_type_m_s_errors <- data_type_m_s_errors %>%
 
 We plot and save the results:
 
-```{r, layout="l-body-outset", fig.width=30, fig.height=8, code_folding="Please show me the code!"}
+```{r, layout="l-page", fig.width=30, fig.height=8, code_folding="Please show me the code!"}
 # make the graph
 graph_type_m_s_errors <- data_type_m_s_errors %>%
   rename(
@@ -1523,8 +1510,7 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
     "2.matching_results",
     "graph_type_m_s_errors.pdf"
   ),
@@ -1538,7 +1524,7 @@ ggsave(
 
 # Heterogeneity Analysis
 
-```{r, fig.width=12, fig.height=6, layout="l-body-outset", code_folding="Please show me the code!"}
+```{r, fig.width=12, fig.height=6, layout="l-page", code_folding="Please show me the code!"}
 # prepare data on pair differences in concentration and wind direction
 data_pair_difference_pollutant_0 <-
   data_pair_difference_pollutant %>%
@@ -1598,8 +1584,7 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
     "2.matching_results",
     "graph_wilcoxon_wd.pdf"
   ),
@@ -1611,7 +1596,7 @@ ggsave(
 ```
 
 
-```{r, fig.width=10, fig.height=5, layout="l-body-outset", code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # joint concentration differences with tonnage differences
 data_pair_difference_pollutant <- data_pair_difference_pollutant %>%
   rename(difference_concentration = difference)
@@ -1677,8 +1662,7 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
     "2.matching_results",
     "graph_concentration_tonnage_pair.pdf"
   ),
@@ -1714,7 +1698,7 @@ data_matching <-
       "2.data_for_analysis",
       "1.matched_data",
       "1.experiments_cruise",
-      "1.experiment_entry_cruise",
+      
       "matching_data.rds"
     )
   )
@@ -1824,8 +1808,8 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
+    
     "2.matching_results",
     "graph_propensity_score.pdf"
   ),
@@ -1889,8 +1873,8 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
+    
     "2.matching_results",
     "graph_love_plot_ps.pdf"
   ),
@@ -1981,8 +1965,8 @@ knitr::include_graphics(
           "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
+    
     "2.matching_results",
     "ri_balance_check_ps.png"))
 ```
@@ -2098,8 +2082,8 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
+    
     "2.matching_results",
     "graph_ps_analysis.pdf"
   ),

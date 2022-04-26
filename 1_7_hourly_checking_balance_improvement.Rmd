@@ -1,5 +1,5 @@
 ---
-title: "Checking Balance Improvement - Entering Cruise Experiment"
+title: "Checking Balance Improvement"
 description: |
   Comparing hours with entering cruise traffic to hours without. Adjusting for calendar and weather indicators.
 author:
@@ -46,14 +46,7 @@ We adjust for calendar calendar indicator and weather confounding factors.
 
 # Required Packages
 
-To reproduce exactly the `5_script_checking_balance_improvement.html` document, we first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `5_script_checking_balance_figures.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template for this document. 
-
-Once everything is set up, we have to load the following packages:
+We load the following packages:
 
 ```{r, message = FALSE, warning = FALSE}
 # load required packages
@@ -68,7 +61,7 @@ library(patchwork) # combining plots
 library(kableExtra) # for table formatting
 ```
 
-We finally load our custom `ggplot2` theme for graphs:
+We also load our custom ggplot2 theme for graphs:
 
 ```{r}
 # load ggplot custom theme
@@ -96,8 +89,6 @@ data_matching <-
       "1.hourly_data",
       "2.data_for_analysis",
       "1.matched_data",
-      "1.experiments_cruise",
-      "1.experiment_entry_cruise",
       "matching_data.rds"
     )
   ) %>%
@@ -112,8 +103,6 @@ data_matched <-
       "1.hourly_data",
       "2.data_for_analysis",
       "1.matched_data",
-      "1.experiments_cruise",
-      "1.experiment_entry_cruise",
       "matched_data_entry_cruise.rds"
     )
   ) %>%
@@ -163,7 +152,7 @@ data <- data %>%
 
 ### Continuous Weather Covariates
 
-```{r fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # compute figures for the love plot
 data_weather_continuous <- data %>%
   select(
@@ -272,12 +261,11 @@ graph_love_plot_continuous_weather
 ggsave(
   graph_love_plot_continuous_weather,
   filename = here::here(
-      "inputs",
-      "3.outputs",
-      "1.hourly_analysis",
-      "2.experiments_cruise",
-      "1.experiment_entry_cruise",
-      "1.checking_matching_procedure",
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "2.experiment_cruise",
+    "1.checking_matching_procedure",
     "graph_love_plot_continuous_weather.pdf"
   ),
   width = 55,
@@ -289,7 +277,7 @@ ggsave(
 
 ### Categorical Weather Covariates
 
-```{r fig.width=10, fig.height=10, code_folding="Please show me the code!"}
+```{r fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # compute figures for the love plot
 data_weather_categorical <- data %>%
   select(
@@ -368,8 +356,7 @@ ggsave(
       "inputs",
       "3.outputs",
       "1.hourly_analysis",
-      "2.experiments_cruise",
-      "1.experiment_entry_cruise",
+      "2.experiment_cruise",
       "1.checking_matching_procedure",
     "graph_love_plot_wind_direction.pdf"
   ),
@@ -407,12 +394,11 @@ graph_love_plot_rainfall
 ggsave(
   graph_love_plot_rainfall,
   filename = here::here(
-      "inputs",
-      "3.outputs",
-      "1.hourly_analysis",
-      "2.experiments_cruise",
-      "1.experiment_entry_cruise",
-      "1.checking_matching_procedure",
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "2.experiment_cruise",
+    "1.checking_matching_procedure",
     "graph_love_plot_rainfall.pdf"
   ),
   width = 30,
@@ -424,7 +410,7 @@ ggsave(
 
 ### Pollutants
 
-```{r fig.width=10, fig.height=10, code_folding="Please show me the code!"}
+```{r fig.width=10, fig.height=10, layout="l-page", code_folding="Please show me the code!"}
 # compute figures for the love plot
 data_pollutants <- data %>%
   select(
@@ -524,12 +510,11 @@ graph_love_plot_pollutants
 ggsave(
   graph_love_plot_pollutants,
   filename = here::here(
-      "inputs",
-      "3.outputs",
-      "1.hourly_analysis",
-      "2.experiments_cruise",
-      "1.experiment_entry_cruise",
-      "1.checking_matching_procedure",
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "2.experiment_cruise",
+    "1.checking_matching_procedure",
     "graph_love_plot_pollutants.pdf"
   ),
   width = 60,
@@ -542,7 +527,7 @@ ggsave(
 
 ### Vessels Traffic
 
-```{r fig.width=10, fig.height=10, code_folding="Please show me the code!"}
+```{r fig.width=10, fig.height=10, layout="l-page", code_folding="Please show me the code!"}
 # compute figures for the love plot
 data_tonnage <-  data %>%
   # select relevant variables
@@ -644,12 +629,11 @@ graph_love_plot_tonnage
 ggsave(
   graph_love_plot_tonnage,
   filename = here::here(
-      "inputs",
-      "3.outputs",
-      "1.hourly_analysis",
-      "2.experiments_cruise",
-      "1.experiment_entry_cruise",
-      "1.checking_matching_procedure",
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "2.experiment_cruise",
+    "1.checking_matching_procedure",
     "graph_love_plot_tonnage.pdf"
   ),
   width = 40,
@@ -661,7 +645,7 @@ ggsave(
 
 ### Road Traffic
 
-```{r fig.width=10, fig.height=10, code_folding="Please show me the code!"}
+```{r fig.width=10, fig.height=10, layout="l-page", code_folding="Please show me the code!"}
 # compute figures for the love plot
 data_road <- data %>%
   # select relevant variables
@@ -731,16 +715,16 @@ graph_love_plot_road <-
 # print the graph
 graph_love_plot_road
 
+
 # save the graph
 ggsave(
   graph_love_plot_road,
   filename = here::here(
-      "inputs",
-      "3.outputs",
-      "1.hourly_analysis",
-      "2.experiments_cruise",
-      "1.experiment_entry_cruise",
-      "1.checking_matching_procedure",
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "2.experiment_cruise",
+    "1.checking_matching_procedure",
     "graph_love_plot_road.pdf"
   ),
   width = 25,
@@ -754,7 +738,7 @@ ggsave(
 
 Create the relevant data:
 
-```{r fig.width=10, fig.height=10, code_folding="Please show me the code!"}
+```{r fig.width=10, fig.height=10, layout="l-page", code_folding="Please show me the code!"}
 # compute figures for the love plot
 data_calendar <- data %>%
   mutate(weekday = lubridate::wday(date, abbr = FALSE, label = TRUE)) %>%
@@ -798,7 +782,7 @@ data_calendar <- data %>%
 
 Plot for hours:
 
-```{r fig.width=10, fig.height=10, code_folding="Please show me the code!"}
+```{r fig.width=10, fig.height=6, layout="l-page", code_folding="Please show me the code!"}
 # graph for hour
 graph_love_plot_hour <- data_calendar %>%
   filter(calendar_variable == "Hour") %>%
@@ -823,12 +807,11 @@ graph_love_plot_hour
 ggsave(
   graph_love_plot_hour,
   filename = here::here(
-      "inputs",
-      "3.outputs",
-      "1.hourly_analysis",
-      "2.experiments_cruise",
-      "1.experiment_entry_cruise",
-      "1.checking_matching_procedure",
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "2.experiment_cruise",
+    "1.checking_matching_procedure",
     "graph_love_plot_hour.pdf"
   ),
   width = 30,
@@ -840,7 +823,7 @@ ggsave(
 
 Plot for bank days and holidays:
 
-```{r fig.width=10, fig.height=10, code_folding="Please show me the code!"}
+```{r fig.width=4, fig.height=4, layout="l-page", code_folding="Please show me the code!"}
 # graph for bank days and holidays
 graph_love_plot_bank_holidays <- data_calendar %>%
   filter(calendar_variable %in% c("Bank Day", "Holidays")) %>%
@@ -866,12 +849,11 @@ graph_love_plot_bank_holidays
 ggsave(
   graph_love_plot_bank_holidays,
   filename = here::here(
-      "inputs",
-      "3.outputs",
-      "1.hourly_analysis",
-      "2.experiments_cruise",
-      "1.experiment_entry_cruise",
-      "1.checking_matching_procedure",
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "2.experiment_cruise",
+    "1.checking_matching_procedure",
     "graph_love_plot_bank_holidays.pdf"
   ),
   width = 30,
@@ -883,7 +865,7 @@ ggsave(
 
 Plot for days of the week:
 
-```{r fig.width=10, fig.height=10, code_folding="Please show me the code!"}
+```{r fig.width=10, fig.height=6, layout="l-page", code_folding="Please show me the code!"}
 # graph for weekdays
 graph_love_plot_weekday <- data_calendar %>%
   filter(calendar_variable == "Day of the Week") %>%
@@ -920,12 +902,11 @@ graph_love_plot_weekday
 ggsave(
   graph_love_plot_weekday,
   filename = here::here(
-      "inputs",
-      "3.outputs",
-      "1.hourly_analysis",
-      "2.experiments_cruise",
-      "1.experiment_entry_cruise",
-      "1.checking_matching_procedure",
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "2.experiment_cruise",
+    "1.checking_matching_procedure",
     "graph_love_plot_weekday.pdf"
   ),
   width = 30,
@@ -937,7 +918,7 @@ ggsave(
 
 Plot for months:
 
-```{r fig.width=10, fig.height=10, code_folding="Please show me the code!"}
+```{r fig.width=10, fig.height=6, layout="l-page", code_folding="Please show me the code!"}
 # graph for month
 graph_love_plot_month <- data_calendar %>%
   filter(calendar_variable == "Month") %>%
@@ -980,12 +961,11 @@ graph_love_plot_month
 ggsave(
   graph_love_plot_month,
   filename = here::here(
-      "inputs",
-      "3.outputs",
-      "1.hourly_analysis",
-      "2.experiments_cruise",
-      "1.experiment_entry_cruise",
-      "1.checking_matching_procedure",
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "2.experiment_cruise",
+    "1.checking_matching_procedure",
     "graph_love_plot_month.pdf"
   ),
   width = 30,
@@ -997,7 +977,7 @@ ggsave(
 
 Plot for years:
 
-```{r fig.width=10, fig.height=10, code_folding="Please show me the code!"}
+```{r fig.width=10, fig.height=6, layout="l-page", code_folding="Please show me the code!"}
 # graph for year
 graph_love_plot_year <- data_calendar %>%
   filter(calendar_variable == "Year") %>%
@@ -1023,12 +1003,11 @@ graph_love_plot_year
 ggsave(
   graph_love_plot_year,
   filename = here::here(
-      "inputs",
-      "3.outputs",
-      "1.hourly_analysis",
-      "2.experiments_cruise",
-      "1.experiment_entry_cruise",
-      "1.checking_matching_procedure",
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "2.experiment_cruise",
+    "1.checking_matching_procedure",
     "graph_love_plot_year.pdf"
   ),
   width = 30,
@@ -1044,7 +1023,7 @@ We finally plot the distribution of standardized mean differences for continuous
 
 ### Continuous Covariates
 
-```{r fig.width=10, fig.height=10, code_folding="Please show me the code!"}
+```{r fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # we select the dataset indicator and the standardized difference
 data_love_tonnage <- data_love_tonnage %>%
   ungroup() %>%
@@ -1075,7 +1054,7 @@ data_continuous_love <-
 graph_boxplot_continuous_balance_improvement <-
   ggplot(data_continuous_love,
          aes(x = dataset, y = standardized_difference)) +
-  geom_boxplot(colour = my_blue, size = 1.2) +
+  geom_boxplot(colour = my_blue) +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
   xlab("Dataset") +
   ylab("Standardized \nMean Differences") +
@@ -1088,12 +1067,11 @@ graph_boxplot_continuous_balance_improvement
 ggsave(
   graph_boxplot_continuous_balance_improvement,
   filename = here::here(
-      "inputs",
-      "3.outputs",
-      "1.hourly_analysis",
-      "2.experiments_cruise",
-      "1.experiment_entry_cruise",
-      "1.checking_matching_procedure",
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "2.experiment_cruise",
+    "1.checking_matching_procedure",
     "graph_boxplot_continuous_balance_improvement.pdf"
   ),
   width = 30,
@@ -1105,7 +1083,7 @@ ggsave(
 
 ### Categorical Covariates
 
-```{r fig.width=10, fig.height=10, code_folding="Please show me the code!"}
+```{r fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # we select the dataset indicator and the standardized difference
 data_calendar <- data_calendar %>%
   ungroup() %>%
@@ -1125,7 +1103,7 @@ data_categorical_love <-
 # create the graph
 graph_boxplot_categorical_balance_improvement <-
   ggplot(data_categorical_love, aes(x = dataset, y = abs_difference)) +
-  geom_boxplot(colour = my_blue, size = 1.2) +
+  geom_boxplot(colour = my_blue) +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
   xlab("Dataset") +
   ylab("Absolute Difference \nin Percentage Points") +
@@ -1138,12 +1116,11 @@ graph_boxplot_categorical_balance_improvement
 ggsave(
   graph_boxplot_categorical_balance_improvement,
   filename = here::here(
-      "inputs",
-      "3.outputs",
-      "1.hourly_analysis",
-      "2.experiments_cruise",
-      "1.experiment_entry_cruise",
-      "1.checking_matching_procedure",
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "2.experiment_cruise",
+    "1.checking_matching_procedure",
     "graph_boxplot_categorical_balance_improvement.pdf"
   ),
   width = 30,
@@ -1230,7 +1207,12 @@ data_covs <- data_matched %>%
 data_covs <- data_covs %>%
   mutate(is_treated = ifelse(is_treated == TRUE, 1, 0)) %>%
   mutate_at(
-    vars(wind_direction_east_west , wind_direction_east_west_lag_1, wind_direction_east_west_lag_2, wind_direction_east_west_lag_3),
+    vars(
+      wind_direction_east_west ,
+      wind_direction_east_west_lag_1,
+      wind_direction_east_west_lag_2,
+      wind_direction_east_west_lag_3
+    ),
     ~ ifelse(. == "West", 1, 0)
   ) %>%
   fastDummies::dummy_cols(., select_columns = c("year", "month", "weekday", "hour")) %>%
@@ -1241,15 +1223,46 @@ pair_number <- as.numeric(data_covs$pair_number)
 is_treated <- data_covs$is_treated
 
 data_covs <- data_covs %>%
-  select(-pair_number,-is_treated) %>%
-  select(total_gross_tonnage_ferry, total_gross_tonnage_entry_ferry, total_gross_tonnage_entry_other_vessels, total_gross_tonnage_exit_cruise, total_gross_tonnage_exit_other_vessels, total_gross_tonnage_cruise_lag_1, total_gross_tonnage_ferry_lag_1, total_gross_tonnage_exit_other_vessels_lag_1,
-         total_gross_tonnage_cruise_lag_2, total_gross_tonnage_ferry_lag_2, total_gross_tonnage_exit_other_vessels_lag_1, total_gross_tonnage_cruise_lag_2, total_gross_tonnage_ferry_lag_2, total_gross_tonnage_entry_ferry_lag_2, total_gross_tonnage_entry_ferry_lag_2, total_gross_tonnage_entry_ferry_lag_2, total_gross_tonnage_entry_other_vessels_lag_2, total_gross_tonnage_cruise_lag_3, total_gross_tonnage_ferry_lag_3, total_gross_tonnage_entry_other_vessels_lag_3,
-         total_gross_tonnage_exit_cruise_lag_3, total_gross_tonnage_exit_ferry_lag_3, total_gross_tonnage_exit_other_vessels_lag_3,
-         temperature_average, humidity_average, wind_speed, wind_direction_east_west, temperature_average_lag_1:wind_direction_east_west_lag_1, temperature_average_lag_2, humidity_average_lag_2:wind_direction_east_west_lag_3,
-         -year_2018, - month_December, -weekday_Sunday, -hour_0, -bank_day_dummy)
+  select(-pair_number, -is_treated) %>%
+  select(
+    total_gross_tonnage_ferry,
+    total_gross_tonnage_entry_ferry,
+    total_gross_tonnage_entry_other_vessels,
+    total_gross_tonnage_exit_cruise,
+    total_gross_tonnage_exit_other_vessels,
+    total_gross_tonnage_cruise_lag_1,
+    total_gross_tonnage_ferry_lag_1,
+    total_gross_tonnage_exit_other_vessels_lag_1,
+    total_gross_tonnage_cruise_lag_2,
+    total_gross_tonnage_ferry_lag_2,
+    total_gross_tonnage_exit_other_vessels_lag_1,
+    total_gross_tonnage_cruise_lag_2,
+    total_gross_tonnage_ferry_lag_2,
+    total_gross_tonnage_entry_ferry_lag_2,
+    total_gross_tonnage_entry_ferry_lag_2,
+    total_gross_tonnage_entry_ferry_lag_2,
+    total_gross_tonnage_entry_other_vessels_lag_2,
+    total_gross_tonnage_cruise_lag_3,
+    total_gross_tonnage_ferry_lag_3,
+    total_gross_tonnage_entry_other_vessels_lag_3,
+    total_gross_tonnage_exit_cruise_lag_3,
+    total_gross_tonnage_exit_ferry_lag_3,
+    total_gross_tonnage_exit_other_vessels_lag_3,
+    temperature_average,
+    humidity_average,
+    wind_speed,
+    wind_direction_east_west,
+    temperature_average_lag_1:wind_direction_east_west_lag_1,
+    temperature_average_lag_2,
+    humidity_average_lag_2:wind_direction_east_west_lag_3,-year_2018,
+    -month_December,
+    -weekday_Sunday,
+    -hour_0,
+    -bank_day_dummy
+  )
 
 # total_gross_tonnage_exit_ferry, rainfall_height_dummy, rainfall_height_dummy_lag_2,
-#select(-year_2018, - month_December, -weekday_Sunday, -hour_0, -bank_day_dummy) 
+#select(-year_2018, - month_December, -weekday_Sunday, -hour_0, -bank_day_dummy)
 
 # run balance check
 asIfRandPlot(
@@ -1261,16 +1274,17 @@ asIfRandPlot(
 )
 ```
 
-```{r, echo = FALSE, out.width = "800%", fig.align = "center"}
+```{r, echo = FALSE, out.width = "800%", layout="l-page", fig.align = "center"}
 knitr::include_graphics(
-    here::here(
-      "inputs",
-      "3.outputs",
-      "1.hourly_analysis",
-      "2.experiments_cruise",
-      "1.experiment_entry_cruise",
-      "1.checking_matching_procedure",
-    "ri_balance_check.png"))
+  here::here(
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "2.experiment_cruise",
+    "1.checking_matching_procedure",
+    "ri_balance_check.png"
+  )
+)
 ```
 
 

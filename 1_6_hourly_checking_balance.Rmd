@@ -1,5 +1,5 @@
 ---
-title: "Checking Covariates Balance - Entering Cruise Experiment"
+title: "Checking Covariates Balance"
 description: |
   Comparing hours with entering cruise traffic to hours without. Adjusting for calendar and weather indicators.
 author:
@@ -43,20 +43,13 @@ In this document, we take great care providing all steps and R codes required to
 * treated units are hours with positive entering cruise traffic in t.
 * control units are hours without entering cruise traffic in t.
 
-We adjust for calendar calendar indicator and weather confouding factors.
+We adjust for calendar calendar indicator and weather confounding factors.
 
 **Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@hhs.se.**
 
 # Required Packages
 
-To reproduce exactly the `4_script_checking_balance_figures.html` document, we first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `5_script_checking_balance_figures.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template for this document. 
-
-Once everything is set up, we have to load the following packages:
+We load the following packages:
 
 ```{r}
 # load required packages
@@ -68,7 +61,7 @@ library(Cairo) # for printing custom police of graphs
 library(patchwork) # combining plots
 ```
 
-We finally load our custom `ggplot2` theme for graphs:
+We also load our custom ggplot2 theme for graphs:
 
 ```{r}
 # load ggplot custom theme
@@ -96,8 +89,6 @@ data_matched <-
       "1.hourly_data",
       "2.data_for_analysis",
       "1.matched_data",
-      "1.experiments_cruise",
-      "1.experiment_entry_cruise",
       "matched_data_entry_cruise.rds"
     )
   ) 
@@ -111,7 +102,7 @@ We check whether coviariates balance was achieved with the thresholds we defined
 
 For continuous weather covariates, we draw boxplots for treated and control groups:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=10, layout="l-page", code_folding="Please show me the code!"}
 # we select control variables and store them in a long dataframe
 data_weather_continuous_variables <- data_matched %>%
   select(
@@ -173,9 +164,8 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
-    "1.checking_matching_procedure",
+    "2.experiment_cruise",
+        "1.checking_matching_procedure",
     "graph_boxplot_continuous_weather.pdf"
   ),
   width = 50,
@@ -187,7 +177,7 @@ ggsave(
 
 For the rainfall dummy and the wind direction categories, we plot the proportions:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # we select the rainfall variables
 data_weather_categorical <- data_matched %>%
   select(
@@ -287,9 +277,8 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
-    "1.checking_matching_procedure",
+    "2.experiment_cruise",
+        "1.checking_matching_procedure",
     "graph_categorical_weather.pdf"
   ),
   width = 60,
@@ -301,7 +290,7 @@ ggsave(
 
 For pollutants:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=12, fig.height=10, layout="l-page", code_folding="Please show me the code!"}
 # we select control variables and store them in a long dataframe
 data_pollutant_variables <- data_matched %>%
   select(
@@ -354,9 +343,8 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
-    "1.checking_matching_procedure",
+    "2.experiment_cruise",
+        "1.checking_matching_procedure",
     "graph_boxplot_pollutants_hourly.pdf"
   ),
   width = 80,
@@ -370,7 +358,7 @@ ggsave(
 
 For calendar variables such as the hour of the day, the day of the week, bank days and holidays we matched strictly. We plot the proportions of observations belonging to each year by treatment status:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # compute the proportions of observations belonging to each month by treatment status
 data_month <- data_matched %>%
   mutate(is_treated = ifelse(is_treated == "TRUE", "Treated", "Control")) %>%
@@ -437,7 +425,7 @@ graph_month
 
 We plot the proportions of observations belonging to each year by treatment status:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # compute the proportions of observations belonging to each year by treatment status
 data_year <- data_matched %>%
   mutate(is_treated = ifelse(is_treated == "TRUE", "Treated", "Control")) %>%
@@ -485,8 +473,7 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
     "1.checking_matching_procedure",
     "graph_month_year.pdf"
   ),

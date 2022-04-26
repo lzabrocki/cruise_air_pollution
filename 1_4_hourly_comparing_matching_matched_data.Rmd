@@ -1,5 +1,5 @@
 ---
-title: "Comparing the Matched Data to the Initial Data - Entering Cruise Experiment"
+title: "Comparing the Matched Data to the Initial Data"
 description: |
   Comparing hours with entering cruise traffic to hours without. Adjusting for calendar and weather indicators.
 author:
@@ -49,14 +49,7 @@ We adjust for calendar calendar indicator and weather confounding factors.
 
 # Required Packages
 
-To reproduce exactly the `2_script_comparing_two_datasets.html` document, we first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `2_script_comparing_two_datasets.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template for this document. 
-
-Once everything is set up, we have to load the following packages:
+We load the following packages:
 
 ```{r}
 # load required packages
@@ -70,7 +63,7 @@ library(Cairo) # for printing custom police of graphs
 library(patchwork) # combining plots
 ```
 
-We finally load our custom `ggplot2` theme for graphs:
+We also  load our custom `ggplot2` theme for graphs:
 
 ```{r}
 # load ggplot custom theme
@@ -98,8 +91,6 @@ data_matching <-
       "1.hourly_data",
       "2.data_for_analysis",
       "1.matched_data",
-      "1.experiments_cruise",
-      "1.experiment_entry_cruise",
       "matching_data.rds"
     )
   ) %>%
@@ -114,8 +105,6 @@ data_matched <-
       "1.hourly_data",
       "2.data_for_analysis",
       "1.matched_data",
-      "1.experiments_cruise",
-      "1.experiment_entry_cruise",
       "matched_data_entry_cruise.rds"
     )
   ) %>%
@@ -129,7 +118,7 @@ data_all <- bind_rows(data_matching, data_matched) %>% as.data.frame()
 
 We plot below the density distributions of continuous weather covariates for the two datasets:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # we select continuous weather variables and store them in a long dataframe
 data_continuous_weather_variables <- data_all %>%
   select(temperature_average, wind_speed, humidity_average, dataset) %>%
@@ -181,7 +170,7 @@ graph_density_continuous_weather_variables
 
 We plot the proportion of weather categorical variables for the two datasets 
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # we select categorical weather variables and store them in a long dataframe
 data_categorical_weather_variables <- data_all %>%
   # select relevant variables
@@ -231,7 +220,7 @@ graph_categorical_weather_variables <-
   )) +
   geom_point(shape = 21,
              color = "black",
-             size = 8) +
+             size = 2) +
   scale_fill_manual(values = c(my_blue, my_orange),
                     guide = guide_legend(reverse = TRUE)) +
   facet_wrap( ~ values, scale = "free_x", ncol = 3) +
@@ -246,7 +235,7 @@ graph_categorical_weather_variables
 
 We combine the graph_density_continuous_weather_variables and graph_categorical_weather_variables
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # combine plots
 graph_weather_three_datasets <-
   graph_density_continuous_weather_variables / graph_categorical_weather_variables +
@@ -260,8 +249,8 @@ ggsave(
    "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
+    
     "1.checking_matching_procedure",
     "graph_weather_two_datasets.pdf"
   ),
@@ -274,7 +263,7 @@ ggsave(
 
 We plot the proportions of observations belonging to each hour by dataset:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # we select season and year variables
 data_hour <- data_all %>%
   select(hour, dataset) %>%
@@ -297,7 +286,7 @@ graph_hour <-
       group = dataset
     )
   ) +
-  geom_line(size = 2) +
+  geom_line() +
   scale_colour_manual(values = c(my_orange, my_blue),
                       guide = guide_legend(reverse = FALSE)) +
   ggtitle("Hour") +
@@ -312,7 +301,7 @@ graph_hour
 
 We plot the proportions of observations belonging to each day of the week by dataset:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # compute the proportions of observations belonging to each day of the week by dataset
 data_weekday <- data_all %>%
   mutate(weekday = lubridate::wday(date, abbr = FALSE, label = TRUE)) %>%
@@ -347,7 +336,7 @@ graph_weekday <-
       group = dataset
     )
   ) +
-  geom_line(size = 2) +
+  geom_line() +
   scale_colour_manual(values = c(my_orange, my_blue),
                       guide = guide_legend(reverse = FALSE)) +
   ggtitle("Day of the Week") +
@@ -362,7 +351,7 @@ graph_weekday
 
 We plot the proportions of observations belonging to bank days and holidays by dataset:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # compute the proportions of observations belonging to bank days and holidays by dataset
 data_bank_holidays <- data_all %>%
   select(bank_day_dummy, holidays_dummy, dataset) %>%
@@ -392,7 +381,7 @@ graph_bank_holidays <-
   )) +
   geom_point(shape = 21,
              colour = "black",
-             size = 8) +
+             size = 2) +
   scale_fill_manual(values = c(my_orange, my_blue),
                     guide = guide_legend(reverse = FALSE)) +
   facet_wrap( ~ name) +
@@ -408,7 +397,7 @@ graph_bank_holidays
 
 We plot the proportions of observations belonging to each month by dataset:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # compute the proportions of observations belonging to each month by dataset
 data_month <- data_all %>%
   select(month, dataset) %>%
@@ -463,7 +452,7 @@ graph_month <-
       group = dataset
     )
   ) +
-  geom_line(size = 2) +
+  geom_line() +
   scale_colour_manual(values = c(my_orange, my_blue),
                       guide = guide_legend(reverse = FALSE)) +
   ggtitle("Month") +
@@ -478,7 +467,7 @@ graph_month
 
 We plot the proportions of observations belonging to each year by dataset:
 
-```{r, fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
 # compute the proportions of observations belonging to each year by dataset
 data_year <- data_all %>%
   select(year, dataset) %>%
@@ -501,7 +490,7 @@ graph_year <-
       group = dataset
     )
   ) +
-  geom_line(size = 2) +
+  geom_line() +
   scale_colour_manual(values = c(my_orange, my_blue),
                       guide = guide_legend(reverse = FALSE)) +
   ggtitle("Year") +
@@ -516,14 +505,12 @@ graph_year
 
 We combine all plots for calendar variables:
 
-```{r, fig.width=28, fig.height=18, code_folding="Please show me the code!"}
+```{r, fig.width=10, fig.height=10, layout="l-page", code_folding="Please show me the code!"}
 # combine plots
 graph_calendar_three_datasets <-
   (graph_hour + graph_weekday + graph_bank_holidays) / (graph_month + graph_year) +
   plot_annotation(tag_levels = 'A') &
   theme(plot.tag = element_text(size = 30, face = "bold"))
-
-graph_calendar_three_datasets
 
 # save the plot
 ggsave(
@@ -532,8 +519,7 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
     "1.checking_matching_procedure",
     "graph_calendar_two_datasets.pdf"
   ),
