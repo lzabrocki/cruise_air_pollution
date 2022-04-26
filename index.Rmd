@@ -1,6 +1,6 @@
 ---
 title: "Estimating the Local Air Pollution Impacts of Cruise Traffic"
-image: 
+image: "inputs/3.outputs/1.hourly_analysis/2.experiment_cruise/2.matching_results/graph_fisherian_intervals.png"
 links:
   - label: <i id="icons" class="fas fa-envelope big-icon"></i>
     url: "mailto:leo.zabrocki@gmail.com"

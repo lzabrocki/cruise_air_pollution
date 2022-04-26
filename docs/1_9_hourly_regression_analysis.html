@@ -2179,8 +2179,26 @@ Data
 <span class="down-arrow">&#x25BE;</span>
 </button>
 <div class="nav-dropdown-content">
+<a href="1_1_hourly_data_wrangling.html">Hourly Data Wrangling</a>
+<a href="1_2_hourly_eda.html">Hourly EDA</a>
 <a href="2_1_daily_data_wrangling.html">Daily Data Wrangling</a>
 <a href="2_2_daily_eda.html">Daily EDA</a>
+</div>
+</div>
+<div class="nav-dropdown">
+<button class="nav-dropbtn">
+Hourly Matching
+ 
+<span class="down-arrow">&#x25BE;</span>
+</button>
+<div class="nav-dropdown-content">
+<a href="1_3_hourly_matching_procedure.html">Matching Procedure</a>
+<a href="1_4_hourly_comparing_matching_matched_data.html">Comparing Matching &amp; Matched Data</a>
+<a href="1_5_hourly_checking_intervention.html">Checking Intervention</a>
+<a href="1_6_hourly_checking_balance.html">Checking Balance</a>
+<a href="1_7_hourly_checking_balance_improvement.html">Checking Balance Improvement</a>
+<a href="1_8_hourly_analysis_results.hmtl">Treatment Analysis</a>
+<a href="1_9_hourly_regression_analysis.html">Outcome Regression</a>
 </div>
 </div>
 <div class="nav-dropdown">
@@ -2323,7 +2341,7 @@ Please show me the code!
 <span class='co'># create an indicator to alternate shading of confidence intervals</span>
 <span class='va'>data_neyman_reg</span> <span class='op'>&lt;-</span> <span class='va'>data_neyman_reg</span> <span class='op'>%&gt;%</span>
   <span class='fu'>arrange</span><span class='op'>(</span><span class='va'>pollutant</span>, <span class='va'>time</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'>mutate</span><span class='op'>(</span>stripe <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='op'>(</span><span class='va'>time</span> <span class='op'>%%</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>0</span>, <span class='st'>"Grey"</span>, <span class='st'>"White"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>stripe <span class='op'>=</span> <span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fifelse.html'>ifelse</a></span><span class='op'>(</span><span class='op'>(</span><span class='va'>time</span> <span class='op'>%%</span> <span class='fl'>2</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>0</span>, <span class='st'>"Grey"</span>, <span class='st'>"White"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>ungroup</span><span class='op'>(</span><span class='op'>)</span>
 
 <span class='co'># make the graph</span>

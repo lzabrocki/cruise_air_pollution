@@ -109,7 +109,7 @@ data_matched <-
   mutate(dataset = "Matched Data")
 
 # bind the two datasets
-data <- bind_rows(data_matched, data_matching) %>% as_data_frame()
+data <- bind_rows(data_matched, data_matching) %>% dplyr::as_data_frame()
 ```
 
 We also load the initial data to select the lags of variables at the **daily** level:
@@ -131,7 +131,7 @@ data_daily <-
     date,
     daily_mean_no2_sl_lag_1:daily_mean_o3_l_lag_2,
     daily_rainfall_height_dummy_lag_1:daily_humidity_average_lag_2
-  ) %>% as_data_frame()
+  ) %>% dplyr::as_data_frame()
 ```
 
 We merge the `matched_data` with the `data_daily` :

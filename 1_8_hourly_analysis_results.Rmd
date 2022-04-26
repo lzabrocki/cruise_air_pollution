@@ -1072,7 +1072,7 @@ data_marseille_raw_pollutants <- readRDS(
 ) %>%
   rename_at(vars(-date), function(x)
     paste0("raw_", x)) %>%
-  as_data_frame()
+  dplyr::as_data_frame()
 
 # we first define data_marseille_raw_pollutants_leads and data_marseille_raw_pollutants_lags
 # to store leads and lags

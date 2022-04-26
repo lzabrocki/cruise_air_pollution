@@ -178,7 +178,8 @@ port_data <- port_data %>%
   # select relevant variables
   select(holder_name:destination_country) %>%
   # convert continuous variables to numeric
-  mutate_at(vars(boat_height:deadweight_tonnage), ~ as.numeric(.))
+  mutate_at(vars(boat_height:deadweight_tonnage), ~ as.numeric(.)) %>%
+  dplyr::as_data_frame()
 ```
 
 **Before cleaning the data further, it is very important to note that all variables have minor recording issues.** For instance, below is a table of summary statistics for the continuous variables:

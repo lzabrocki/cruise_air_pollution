@@ -1,7 +1,7 @@
 name: "."
 title: "Estimating the Local Air Pollution Impacts of Cruise Traffic"
 theme: theme.css
-base_url: 
+base_url: https://lzabrocki.github.io/cruise_air_pollution/
 repository_url: https://github.com/lzabrocki/cruise_air_pollution.git
 description: |
   Website of the Project
@@ -15,10 +15,30 @@ navbar:
     - text: "Article"
     - text: "Data"
       menu: 
+        - text: "Hourly Data Wrangling"
+          href: 1_1_hourly_data_wrangling.html
+        - text: "Hourly EDA"
+          href: 1_2_hourly_eda.html
         - text: "Daily Data Wrangling"
           href: 2_1_daily_data_wrangling.html
         - text: "Daily EDA"
           href: 2_2_daily_eda.html
+    - text: "Hourly Matching"
+      menu: 
+        - text: "Matching Procedure"
+          href: 1_3_hourly_matching_procedure.html      
+        - text: "Comparing Matching & Matched Data"
+          href: 1_4_hourly_comparing_matching_matched_data.html
+        - text: "Checking Intervention"
+          href: 1_5_hourly_checking_intervention.html
+        - text: "Checking Balance"
+          href: 1_6_hourly_checking_balance.html
+        - text: "Checking Balance Improvement"
+          href: 1_7_hourly_checking_balance_improvement.html
+        - text: "Treatment Analysis"
+          href: 1_8_hourly_analysis_results.hmtl
+        - text: "Outcome Regression"
+          href: 1_9_hourly_regression_analysis.html
     - text: "Daily Matching"
       menu: 
         - text: "Matching Procedure"
