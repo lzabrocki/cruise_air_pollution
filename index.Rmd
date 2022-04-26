@@ -14,9 +14,13 @@ site: distill::distill_website
 
 Hello and welcome!
 
-This website gathers all the materials for the paper *Estimating the Local Air Pollution Impacts of Cruise Traffic: A Principled Approach for Observational Data* by [Léo Zabrocki](https://lzabrocki.github.io/), [Marion Leroutier](https://marionleroutier.weebly.com/) and [Marie-Abèle Bind](https://biostatistics.massgeneral.org/faculty/marie-abele-bind-phd/).
+This website gathers all the codes used in our paper entitled *Estimating the Local Air Pollution Impacts of Cruise Traffic: A Principled Approach for Observational Data* by [Léo Zabrocki](https://lzabrocki.github.io/), [Marion Leroutier](https://marionleroutier.weebly.com/) and [Marie-Abèle Bind](https://biostatistics.massgeneral.org/faculty/marie-abele-bind-phd/).
+
+Our data are stored on the Open Science Framework at the following address: XXX. The repository contains a README file that details the data sources and explains how to reproduce the statistical analysis.
 
 
+Even if we strive to make our study reproducible, its full replication presents two important caveats:
 
-
+* First, we were not allowed to share the weather data from Météo-France. We therefore added a small amount of noise to the original data. Researchers who reproduce our analysis will get different results. They can however easily check our coding procedure.
+* Second, the matching procedure at the hourly level is computationally demanding. We had to rent an Amazon Web Services virtual computer (EC2 t3.2xlarge) to run the matching algorithm.
 

@@ -1,5 +1,5 @@
 ---
-title: "Matching Procedure - Entering Cruise Experiment"
+title: "Matching Procedure"
 description: |
   Comparing hours with entering cruise traffic to hours without. Adjusting for calendar and weather indicators.
 author:
@@ -34,7 +34,7 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = FALSE,
   dev = "CairoPNG",
-  dpi = 600
+  dpi = 300
 )
 ```
 
@@ -49,14 +49,7 @@ We adjust for calendar calendar indicator and weather confouding factors.
 
 # Required Packages
 
-To reproduce exactly the `1_script_matching_procedure.html` document, we first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `1_script_matching_procedure.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template for this document. 
-
-Once everything is set up, we have to load the following packages:
+We load the following packages:
 
 ```{r}
 # load required packages
@@ -67,9 +60,10 @@ library(Rcpp) # for running the matching algorithm
 library(optmatch) # for matching pairs
 library(igraph) # for pair matching via bipartite maximal weighted matching
 library(Cairo) # for printing custom police of graphs
+library(kableExtra) # for table formatting
 ```
 
-We also have to load the `script_time_series_matching_function.R` which provides the functions used for matching time series:
+We also have to load the script_time_series_matching_function.R which provides the functions used for matching time series:
 
 ```{r}
 # load matching functions
@@ -273,16 +267,14 @@ saveRDS(
     "1.hourly_data",
     "2.data_for_analysis",
     "1.matched_data",
-    "1.experiments_cruise",
-    "1.experiment_entry_cruise",
     "matching_data.rds"
   )
 )
 ```
 
-There are `r N_treated` treated units and  `r N_control` control units. We display the distribution of treated and control units through time:
+There are `r N_treated` treated units and  `r N_control` control units. We display the distribution of treated and control units over the year 2018:
 
-```{r, eval = FALSE, layout="l-body-outset", fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+```{r, eval = FALSE, layout="l-page", fig.width=10, fig.height=5, code_folding="Please show me the code!"}
 # make stripes graph
 graph_stripes_hourly_experiment <- matching_data %>%
   mutate(is_treated = ifelse(is_treated == "TRUE", "Treated", "Control")) %>%
@@ -316,8 +308,7 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
     "1.checking_matching_procedure",
     "graph_stripes_hourly_experiment.pdf"
   ),
@@ -818,17 +809,12 @@ matched_data <-
       "1.hourly_data",
       "2.data_for_analysis",
       "1.matched_data",
-      "1.experiments_cruise",
-      "1.experiment_entry_cruise",
       "matched_data_entry_cruise.RDS"
     )
   )
 ```
 
-The matching procedure resulted in `r nrow(matched_data)/2` matched pairs.
-
-
-The distribution of difference in days within a pair is summarized below:
+The matching procedure resulted in `r nrow(matched_data)/2` matched pairs. The distribution of difference in days within a pair is summarized below:
 
 ```{r, code_folding="Please show me the code!"}
 matched_data %>%
@@ -845,32 +831,34 @@ matched_data %>%
   kable_styling(position = "center")
 ```
 
+This table shows that there should be no spillover effects within pairs.
 
-We also compute the difference between pairs:
 
-```{r, eval = FALSE, code_folding="Please show me the code!"}
+In the match dataset, there could however be spillover **between** pairs. For example, the first lead of a treated pollutant concentration could be used as a control in another pair. We first compute below the minimum of the distance of each treated unit with all other control units and then retrieve the proportion of treated units for which the minimum distance with a control unit in another pair is inferior or equal to to 5 hours.
+
+```{r, code_folding="Please show me the code!"}
+# retrieve dates of treated units
 treated_pairs <- matched_data %>%
   select(pair_number, is_treated, date) %>%
   filter(is_treated == TRUE)
 
-a<- treated_pairs %>% 
+# retrieve dates of controls
+control_pairs <- matched_data %>%
+  select(pair_number, is_treated, date) %>%
+  filter(is_treated == FALSE)
+
+# compute proportion for which the distance is 1
+distance_5_hours <- treated_pairs %>% 
   group_by(pair_number, date) %>%
-  expand(other_date = treated_pairs$date) %>%
+  expand(other_date = control_pairs$date) %>%
   filter(date!=other_date) %>%
   mutate(difference = abs(date-other_date)) %>%
   group_by(pair_number) %>%
   summarise(min_difference = min(difference)/(60*60)) %>%
-  arrange(min_difference)
-  
-summarise(
-    "Mean" = round(mean(average_difference, na.rm = TRUE), 1),
-    "Standard Deviation" = round(sd(average_difference, na.rm = TRUE), 1),
-    "Minimum" = round(min(average_difference, na.rm = TRUE), 1),
-    "Maximum" = round(max(average_difference, na.rm = TRUE), 1)
-  ) %>%
-  # print the table
-  kable(., align = c("l", rep("c", 4))) %>%
-  kable_styling(position = "center")
+  arrange(min_difference) %>%
+  summarise(sum(min_difference<=5)/n()*100)
 ```
+
+`r round(distance_5_hours, 1)`% of pairs could suffer from a between spillover effect. For the moment, we do not drop these pairs but we certainly should find a way to take into account this issue.
 
 

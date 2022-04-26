@@ -46,14 +46,7 @@ In this document, we took great care providing all steps and R codes required to
 
 # Required Packages
 
-To reproduce exactly the `script_data_wrangling.html` document, you first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language on your computer 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `script_data_wrangling.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template of this document. 
-
-Once everything is set up, we need to load the following packages:
+We load the following packages:
 
 ```{r}
 # load required packages
