@@ -1,5 +1,5 @@
 ---
-title: "Exploraty Data Analysis of the Effect of Road Traffic on NO2 Concentration in Marseille"
+title: "Outcome Regression Approach"
 description: |
   Comparing weekdays to weekend.
 author:
@@ -46,14 +46,7 @@ In this document
 
 # Required Packages
 
-To reproduce exactly the `2_9_daily_regression_analysis.html` document, we first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language on your computer 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `2_9_daily_regression_analysis.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template of this document. 
-
-Once everything is set up, we have to load the following packages:
+We load the following packages:
 
 ```{r}
 # load required packages
@@ -68,7 +61,7 @@ library(kableExtra) # for table formatting
 library(Cairo) # for printing custom police of graphs
 ```
 
-We load our custom `ggplot2` theme for graphs:
+We load our custom ggplot2 theme for graphs:
 
 ```{r}
 # load ggplot custom theme
@@ -81,11 +74,13 @@ my_orange <- "#fb8500"
 ```
 
 
-Finally, we ran a simple time-stratified regression model on the matching data to see how the results differ with those found in our matched data analysis. We only adjust for calendar indicator and weather covariates measured at time t. Again, we ran this procedure on an Amazon Web Services virtual computer (EC2 t3.2xlarge). The code we used is in the script `script_aws_regression_matching_data.R` located in the **1.experiment_entry_cruise/script_aws** folder. It takes several minutes to run.
+# Results
+
+We ran a simple time-stratified regression model on the matching data to see how the results differ with those found in our matched data analysis. We only adjust for calendar indicator and weather covariates measured at time t. We ran this procedure on an Amazon Web Services virtual computer (EC2 t3.2xlarge).
 
 We load the outputs of the regression model and plot the 95% confidence intervals:
 
-```{r, layout="l-body-outset", fig.width=30, fig.height=12, code_folding="Please show me the code!"}
+```{r, fig.width=15, fig.height=10, layout="l-page", code_folding="Please show me the code!"}
 # load regression outputs
 data_reg_analysis <- readRDS(
   here::here(
@@ -94,8 +89,6 @@ data_reg_analysis <- readRDS(
     "1.hourly_data",
     "2.data_for_analysis",
     "1.matched_data",
-    "1.experiments_cruise",
-    "1.experiment_entry_cruise",
     "data_matching_regression.rds"
   )
 ) %>%
@@ -113,8 +106,6 @@ data_neyman <- readRDS(
     "1.hourly_data",
     "2.data_for_analysis",
     "1.matched_data",
-    "1.experiments_cruise",
-    "1.experiment_entry_cruise",
     "data_neyman.rds"
   )
 )
@@ -155,11 +146,12 @@ graph_reg_analysis <-
     alpha = 0.4
   ) +
   geom_hline(yintercept = 0, color = "black") +
+  geom_vline(xintercept = c(3.6), color = "black") +
   geom_pointrange(position = position_dodge(width = 1), size = 1.2) +
   scale_shape_manual(name = "Analysis:", values = c(16, 17)) +
   scale_color_manual(name = "Analysis:", values = c(my_orange, my_blue)) +
   facet_wrap( ~ pollutant, ncol = 4) +
-  scale_fill_manual(values = c('grey90', "white")) +
+  scale_fill_manual(values = c('gray80', "NA")) +
   guides(fill = FALSE) +
   ylab("Average Difference \nin Concentrations (µg/m³)") + xlab("Day") +
   theme_tufte()
@@ -174,8 +166,7 @@ ggsave(
     "inputs",
     "3.outputs",
     "1.hourly_analysis",
-    "2.experiments_cruise",
-    "1.experiment_entry_cruise",
+    "2.experiment_cruise",
     "2.matching_results",
     "graph_matching_regression.pdf"
   ),
