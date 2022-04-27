@@ -36,7 +36,7 @@ navbar:
         - text: "Checking Balance Improvement"
           href: 1_7_hourly_checking_balance_improvement.html
         - text: "Treatment Analysis"
-          href: 1_8_hourly_analysis_results.hmtl
+          href: 1_8_hourly_analysis_results.html
         - text: "Outcome Regression"
           href: 1_9_hourly_regression_analysis.html
     - text: "Daily Matching"
@@ -52,7 +52,7 @@ navbar:
         - text: "Checking Balance Improvement"
           href: 2_7_daily_checking_balance_improvement.html
         - text: "Treatment Analysis"
-          href: 2_8_daily_analysis_results.hmtl
+          href: 2_8_daily_analysis_results.html
         - text: "Outcome Regression"
           href: 2_9_daily_regression_analysis.html
         - text: "Road Traffic Analysis"
