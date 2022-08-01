@@ -340,3 +340,30 @@ ggsave(
 )
 ```` 
 
+We combine the two previous plots:
+
+```{r, fig.width=10, fig.height=10, layout="l-page", code_folding="Please show me the code!"}
+# combine plots
+graph_daily_intervention <-
+  graph_mean_tonnage_day / graph_tonnage_difference_vessel_type +
+  plot_annotation(tag_levels = 'A') &
+  theme(plot.tag = element_text(size = 30, face = "bold"))
+
+# save the plot
+ggsave(
+  graph_daily_intervention,
+  filename = here::here(
+    "inputs",
+    "3.outputs",
+    "2.daily_analysis",
+    "2.analysis_pollution",
+    "1.cruise_experiment",
+    "1.checking_matching_procedure",
+    "graph_daily_intervention.pdf"
+  ),
+  width = 30,
+  height = 30,
+  units = "cm",
+  device = cairo_pdf
+)
+```

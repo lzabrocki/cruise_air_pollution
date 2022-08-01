@@ -65,9 +65,14 @@ Once everything is set up, we have to load the following packages:
 library(knitr) # for creating the R Markdown document
 library(here) # for files paths organization
 library(tidyverse) # for data manipulation and visualization
-library(retrodesign) # for computing power, type M and S errors
+library(broom) # for cleaning regression outputs
+library(MatchIt) # for matching procedures
+library(cobalt) # for assessing covariates balance
+library(randChecks) # for randomization check
+library(lmtest) # for modifying regression standard errors
+library(sandwich) # for robust and cluster robust standard errors
 library(Cairo) # for printing custom police of graphs
-library(kableExtra) # for table formatting
+library(patchwork) # combining plots
 ```
 
 We finally load our custom `ggplot2` theme for graphs:
@@ -666,7 +671,7 @@ graph_fisherian_intervals <-
     ymin = -Inf,
     ymax = Inf,
     color = NA,
-    alpha = 0.1
+    alpha = 0.4
   ) +
   geom_hline(yintercept = 0, color = "black") +
   geom_vline(xintercept = c(3.6), color = "black") +
@@ -680,7 +685,7 @@ graph_fisherian_intervals <-
     colour = my_blue,
     lwd = 0.8
   ) +
-  facet_wrap( ~ pollutant, scales = "free_y", ncol = 4) +
+  facet_wrap( ~ pollutant, ncol = 4) +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
   scale_fill_manual(values = c('gray80', "NA")) +
   guides(fill = FALSE) +
@@ -702,8 +707,8 @@ ggsave(
     "2.matching_results",
     "graph_fisherian_intervals.pdf"
   ),
-  width = 40,
-  height = 18,
+  width = 35,
+  height = 15,
   units = "cm",
   device = cairo_pdf
 )
@@ -1441,19 +1446,19 @@ ggsave(
 
 Our matching procedure resulted in few matched treated units: we might therefore have a low statistical power to detect the effect of cruise vessels on air pollutant concentrations. Even more worrying is our higher chance to suffer from type-S an type-M errors. While we do not know what the true effect of cruise on air pollutants is, we can explore our statistical power and our probability to make types S and M errors using a grid of plausible effect sizes. We proceed as follows:
 
-* We take the standard error computed for the average treatment effect of cruise on NO2 concentration in *t* at Saint-Louis. 
+* We take the standard error computed for the average treatment effect of cruise on NO2 concentration in *t* at Longchamp. 
 * We set create a grid of plausible effect sizes.
 * The `retrodesign` package allows us to compute the statistical power, the type-M and type-S errors associated with each effect size.
 
 ```{r}
 # retrieve the standard error
 standard_error <- data_neyman %>%
-  filter(pollutant == "NO2 Saint-Louis" & time == 0) %>%
+  filter(pollutant == "NO2 Longchamp" & time == 0) %>%
   pull(standard_error)
 
 # create data on plausible effect sizes
 data_type_m_s_errors <-
-  tibble(plausible_effect = seq(from = 0.25, to = 6, by = 0.1))
+  tibble(plausible_effect = seq(from = 0.25, to = 5, by = 0.1))
 
 # add the standard error to data_type_m_s_errors
 data_type_m_s_errors <- data_type_m_s_errors %>%
@@ -1493,8 +1498,10 @@ graph_type_m_s_errors <- data_type_m_s_errors %>%
     values_to = "value"
   ) %>%
   ggplot(., aes(x = plausible_effect, y = value)) +
-  geom_line(size = 1.3, colour = my_blue) +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  geom_line(colour = my_blue) +
+  geom_vline(xintercept = 4.7, colour = my_orange) +
+  geom_vline(xintercept = 2.35, colour = my_orange, linetype = "dashed") +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10),limits = c(0, NA)) +
   facet_wrap(~ variable, scales = "free") +
   xlab("Plausible Effect Sizes for an Average Increase\n in NO2 Concentrations (µg/m³)") + ylab("") +
   theme_tufte()
@@ -1514,8 +1521,8 @@ ggsave(
     "2.matching_results",
     "graph_type_m_s_errors.pdf"
   ),
-  width = 40,
-  height = 15,
+  width = 25,
+  height = 10,
   units = "cm",
   device = cairo_pdf
 )
@@ -1697,8 +1704,6 @@ data_matching <-
       "1.hourly_data",
       "2.data_for_analysis",
       "1.matched_data",
-      "1.experiments_cruise",
-      
       "matching_data.rds"
     )
   )
@@ -1809,7 +1814,6 @@ ggsave(
     "3.outputs",
     "1.hourly_analysis",
     "2.experiment_cruise",
-    
     "2.matching_results",
     "graph_propensity_score.pdf"
   ),

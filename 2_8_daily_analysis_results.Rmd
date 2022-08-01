@@ -739,6 +739,7 @@ graph_fisherian_intervals <-
     alpha = 0.4
   ) +
   geom_hline(yintercept = 0, color = "black") +
+  geom_vline(xintercept = c(1.6), color = "black") +
   geom_pointrange(
     aes(
       x = as.factor(time),
@@ -750,7 +751,7 @@ graph_fisherian_intervals <-
     lwd = 1.2
   ) +
   facet_wrap( ~ pollutant, ncol = 4) +
-  scale_fill_manual(values = c('grey90', "white")) +
+  scale_fill_manual(values = c('gray80', "NA")) +
   guides(fill = FALSE) +
   ylab("Constant-Additive Increase \nin Concentrations (µg/m³)") + xlab("Day") +
   theme_tufte()

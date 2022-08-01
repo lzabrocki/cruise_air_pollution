@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" version="1.0">
   <url>
     <loc>https://lzabrocki.github.io/cruise_air_pollution/1_1_hourly_data_wrangling.html</loc>
-    <lastmod>2022-04-26T10:23:47+02:00</lastmod>
+    <lastmod>2022-08-01T19:33:31+02:00</lastmod>
   </url>
   <url>
     <loc>https://lzabrocki.github.io/cruise_air_pollution/1_2_hourly_eda.html</loc>
@@ -26,15 +26,15 @@
   </url>
   <url>
     <loc>https://lzabrocki.github.io/cruise_air_pollution/1_7_hourly_checking_balance_improvement.html</loc>
-    <lastmod>2022-04-26T19:43:59+02:00</lastmod>
+    <lastmod>2022-04-27T22:46:36+02:00</lastmod>
   </url>
   <url>
     <loc>https://lzabrocki.github.io/cruise_air_pollution/1_8_hourly_analysis_results.html</loc>
-    <lastmod>2022-04-26T20:01:01+02:00</lastmod>
+    <lastmod>2022-04-28T13:05:23+02:00</lastmod>
   </url>
   <url>
     <loc>https://lzabrocki.github.io/cruise_air_pollution/1_9_hourly_regression_analysis.html</loc>
-    <lastmod>2022-04-26T19:20:51+02:00</lastmod>
+    <lastmod>2022-04-28T13:23:19+02:00</lastmod>
   </url>
   <url>
     <loc>https://lzabrocki.github.io/cruise_air_pollution/2_1_daily_data_wrangling.html</loc>
@@ -50,7 +50,7 @@
   </url>
   <url>
     <loc>https://lzabrocki.github.io/cruise_air_pollution/2_3_daily_matching_procedure.html</loc>
-    <lastmod>2022-04-25T22:04:38+02:00</lastmod>
+    <lastmod>2022-05-20T13:32:37+02:00</lastmod>
   </url>
   <url>
     <loc>https://lzabrocki.github.io/cruise_air_pollution/2_4_daily_comparing_matching_matched_data.html</loc>
@@ -58,7 +58,7 @@
   </url>
   <url>
     <loc>https://lzabrocki.github.io/cruise_air_pollution/2_5_daily_checking_intervention.html</loc>
-    <lastmod>2022-04-25T22:14:14+02:00</lastmod>
+    <lastmod>2022-04-27T23:34:28+02:00</lastmod>
   </url>
   <url>
     <loc>https://lzabrocki.github.io/cruise_air_pollution/2_6_daily_checking_balance.html</loc>
@@ -70,7 +70,7 @@
   </url>
   <url>
     <loc>https://lzabrocki.github.io/cruise_air_pollution/2_8_daily_analysis_results.html</loc>
-    <lastmod>2022-04-25T23:28:11+02:00</lastmod>
+    <lastmod>2022-04-28T00:18:15+02:00</lastmod>
   </url>
   <url>
     <loc>https://lzabrocki.github.io/cruise_air_pollution/2_9_daily_regression_analysis.html</loc>
@@ -82,6 +82,6 @@
   </url>
   <url>
     <loc>https://lzabrocki.github.io/cruise_air_pollution/</loc>
-    <lastmod>2022-04-26T21:15:31+02:00</lastmod>
+    <lastmod>2022-08-01T18:52:50+02:00</lastmod>
   </url>
 </urlset>

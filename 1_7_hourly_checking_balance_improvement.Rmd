@@ -1131,6 +1131,33 @@ ggsave(
 ```
 
 
+We combine the two previous plots in a single figure:
+
+```{r, code_folding="Please show me the code!"}
+# combine plots
+graph_overall_balance <-
+  graph_boxplot_continuous_balance_improvement /graph_boxplot_categorical_balance_improvement +
+  plot_annotation(tag_levels = 'A') &
+  theme(plot.tag = element_text(size = 30, face = "bold"))
+
+# save the plot
+ggsave(
+  graph_overall_balance,
+  filename = here::here(
+    "inputs",
+    "3.outputs",
+    "1.hourly_analysis",
+    "2.experiment_cruise",
+    "1.checking_matching_procedure",
+    "graph_overall_balance_hourly.pdf"
+  ),
+  width = 20,
+  height = 20,
+  units = "cm",
+  device = cairo_pdf
+)
+```
+
 And we compute the overall figures for imbalance before and after matching:
 
 ```{r, code_folding="Please show me the code!"}
