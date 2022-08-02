@@ -13,8 +13,8 @@ author:
     affiliation_url: https://www.hhs.se/en/persons/l/leroutier-marion/
   - name: Léo Zabrocki 
     url: https://lzabrocki.github.io/
-    affiliation: Paris School of Economics
-    affiliation_url: https://www.parisschoolofeconomics.eu/fr/zabrocki-leo/
+    affiliation: RFF-CMCC EIEE
+    affiliation_url: https://www.eiee.org/
 date: "`r Sys.Date()`"
 output: 
     distill::distill_article:
@@ -42,7 +42,7 @@ knitr::opts_chunk$set(
 
 We adjust for calendar calendar indicator and weather confounding factors.
 
-**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@hhs.se.**
+**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@gmail.com and marion.leroutier@hhs.se.**
 
 # Required Packages
 
@@ -61,7 +61,7 @@ library(patchwork) # combining plots
 library(kableExtra) # for table formatting
 ```
 
-We also load our custom ggplot2 theme for graphs:
+We also load our custom **ggplot2** theme for graphs:
 
 ```{r}
 # load ggplot custom theme
@@ -1130,13 +1130,12 @@ ggsave(
 )
 ```
 
-
 We combine the two previous plots in a single figure:
 
 ```{r, code_folding="Please show me the code!"}
 # combine plots
 graph_overall_balance <-
-  graph_boxplot_continuous_balance_improvement /graph_boxplot_categorical_balance_improvement +
+  graph_boxplot_continuous_balance_improvement + graph_boxplot_categorical_balance_improvement +
   plot_annotation(tag_levels = 'A') &
   theme(plot.tag = element_text(size = 30, face = "bold"))
 
@@ -1152,7 +1151,7 @@ ggsave(
     "graph_overall_balance_hourly.pdf"
   ),
   width = 20,
-  height = 20,
+  height = 10,
   units = "cm",
   device = cairo_pdf
 )
@@ -1179,7 +1178,7 @@ data_continuous_love %>%
 
 # Randomization Check for Covariate Balance
 
-Finally, we implement the procedure of Zach Branson (2021) to carry out a randomization check to test whether daily observations are as-if randomized according to observed covariates.
+Finally, we implement the procedure of [Zach Branson (2021)](https://drive.google.com/file/d/16G59khS-HVUjsSYY3NTT3yOq-Y-26la4/view) to carry out a randomization check to test whether daily observations are as-if randomized according to observed covariates.
 
 ```{r, eval = FALSE}
 # we select covariates
@@ -1287,9 +1286,6 @@ data_covs <- data_covs %>%
     -hour_0,
     -bank_day_dummy
   )
-
-# total_gross_tonnage_exit_ferry, rainfall_height_dummy, rainfall_height_dummy_lag_2,
-#select(-year_2018, - month_December, -weekday_Sunday, -hour_0, -bank_day_dummy)
 
 # run balance check
 asIfRandPlot(

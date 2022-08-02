@@ -55,8 +55,8 @@ We load the following packages:
 # load required packages
 library(knitr) # for creating the R Markdown document
 library(here) # for files paths organization
-library(tidyverse) # for data manipulation and visualization
 library(dtplyr) # to speed up to dplyr
+library(tidyverse) # for data manipulation and visualization
 library(ggridges) # for ridge density plots
 library(kableExtra) # for table formatting
 library(Cairo) # for printing custom police of graphs
@@ -233,9 +233,9 @@ graph_categorical_weather_variables <-
 graph_categorical_weather_variables
 ```
 
-We combine the graph_density_continuous_weather_variables and graph_categorical_weather_variables
+We combine the graph_density_continuous_weather_variables and graph_categorical_weather_variables:
 
-```{r, fig.width=10, fig.height=5, layout="l-page", code_folding="Please show me the code!"}
+```{r, eval = FALSE, code_folding="Please show me the code!"}
 # combine plots
 graph_weather_three_datasets <-
   graph_density_continuous_weather_variables / graph_categorical_weather_variables +
@@ -246,11 +246,10 @@ graph_weather_three_datasets <-
 ggsave(
   graph_weather_three_datasets,
   filename = here::here(
-   "inputs",
+    "inputs",
     "3.outputs",
     "1.hourly_analysis",
     "2.experiment_cruise",
-    
     "1.checking_matching_procedure",
     "graph_weather_two_datasets.pdf"
   ),

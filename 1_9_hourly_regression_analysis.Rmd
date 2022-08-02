@@ -13,8 +13,8 @@ author:
     affiliation_url: https://www.hhs.se/en/persons/l/leroutier-marion/
   - name: Léo Zabrocki 
     url: https://lzabrocki.github.io/
-    affiliation: Paris School of Economics
-    affiliation_url: https://www.parisschoolofeconomics.eu/fr/zabrocki-leo/
+    affiliation: RFF-CMCC EIEE
+    affiliation_url: https://www.eiee.org/
 date: "`r Sys.Date()`"
 output: 
     distill::distill_article:
@@ -42,18 +42,11 @@ knitr::opts_chunk$set(
 
 In this document
 
-**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@hhs.se.**
+**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@gmail.com and marion.leroutier@hhs.se.**
 
 # Required Packages
 
-To reproduce exactly the `2_9_daily_regression_analysis.html` document, we first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language on your computer 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `2_9_daily_regression_analysis.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template of this document. 
-
-Once everything is set up, we have to load the following packages:
+We load the following packages:
 
 ```{r}
 # load required packages
@@ -65,7 +58,7 @@ library(kableExtra) # for table formatting
 library(Cairo) # for printing custom police of graphs
 ```
 
-We load our custom `ggplot2` theme for graphs:
+We also load our custom **ggplot2** theme for graphs:
 
 ```{r}
 # load ggplot custom theme
@@ -82,7 +75,7 @@ Finally, we ran a simple time-stratified regression model on the matching data t
 
 We load the outputs of the regression model and plot the 95% confidence intervals:
 
-```{r, layout="l-body-outset", fig.width=30, fig.height=12, code_folding="Please show me the code!"}
+```{r, layout="l-body-outset", fig.width=10, fig.height=5, code_folding="Please show me the code!"}
 # load regression outputs
 data_reg_analysis <- readRDS(
   here::here(

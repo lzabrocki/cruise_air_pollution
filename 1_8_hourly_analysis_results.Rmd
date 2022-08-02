@@ -13,8 +13,8 @@ author:
     affiliation_url: https://www.hhs.se/en/persons/l/leroutier-marion/
   - name: Léo Zabrocki 
     url: https://lzabrocki.github.io/
-    affiliation: Paris School of Economics
-    affiliation_url: https://www.parisschoolofeconomics.eu/fr/zabrocki-leo/
+    affiliation: RFF-CMCC EIEE
+    affiliation_url: https://www.eiee.org/
 date: "`r Sys.Date()`"
 output: 
     distill::distill_article:
@@ -45,37 +45,25 @@ In this document, we take great care providing all steps and R codes required to
 * treated units are hours with positive entering cruise traffic in t.
 * control units are hours without entering cruise traffic in t.
 
-We adjust for calendar calendar indicator and weather confouding factors.
+We adjust for calendar calendar indicator and weather confounding factors.
 
-**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@hhs.se.**
+**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@gmail.com and marion.leroutier@hhs.se.**
 
 # Required Packages
 
-To reproduce exactly the `6_script_analyzing_results.html` document, we first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `6_script_analyzing_results.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template for this document. 
-
-Once everything is set up, we have to load the following packages:
+We load the following packages:
 
 ```{r}
 # load required packages
 library(knitr) # for creating the R Markdown document
 library(here) # for files paths organization
 library(tidyverse) # for data manipulation and visualization
-library(broom) # for cleaning regression outputs
-library(MatchIt) # for matching procedures
-library(cobalt) # for assessing covariates balance
-library(randChecks) # for randomization check
-library(lmtest) # for modifying regression standard errors
-library(sandwich) # for robust and cluster robust standard errors
+library(retrodesign) # for retrospective power analysis
 library(Cairo) # for printing custom police of graphs
 library(patchwork) # combining plots
 ```
 
-We finally load our custom `ggplot2` theme for graphs:
+We also load our custom **ggplot2** theme for graphs:
 
 ```{r}
 # load ggplot custom theme
@@ -92,7 +80,7 @@ my_orange <- "#fb8500"
 
 # Preparing the Data
 
-We load the matching and matched data and bind them together:
+We load the matched data:
 
 ```{r}
 # load matched data
@@ -730,20 +718,20 @@ ri_data_fi_final %>%
   rmarkdown::paged_table(.)
 ```
 
-# Checking the Sensivity of Results
+# Checking the Robustness of Results
 
-In this section, we carry out four investigations:
+In this section, we carry out several robustness checks:
 
-* We evaluate to which extent our results could suffer from hidde bias.
+* We evaluate to which extent our results could suffer from hidden bias. We first implement a sensitivity analysis for hidden bias à la Rosenbaum. 
 * We check how our results are sensitive to outliers by computing 95% Fisherian intervals based on the Wilcoxon's signed rank test statistic.
-* As we imputed the missing pollutant concentrations, we also want to see how our results might for the non-missing outcomes. We compute 95% Fisherian intervals based on the Wilcoxon's signed rank test statistic.
+* As we imputed the missing pollutant concentrations, we also want to see how our results might differ for the non-missing outcomes.
 * We compute confidence intervals for the average treatment effect using Neyman's approach.
-* We explore how our study could suffer from type S and M errors.
+* We finally explore how our study could suffer from type S and M errors due to low statistical power.
 
 
 ### Sensitivity to Hidden Bias
 
-We implement the studentized sensitivity analysis for the ATE developed by Colin B. Fogarty (2019). We first load the relevant functions:
+We implement the studentized sensitivity analysis for the ATE developed by [Colin B. Fogarty (2019)](https://www.tandfonline.com/doi/abs/10.1080/01621459.2019.1632072). We first load the relevant functions:
 
 ```{r}
 # load fogarty's studentized Sensitivity Analysis functions
@@ -966,7 +954,7 @@ data_hidden_bias %>%
   unnest(cols = c(sensitivity_interval)) %>%
   mutate_at(vars(-pollutant), ~ round(., 2)) %>%
   kable(., align = c("l", rep("c", 3))) %>%
-  kable_styling(position = "center")
+  kableExtra::kable_styling(position = "center")
 ```
 
 
@@ -1365,7 +1353,8 @@ data_neyman <-
   mutate(
     ci_lower_95 = mean_difference - 1.96 * standard_error,
     ci_upper_95 = mean_difference + 1.96 * standard_error
-  )
+  ) %>%
+  mutate(data = "Neyman")
 
 # save the data
 saveRDS(
@@ -1383,20 +1372,38 @@ saveRDS(
 
 We plot the the point estimates for the average treatment effects and their associated 95% confidence intervals:
 
-```{r, layout="l-page", fig.width=30, fig.height=8, code_folding="Please show me the code!"}
+```{r, layout="l-page", fig.width=10, fig.height=5, code_folding="Please show me the code!"}
+# bind ri_data_fi_final with data_neyman
+data_ci <- ri_data_fi_final %>%
+  rename(mean_difference = observed_mean_difference,
+         ci_lower_95 = lower_fi,
+         ci_upper_95 = upper_fi) %>%
+  mutate(data = "Fisher") %>%
+  bind_rows(., data_neyman)
+
 # create an indicator to alternate shading of confidence intervals
-data_neyman <- data_neyman %>%
+data_ci <- data_ci %>%
   arrange(pollutant, time) %>%
   mutate(stripe = ifelse((time %% 2) == 0, "Grey", "White")) %>%
   ungroup()
 
 # make the graph
 graph_neyman_ci <-
-  ggplot(data_neyman, aes(x = as.factor(time), y = mean_difference)) +
+  ggplot(
+    data_ci,
+    aes(
+      x = as.factor(time),
+      y = mean_difference,
+      ymin = ci_lower_95,
+      ymax = ci_upper_95,
+      colour = data,
+      shape = data
+    )
+  ) +
   geom_rect(
     aes(fill = stripe),
-    xmin = as.numeric(as.factor(data_neyman$time)) - 0.42,
-    xmax = as.numeric(as.factor(data_neyman$time)) + 0.42,
+    xmin = as.numeric(as.factor(data_ci$time)) - 0.42,
+    xmax = as.numeric(as.factor(data_ci$time)) + 0.42,
     ymin = -Inf,
     ymax = Inf,
     color = NA,
@@ -1404,20 +1411,15 @@ graph_neyman_ci <-
   ) +
   geom_hline(yintercept = 0, color = "black") +
   geom_vline(xintercept = c(3.6), color = "black") +
-  geom_pointrange(
-    aes(
-      x = as.factor(time),
-      y = mean_difference,
-      ymin = ci_lower_95 ,
-      ymax = ci_upper_95
-    ),
-    colour = my_blue,
-    lwd = 0.8
-  ) +
-  facet_wrap(~ pollutant, scales = "free_y", ncol = 4) +
+  geom_pointrange(position = position_dodge(width = 1),
+                  size = 0.8,
+                  fatten = 2) +
+  scale_shape_manual(name = "Mode of Inference:", values = c(16, 17)) +
+  scale_color_manual(name = "Mode of Inference:", values = c(my_orange, my_blue)) +
+  facet_wrap( ~ pollutant, scales = "free_y", ncol = 4) +
   scale_fill_manual(values = c('gray80', "NA")) +
   guides(fill = FALSE) +
-  ylab("Average Pair Difference \nin Concentrations (µg/m³)") + xlab("Hour") +
+  ylab("Increase \nin Concentrations (µg/m³)") + xlab("Hour") +
   theme_tufte()
 
 # print the graph
@@ -1527,7 +1529,6 @@ ggsave(
   device = cairo_pdf
 )
 ```
-
 
 # Heterogeneity Analysis
 
@@ -1662,6 +1663,9 @@ graph_concentration_tonnage_pair <-
   xlab("Pair Differences in Cruise Tonnage (unitless)") + ylab("Pair Differences \nin Concentrations (µg/m³)") +
   theme_tufte()
 
+# print the graph
+graph_concentration_tonnage_pair
+
 # save the graph
 ggsave(
   graph_concentration_tonnage_pair,
@@ -1679,431 +1683,5 @@ ggsave(
   device = cairo_pdf
 )
 ``` 
-
-
-
-# Alternative Matching
-
-We implement below a propensity score matching procedure where:
-
-1. Each day with an heat wave is matched to the most similar day without heat wave. This is a 1:1 nearest neighbor matching without replacement.
-2. The distance metric used for the matching is the propensity score which is predicted using a logistic model where we regress the treatment indicator on a set of vessel traffic, weather and calendar variables. We choose a caliper equals to 0.01 of the standard deviation of the propensity scores.
-3. Once treated and control units are matched, we assess whether covariates balance has improved. 
-4. We finally estimate the treatment effect.
-
-
-First, we load the matching dataset:
-
-```{r, eval = FALSE}
-# load matching data
-data_matching <-
-  readRDS(
-    here::here(
-      "inputs",
-      "1.data",
-      "1.hourly_data",
-      "2.data_for_analysis",
-      "1.matched_data",
-      "matching_data.rds"
-    )
-  )
-
-
-# select relevant covariates
-data_matching <- data_matching %>%
-  select(
-    contains("mean_no2_l"),
-    contains("mean_no2_sl"),
-    contains("mean_pm10_l"),
-    contains("mean_pm10_sl"),
-    contains("mean_pm25_l"),
-    contains("mean_so2_l"),
-    contains("mean_o3_l"),
-    is_treated,
-    total_gross_tonnage_entry_ferry,
-    total_gross_tonnage_entry_ferry_lag_1,
-    total_gross_tonnage_entry_other_vessels,
-    total_gross_tonnage_entry_other_vessels_lag_1,
-    total_gross_tonnage_entry_cruise_lag_1,
-    total_gross_tonnage_exit_cruise,
-    total_gross_tonnage_exit_ferry,
-    total_gross_tonnage_exit_ferry_lag_1,
-    total_gross_tonnage_exit_other_vessels,
-    total_gross_tonnage_exit_other_vessels_lag_1,
-    total_gross_tonnage_exit_cruise_lag_1,
-    temperature_average,
-    temperature_average_lag_1,
-    humidity_average,
-    humidity_average_lag_1,
-    rainfall_height_dummy,
-    rainfall_height_dummy_lag_1,
-    wind_direction_east_west,
-    wind_direction_east_west_lag_1,
-    wind_speed,
-    wind_speed_lag_1,
-    hour,
-    weekday,
-    holidays_dummy,
-    bank_day_dummy,
-    month,
-    year
-  ) %>%
-  drop_na() %>%
-  mutate_at(vars(hour, weekday, month, year), ~ as.factor(.))
-``` 
-
-We first match each treated unit to its closest control unit using the `matchit()` function and 0.01 caliper:
-
-```{r, eval = FALSE}
-# match without caliper
-matching_ps  <-
-  matchit(
-    is_treated ~
-      total_gross_tonnage_entry_ferry +
-      total_gross_tonnage_entry_ferry_lag_1 +
-      total_gross_tonnage_entry_other_vessels +
-      total_gross_tonnage_entry_other_vessels_lag_1 +
-      total_gross_tonnage_entry_cruise_lag_1 +
-      total_gross_tonnage_exit_cruise +
-      total_gross_tonnage_exit_ferry +
-      total_gross_tonnage_exit_ferry_lag_1 +
-      total_gross_tonnage_exit_other_vessels +
-      total_gross_tonnage_exit_other_vessels_lag_1 +
-      total_gross_tonnage_exit_cruise_lag_1 +
-      temperature_average + temperature_average_lag_1 +
-      humidity_average + humidity_average_lag_1 +
-      rainfall_height_dummy + rainfall_height_dummy_lag_1 +
-      wind_direction_east_west + wind_direction_east_west_lag_1 +
-      wind_speed + wind_speed_lag_1 +
-      hour + weekday + holidays_dummy + bank_day_dummy + month * year,
-    caliper = 0.01,
-    data = data_matching
-  )
-
-# display summary of the procedure
-matching_ps
-```
-
-The output of the matching procedure indicates us the method (1:1 nearest neighbor matching without replacement) and the distance (propensity score) we used. It also tells that out of the  units,  were matched to similar controls. We assess how covariates balance has improved by comparing the distribution of propensity scores before and after matching:
-
-
-```{r, eval = FALSE, fig.width = 10, fig.height = 6, code_folding="Please show me the code!"}
-# distribution of propensity scores
-graph_propensity_score <- bal.plot(
-  matching_ps,
-  var.name = "distance",
-  which = "both",
-  sample.names = c("Initial Data", "Matched Data"),
-  type = "density") +
-  xlab("Propensity Scores") +
-  scale_fill_manual(
-    name = "Group:",
-    values = c(my_blue, my_orange),
-    labels = c("Days without Cruise Vessels", "Days with Cruise Vessels")
-  ) +
-  theme_tufte()
-
-# display the graph
-graph_propensity_score
-
-# save the graph
-ggsave(
-  graph_propensity_score,
-  filename = here::here(
-    "inputs",
-    "3.outputs",
-    "1.hourly_analysis",
-    "2.experiment_cruise",
-    "2.matching_results",
-    "graph_propensity_score.pdf"
-  ),
-  width = 16,
-  height = 10,
-  units = "cm",
-  device = cairo_pdf
-)
-```
-
-We see on this graph that propensity scores distribution for the two groups perfectly overlap after matching. We can also evaluate the covariates balance using the `love.plot()` function from the cobalt package and the absolute mean difference as the summary statistic. For binary variables, the absolute difference in proportion is computed. For continuous covariates, denoted with a star, the absolute standardized mean difference is computed (the difference is divided by the standard deviation of the variable for treated units before matching).
-
-```{r, eval = FALSE, fig.width = 8, fig.height = 8, code_folding="Please show me the code!"}
-# make the love plot
-graph_love_plot_ps <- love.plot(
-  is_treated ~
-      total_gross_tonnage_entry_ferry +
-      total_gross_tonnage_entry_ferry_lag_1 +
-      total_gross_tonnage_entry_other_vessels +
-      total_gross_tonnage_entry_other_vessels_lag_1 +
-      total_gross_tonnage_entry_cruise_lag_1 +
-      total_gross_tonnage_exit_cruise +
-      total_gross_tonnage_exit_ferry +
-      total_gross_tonnage_exit_ferry_lag_1 +
-      total_gross_tonnage_exit_other_vessels +
-      total_gross_tonnage_exit_other_vessels_lag_1 +
-      total_gross_tonnage_exit_cruise_lag_1 +
-    mean_no2_l_lag_1 + mean_no2_sl_lag_1 + mean_pm10_l_lag_1 + mean_pm10_sl_lag_1 +
-    mean_pm25_l_lag_1 + mean_so2_l_lag_1 + mean_o3_l_lag_1 +
-    temperature_average + temperature_average_lag_1 +
-    humidity_average + humidity_average_lag_1 +
-    rainfall_height_dummy + rainfall_height_dummy_lag_1 +
-    wind_direction_east_west + wind_direction_east_west_lag_1 +
-    wind_speed + wind_speed_lag_1 +
-    hour + weekday + holidays_dummy + bank_day_dummy + month + year,
-  data = data_matching,
-  weights = matching_ps,
-  drop.distance = TRUE,
-  abs = TRUE,
-  var.order = "unadjusted",
-  binary = "raw",
-  s.d.denom = "treated",
-  thresholds = c(m = .1),
-  #var.names = cov_labels,
-  sample.names = c("Initial Data", "Matched Data"),
-  shapes = c("circle", "triangle"),
-  colors = c(my_orange, my_blue),
-  #stars = "std"
-) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  xlab("Absolute Mean Differences") +
-  theme_tufte()
-
-# display the graph
-graph_love_plot_ps
-
-# save the graph
-ggsave(
-  graph_love_plot_ps + labs(title = NULL),
-  filename = here::here(
-    "inputs",
-    "3.outputs",
-    "1.hourly_analysis",
-    "2.experiment_cruise",
-    
-    "2.matching_results",
-    "graph_love_plot_ps.pdf"
-  ),
-  width = 20,
-  height = 15,
-  units = "cm",
-  device = cairo_pdf
-)
-```
-
-We display below the evolution of the average of standardized mean differences for continuous covariates:
-
-```{r, eval = FALSE, code_folding="Please show me the code!"}
-graph_love_plot_ps[["data"]] %>%
-  filter(type == "Contin.") %>%
-  group_by(Sample) %>%
-  summarise("Average of Standardized Mean Differences" = round(mean(stat), 2),
-            "Std. Deviation" = round(sd(stat), 2)) %>%
-  kable(align = c("l", "c")) %>%
-  kable_styling(position = "center")
-```
-
-We also display below the evolution of the difference in proportions for binary covariates:
-
-```{r, eval = FALSE, code_folding="Please show me the code!"}
-graph_love_plot_ps[["data"]] %>%
-  filter(type == "Binary") %>%
-  group_by(Sample) %>%
-  summarise("Average of Proportion Differences" = round(mean(stat), 2),
-            "Std. Deviation" = round(sd(stat), 2)) %>%
-  kable(align = c("l", "c")) %>%
-  kable_styling(position = "center")
-```
-
-Overall, for both types of covariates, the balance has clearly improved after matching.
-
-
-We now move to the analysis of the matched datasets using a simple regression model where we first regress the YLL on the treatment indicator. We start with the matched data resulting from the propensity score without a caliper. We first retrieve the matched dataset:
-
-```{r, eval = FALSE}
-# we retrieve the matched data
-data_ps <- match.data(matching_ps)
-```
-
-Balance check:
-
-```{r, eval = FALSE}
-# we select covariates
-data_covs <- data_ps %>%
-  select(
-    is_treated:year,
-    subclass,
-    contains("lag_1")
-  )
-
-# recode some variables
-data_covs <- data_covs %>%
-  mutate(is_treated = ifelse(is_treated == TRUE, 1, 0)) %>%
-  mutate_at(
-    vars(wind_direction_east_west , wind_direction_east_west_lag_1),
-    ~ ifelse(. == "West", 1, 0)
-  ) %>%
-  fastDummies::dummy_cols(., select_columns = c("year", "month", "weekday", "hour")) %>%
-  select(-c("year", "month", "weekday", "hour"))
-
-# format data for asIfRandPlot() function
-subclass <- as.numeric(data_covs$subclass)
-is_treated <- data_covs$is_treated
-
-data_covs <- data_covs %>%
-  select(-subclass,-is_treated) %>%
-  select(-year_2018, - month_December, -weekday_Sunday, -hour_0) 
-
-# run balance check
-asIfRandPlot(
-  X.matched = data_covs,
-  indicator.matched = is_treated,
-  assignment = c("complete", "blocked"),
-  subclass = subclass,
-  perms = 100
-)
-```
-
-
-```{r, eval = FALSE, echo = FALSE, out.width = "800%", fig.align = "center"}
-knitr::include_graphics(
-    here::here(
-          "inputs",
-    "3.outputs",
-    "1.hourly_analysis",
-    "2.experiment_cruise",
-    
-    "2.matching_results",
-    "ri_balance_check_ps.png"))
-```
-
-We then estimate the treatment effect of heat waves with a simple linear regression model:
-
-```{r, eval = FALSE}
-function_ps_analysis <- function(data) {
-  
-  # we fit the regression model
-  model_ps <- lm(concentration ~ is_treated,
-                 data = data,
-                 weights = weights)
-  
-  # retrieve the estimate and 95% ci
-  results_ps <- tidy(coeftest(model_ps,
-                              vcov. = vcovCL,
-                              cluster = ~ subclass),
-                     conf.int = TRUE) %>%
-    filter(term == "is_treatedTRUE") %>%
-    select(term, estimate, conf.low, conf.high)
-  
-  # return output
-  return(results_ps)
-}
-
-
-# reshape in long according to pollutants
-data_ps_analysis <- data_ps %>%
-  pivot_longer(cols = c(contains("no2"), contains("o3"), contains("pm10"), contains("pm25"), contains("so2")), names_to = "variable", values_to = "concentration") %>%
-  mutate(pollutant = NA %>%
-           ifelse(str_detect(variable, "no2_l"), "NO2 Longchamp",.) %>%
-           ifelse(str_detect(variable, "no2_sl"), "NO2 Saint-Louis",.) %>%
-           ifelse(str_detect(variable, "o3"), "O3 Longchamp",.) %>%
-           ifelse(str_detect(variable, "pm10_l"), "PM10 Longchamp",.) %>%
-           ifelse(str_detect(variable, "pm10_sl"), "PM10 Saint-Louis",.) %>%
-           ifelse(str_detect(variable, "pm25"), "PM2.5 Longchamp",.) %>%
-           ifelse(str_detect(variable, "so2"), "SO2 Lonchamp",.)) %>%
-  mutate(    time = 0 %>%
-      ifelse(str_detect(variable, "lag_3"),-3, .) %>%
-      ifelse(str_detect(variable, "lag_2"),-2, .) %>%
-      ifelse(str_detect(variable, "lag_1"),-1, .) %>%
-      ifelse(str_detect(variable, "lead_1"), 1, .) %>%
-      ifelse(str_detect(variable, "lead_2"), 2, .) %>% 
-      ifelse(str_detect(variable, "lead_3"), 3, .)) %>%
-  select(-variable)
-
-# we nest the data by pollutant and time
-data_ps_analysis <- data_ps_analysis %>% 
-  group_by(pollutant, time) %>%
-  nest()
-
-data_ps_analysis <- data_ps_analysis %>%
-  mutate(result = map(data, ~ function_ps_analysis(.))) %>%
-  select(-data) %>%
-  unnest() %>%
-  select(-term) %>%
-  rename("mean_difference" = "estimate", "ci_lower_95" = "conf.low", "ci_upper_95" = "conf.high") %>%
-  mutate(analysis = "Propensity Score Matching")
-
-data_neyman <- data_neyman %>%
-  mutate(analysis = "Constrained Pair Matching")
-
-data_neyman_ps <- bind_rows(data_neyman, data_ps_analysis)
-
-# make the graph
-
-# create an indicator to alternate shading of confidence intervals
-data_neyman_ps <- data_neyman_ps %>%
-  arrange(pollutant, time) %>%
-  mutate(stripe = ifelse((time %% 2) == 0, "Grey", "White")) %>%
-  ungroup()
-
-# make the graph
-graph_ps_analysis <-
-  ggplot(
-    data_neyman_ps,
-    aes(
-      x = as.factor(time),
-      y = mean_difference,
-      ymin = ci_lower_95,
-      ymax = ci_upper_95,
-      colour = analysis,
-      shape = analysis
-    )
-  ) +
-  geom_rect(
-    aes(fill = stripe),
-    xmin = as.numeric(as.factor(data_neyman_ps$time)) - 0.42,
-    xmax = as.numeric(as.factor(data_neyman_ps$time)) + 0.42,
-    ymin = -Inf,
-    ymax = Inf,
-    color = NA,
-    alpha = 0.4
-  ) +
-  geom_hline(yintercept = 0, color = "black") +
-  geom_pointrange(position = position_dodge(width = 1), size = 1.2) +
-  scale_shape_manual(name = "Analysis:", values = c(16, 17)) +
-  scale_color_manual(name = "Analysis:", values = c(my_orange, my_blue)) +
-  facet_wrap( ~ pollutant, ncol = 4) +
-  scale_fill_manual(values = c('grey90', "white")) +
-  guides(fill = FALSE) +
-  ylab("Average Difference \nin Concentrations (µg/m³)") + xlab("Day") +
-  theme_tufte()
-
-# display the graph
-graph_ps_analysis
-
-# save the graph
-ggsave(
-  graph_ps_analysis + labs(title = NULL),
-  filename = here::here(
-    "inputs",
-    "3.outputs",
-    "1.hourly_analysis",
-    "2.experiment_cruise",
-    
-    "2.matching_results",
-    "graph_ps_analysis.pdf"
-  ),
-  width = 30,
-  height = 15,
-  units = "cm",
-  device = cairo_pdf
-)
-```
-
-
-
-
-
-
-
-
 
 
