@@ -13,8 +13,8 @@ author:
     affiliation_url: https://www.hhs.se/en/persons/l/leroutier-marion/
   - name: Léo Zabrocki 
     url: https://lzabrocki.github.io/
-    affiliation: Paris School of Economics
-    affiliation_url: https://www.parisschoolofeconomics.eu/fr/zabrocki-leo/
+    affiliation: RFF-CMCC EIEE
+    affiliation_url: https://www.eiee.org/
 date: "`r Sys.Date()`"
 output: 
     distill::distill_article:
@@ -42,7 +42,7 @@ knitr::opts_chunk$set(
 
 In this document, we provide all steps to reproduce the exploratory analysis of our data at the hourly level. 
 
-**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@hhs.se.**
+**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@gmail.com and marion.leroutier@hhs.se.**
 
 # Required Packages
 
@@ -62,7 +62,7 @@ library(patchwork) # for combining plots
 library(Cairo) # for printing customed police of graphs
 ```
 
-We also load our custom `ggplot2` theme for graphs:
+We also load our custom **ggplot2** theme for graphs:
 
 ```{r}
 # load ggplot custom theme
@@ -184,9 +184,11 @@ graph_entering_exiting_total_tonnage_hour_vessel_type <- data %>%
   labs(colour = "Vessel Status") +
   theme_tufte() +
   theme(
-    legend.position = "top",
-    legend.justification = "left",
-    legend.direction = "horizontal"
+    axis.title.y = element_text(size = 20),
+    axis.title.x = element_text(size = 20),
+    strip.text.x = element_text(size = 18),
+    legend.title = element_text(size = 20),
+    legend.text = element_text(size = 18)
   )
 
 # display the graph
@@ -624,7 +626,7 @@ map_marseille <- ggplot() +
   # port's boundaries
   geom_sf(data = harbour_data$osm_lines,
           aes(colour = "Harbour"),
-              size = 0.3, key_glyph = draw_key_label) +
+              size = 0.5, key_glyph = draw_key_label) +
   geom_sf(
     data = harbour_data$osm_polygons,
     aes(colour = "Harbour"),
@@ -635,9 +637,9 @@ map_marseille <- ggplot() +
   ggrepel::geom_text_repel(
     data = stations_coordinates,
     aes(X, Y, label = name),
-    point.padding = 1.8,
+    hjust = 1,
     segment.color = NA,
-    size = 3,
+    size = 4,
     fontface = 'bold'
   ) +
   # axes labels
@@ -680,8 +682,8 @@ ggsave(
     "1.eda",
     "map_marseille.pdf"
   ),
-  width = 20,
-  height = 15,
+  width = 18,
+  height = 12,
   units = "cm",
   device = cairo_pdf
 )

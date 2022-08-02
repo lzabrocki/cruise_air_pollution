@@ -13,8 +13,8 @@ author:
     affiliation_url: https://www.hhs.se/en/persons/l/leroutier-marion/
   - name: Léo Zabrocki 
     url: https://lzabrocki.github.io/
-    affiliation: Paris School of Economics
-    affiliation_url: https://www.parisschoolofeconomics.eu/fr/zabrocki-leo/
+    affiliation: RFF-CMCC EIEE
+    affiliation_url: https://www.eiee.org/
 date: "`r Sys.Date()`"
 output: 
     distill::distill_article:
@@ -43,9 +43,9 @@ In this document, we provide all steps required to reproduce our matching proced
 * treated units are hours with positive entering cruise traffic in t.
 * control units are hours without entering cruise traffic in t.
 
-We adjust for calendar calendar indicator and weather confouding factors.
+We adjust for calendar calendar indicator and weather confounding factors.
 
-**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@psemail.eu.**
+**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@gmail.com and marion.leroutier@psemail.eu.**
 
 # Required Packages
 
@@ -74,7 +74,7 @@ source(here::here(
 ))
 ```
 
-We finally load our custom `ggplot2` theme for graphs:
+We finally load our custom **ggplot2** theme for graphs:
 
 ```{r}
 # load ggplot custom theme
@@ -833,7 +833,6 @@ matched_data %>%
 
 This table shows that there should be no spillover effects within pairs.
 
-
 In the match dataset, there could however be spillover **between** pairs. For example, the first lead of a treated pollutant concentration could be used as a control in another pair. We first compute below the minimum of the distance of each treated unit with all other control units and then retrieve the proportion of treated units for which the minimum distance with a control unit in another pair is inferior or equal to to 5 hours.
 
 ```{r, code_folding="Please show me the code!"}
@@ -859,6 +858,5 @@ distance_5_hours <- treated_pairs %>%
   summarise(sum(min_difference<=5)/n()*100)
 ```
 
-`r round(distance_5_hours, 1)`% of pairs could suffer from a between spillover effect. For the moment, we do not drop these pairs but we certainly should find a way to take into account this issue.
-
+`r round(distance_5_hours, 1)`% of pairs could suffer from a between spillover effect.
 
