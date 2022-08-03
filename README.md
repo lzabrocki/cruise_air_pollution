@@ -1,6 +1,6 @@
 # Estimating the Local Air Pollution Impacts of Maritime Traffic: A Principled Approach for Observational Data
 
-This repo provides all the codes to reproduce the analysis of our paper entitled *Estimating the Local Air Pollution Impacts of Maritime Traffic: A Principled Approach for Observational Data*. Data are archived on an Open Science Framework repository: [Put link here]. Some noise was added to weather data as we were not allowed by Météo-France to share them publicly.
+This repo provides all the codes to reproduce the analysis of our paper entitled *Estimating the Local Air Pollution Impacts of Maritime Traffic: A Principled Approach for Observational Data*. Data are archived on an Open Science Framework repository: https://osf.io/v8aps/. Some noise was added to weather data as we were not allowed by Météo-France to share them publicly.
 
 The repository is organized to render the annotated codes as a Distill website, which can be found at this link: https://lzabrocki.github.io/cruise_air_pollution/.
 
