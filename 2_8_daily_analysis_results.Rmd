@@ -791,14 +791,14 @@ ri_data_fi_final %>%
 
 In this section, we carry out four investigations:
 
-* We check how our results are sensitive to outliers by computing 95% fisherian intervals based on the Wilcoxon's signed rank test statistic.
-* As we imputed the missing pollutant concentrations, we also want to see how our results might for the non-missing outcomes. We compute 95% fisherian intervals based on the Wilcoxon's signed rank test statistic.
+* We check how our results are sensitive to outliers by computing 95% Fisherian intervals based on the Wilcoxon's signed rank test statistic.
+* As we imputed the missing pollutant concentrations, we also want to see how our results might for the non-missing outcomes. We compute 95% Fisherian intervals based on the Wilcoxon's signed rank test statistic.
 * We compute confidence intervals for the average treatment effect using Neyman's approach and a randomization inference procedure based on a studentized test statistic.
 
 
 ### Outliers
 
-To gauge how sensitive our results are to outliers, we use a Wilcoxon signed rank test statistic and compute 95% fisherian intervals using the `wilcox.test()` function.
+To gauge how sensitive our results are to outliers, we use a Wilcoxon signed rank test statistic and compute 95% Fisherian intervals using the `wilcox.test()` function.
 
 ```{r, fig.width=12, fig.height=6, layout="l-page", code_folding="Please show me the code!"}
 # carry out the wilcox.test
@@ -1148,7 +1148,7 @@ ggsave(
 
 ### Neyman's Approach: Computing Confidence Intervals for the Average Treatment Effects
 
-We compute confidence intervals for the average treatement using Neyman's approach. We use the formula for the standard error of pair randomized experiment found in Imbens and Rubin (2015).
+We compute confidence intervals for the average treatment effect using Neyman's approach. We use the formula for the standard error of pair randomized experiment found in Imbens and Rubin (2015).
 
 ```{r}
 # we first compute the average treatment effects for each pollutant and hour
@@ -1182,7 +1182,8 @@ data_neyman <-
   mutate(
     ci_lower_95 = mean_difference - 1.96 * standard_error,
     ci_upper_95 = mean_difference + 1.96 * standard_error
-  )
+  ) %>%
+  mutate(data = "Neyman")
 
 # we save the results to compare them with an outcome regression approach
 saveRDS(
@@ -1201,39 +1202,50 @@ saveRDS(
 We plot the the point estimates for the average treatment effects and their associated 95% confidence intervals:
 
 ```{r, fig.width=12, fig.height=6, layout="l-page", code_folding="Please show me the code!"}
+# merge data on fisherian intervals with neymanian intervals
+data_ci <- ri_data_fi_final %>%
+  rename(ci_upper_95 = upper_fi,
+         ci_lower_95 = lower_fi,
+         mean_difference = observed_mean_difference) %>%
+  mutate(data = "Fisher") %>%
+  bind_rows(., data_neyman)
+
 # create an indicator to alternate shading of confidence intervals
-data_neyman <- data_neyman %>%
+data_ci <- data_ci %>%
   arrange(pollutant, time) %>%
   mutate(stripe = ifelse((time %% 2) == 0, "Grey", "White")) %>%
   ungroup()
 
 # make the graph
 graph_neyman_ci <-
-  ggplot(data_neyman, aes(x = as.factor(time), y = mean_difference)) +
+  ggplot(
+    data_ci,
+    aes(
+      x = as.factor(time),
+      y = mean_difference,
+      ymin = ci_upper_95,
+      ymax = ci_lower_95,
+      colour = data,
+      shape = data
+    )
+  ) +
   geom_rect(
     aes(fill = stripe),
-    xmin = as.numeric(as.factor(data_neyman$time)) - 0.42,
-    xmax = as.numeric(as.factor(data_neyman$time)) + 0.42,
+    xmin = as.numeric(as.factor(data_ci$time)) - 0.42,
+    xmax = as.numeric(as.factor(data_ci$time)) + 0.42,
     ymin = -Inf,
     ymax = Inf,
     color = NA,
     alpha = 0.4
   ) +
   geom_hline(yintercept = 0, color = "black") +
-  geom_pointrange(
-    aes(
-      x = as.factor(time),
-      y = mean_difference,
-      ymin = ci_lower_95 ,
-      ymax = ci_upper_95
-    ),
-    colour = my_blue,
-    lwd = 1.2
-  ) +
-  facet_wrap(~ pollutant, ncol = 4) +
+  geom_pointrange(position = position_dodge(width = 1), size = 1.2) +
+  scale_shape_manual(name = "Mode of Inference:", values = c(16, 17)) +
+  scale_color_manual(name = "Mode of Inference:", values = c(my_orange, my_blue)) +
+  facet_wrap( ~ pollutant, ncol = 4) +
   scale_fill_manual(values = c('grey90', "white")) +
   guides(fill = FALSE) +
-  ylab("Average Pair Difference \nin Concentrations (µg/m³)") + xlab("Day") +
+  ylab("Increase \nin Concentrations (µg/m³)") + xlab("Day") +
   theme_tufte()
 
 # print the graph
@@ -1499,7 +1511,7 @@ saveRDS(
 )
 ```  
 
-We plot below the 95% Fisherian intervals:
+We plot below the 95% Fisherian intervals using the studentized test statistic:
 
 ```{r, fig.width=12, fig.height=6, layout="l-page", code_folding="Please show me the code!"}
 # read the data on 95% fisherian intervals
@@ -1513,36 +1525,54 @@ ri_data_fi_weak_final <-
       "1.cruise_experiment",
       "ri_data_fi_weak_final.rds"
     )
-  )
+  ) 
+
+# bind with neymanian intervals
+data_ci <- ri_data_fi_weak_final %>%
+  rename(
+    ci_upper_95 = upper_fi,
+    ci_lower_95 = lower_fi,
+    mean_difference = observed_mean_difference
+  )  %>%
+  mutate(data = "Studentized Test Statistic") %>%
+  bind_rows(., data_neyman)
+
+# create an indicator to alternate shading of confidence intervals
+data_ci <- data_ci %>%
+  arrange(pollutant, time) %>%
+  mutate(stripe = ifelse((time %% 2) == 0, "Grey", "White")) %>%
+  ungroup()
 
 # make the graph
 graph_fisherian_intervals_weak_nulls <-
-  ggplot(ri_data_fi_weak_final,
-         aes(x = as.factor(time), y = observed_mean_difference)) +
+  ggplot(
+    data_ci,
+    aes(
+      x = as.factor(time),
+      y = mean_difference,
+      ymin = ci_lower_95,
+      ymax = ci_upper_95,
+      colour = data,
+      shape = data
+    )
+  ) +
   geom_rect(
     aes(fill = stripe),
-    xmin = as.numeric(as.factor(ri_data_fi_weak_final$time)) - 0.42,
-    xmax = as.numeric(as.factor(ri_data_fi_weak_final$time)) + 0.42,
+    xmin = as.numeric(as.factor(data_ci$time)) - 0.42,
+    xmax = as.numeric(as.factor(data_ci$time)) + 0.42,
     ymin = -Inf,
     ymax = Inf,
     color = NA,
     alpha = 0.4
   ) +
   geom_hline(yintercept = 0, color = "black") +
-  geom_pointrange(
-    aes(
-      x = as.factor(time),
-      y = observed_mean_difference,
-      ymin = lower_fi ,
-      ymax = upper_fi
-    ),
-    colour = my_blue,
-    lwd = 1.2
-  ) +
-  facet_wrap( ~ pollutant, ncol = 4) +
+  geom_pointrange(position = position_dodge(width = 1), size = 1.2) +
+  scale_shape_manual(name = "Test Statistic:", values = c(16, 17)) +
+  scale_color_manual(name = "Test Statistic:", values = c(my_orange, my_blue)) +
+  facet_wrap(~ pollutant, ncol = 4) +
   scale_fill_manual(values = c('grey90', "white")) +
   guides(fill = FALSE) +
-  ylab("Estimated Increase \nin Concentrations (µg/m³)") + xlab("Day") +
+  ylab("Increase \nin Concentrations (µg/m³)") + xlab("Day") +
   theme_tufte()
 
 # print the graph
