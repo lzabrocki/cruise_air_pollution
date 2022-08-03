@@ -13,8 +13,8 @@ author:
     affiliation_url: https://www.hhs.se/en/persons/l/leroutier-marion/
   - name: Léo Zabrocki 
     url: https://lzabrocki.github.io/
-    affiliation: Paris School of Economics
-    affiliation_url: https://www.parisschoolofeconomics.eu/fr/zabrocki-leo/
+    affiliation: RFF-CMCC EIEE
+    affiliation_url: https://www.eiee.org/
 date: "`r Sys.Date()`"
 output: 
     distill::distill_article:
@@ -45,7 +45,7 @@ In this document, we take great care providing all steps and R codes required to
 
 We adjust for calendar calendar indicators and weather confounding factors.
 
-**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@hhs.se.**
+**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@gmail.com and marion.leroutier@hhs.se.**
 
 # Required Packages
 
@@ -104,7 +104,7 @@ pair_difference_tonnage_t <- data_matched %>%
   select(-is_treated) %>%
   group_by(pair_number) %>%
   summarise(tonnage_difference = total_gross_tonnage_cruise[2] - total_gross_tonnage_cruise[1])
-````
+```
 
 We find on average, a `r round(mean(pair_difference_tonnage_t$tonnage_difference),0)` difference in gross tonnage between treated and control units. Below is the distribution of the pair difference in hourly gross tonnage in t:
 
@@ -150,7 +150,7 @@ ggsave(
   units = "cm",
   device = cairo_pdf
 )
-````
+```
 
 To check which hypothetical intervention we study, we plot below the average tonnage for each day and for treated and control groups :
 
@@ -216,6 +216,13 @@ graph_mean_tonnage_day <-
   labs(fill = "Group:") +
   xlab("Day") + ylab("Daily Cruise Gross Tonnage") +
   theme_tufte() +
+  theme(
+    axis.title.y = element_text(size = 20),
+    axis.title.x = element_text(size = 20),
+    strip.text.x = element_text(size = 18),
+    legend.title = element_text(size = 20),
+    legend.text = element_text(size = 18)
+  ) +
   guides(color = FALSE)
 
 # we print the graph
@@ -241,7 +248,7 @@ ggsave(
   units = "cm",
   device = cairo_pdf
 )
-````
+```
 
 
 # Checking Other Vessels' Types Traffic Evolution
@@ -316,7 +323,15 @@ graph_tonnage_difference_vessel_type <-
   ) +
   facet_wrap( ~ vessel_type) +
   xlab("Day") + ylab("Average Difference in\n Total Gross Tonnage") +
-  theme_tufte()
+  theme_tufte() +
+  theme(
+    axis.title.y = element_text(size = 20),
+    axis.title.x = element_text(size = 20),
+    strip.text.x = element_text(size = 18),
+    legend.title = element_text(size = 20),
+    legend.text = element_text(size = 18)
+  )
+
 
 # we print the graph
 graph_tonnage_difference_vessel_type
@@ -338,7 +353,7 @@ ggsave(
   units = "cm",
   device = cairo_pdf
 )
-```` 
+``` 
 
 We combine the two previous plots:
 
@@ -346,6 +361,7 @@ We combine the two previous plots:
 # combine plots
 graph_daily_intervention <-
   graph_mean_tonnage_day / graph_tonnage_difference_vessel_type +
+  plot_layout(heights = c(1, 1.5)) +
   plot_annotation(tag_levels = 'A') &
   theme(plot.tag = element_text(size = 30, face = "bold"))
 

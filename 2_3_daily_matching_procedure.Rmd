@@ -13,8 +13,8 @@ author:
     affiliation_url: https://www.hhs.se/en/persons/l/leroutier-marion/
   - name: Léo Zabrocki 
     url: https://lzabrocki.github.io/
-    affiliation: Paris School of Economics
-    affiliation_url: https://www.parisschoolofeconomics.eu/fr/zabrocki-leo/
+    affiliation: RFF-CMCC EIEE
+    affiliation_url: https://www.eiee.org/
 date: "`r Sys.Date()`"
 output: 
     distill::distill_article:
@@ -46,7 +46,7 @@ In this document, we provide all steps required to reproduce our matching proced
 
 We adjust for calendar calendar indicator and weather confounding factors.
 
-**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@hhs.se.**
+**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@gmail.com and marion.leroutier@hhs.se.**
 
 # Required Packages
 
@@ -583,7 +583,7 @@ distance_1_day <- treated_pairs %>%
   summarise(sum(min_difference<=1)/n()*100)
 ```
 
-`r round(distance_1_day, 1)`% of pairs could suffer from a between spillover effect. For the moment, we do not drop these pairs but we certainly should find a way to take into account this issue.
+`r round(distance_1_day, 1)`% of pairs could suffer from a between spillover effect. 
 
 We finally save the data:
 

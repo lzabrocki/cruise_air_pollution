@@ -13,8 +13,8 @@ author:
     affiliation_url: https://www.hhs.se/en/persons/l/leroutier-marion/
   - name: Léo Zabrocki 
     url: https://lzabrocki.github.io/
-    affiliation: Paris School of Economics
-    affiliation_url: https://www.parisschoolofeconomics.eu/fr/zabrocki-leo/
+    affiliation: RFF-CMCC EIEE
+    affiliation_url: https://www.eiee.org/
 date: "`r Sys.Date()`"
 output: 
     distill::distill_article:
@@ -45,18 +45,11 @@ In this document, we take great care providing all steps and R codes required to
 
 We adjust for calendar calendar indicator and weather confouding factors.
 
-**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@hhs.se.**
+**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@gmail.com and marion.leroutier@hhs.se.**
 
 # Required Packages
 
-To reproduce exactly the `2_8_analysis_results.html` document, we first need to have installed:
-
-* the [R](https://www.r-project.org/) programming language 
-* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `2_8_analysis_results.Rmd` file and interact with the R code chunks
-* the [R Markdown](https://rmarkdown.rstudio.com/) package
-* and the [Distill](https://rstudio.github.io/distill/) package which provides the template for this document. 
-
-Once everything is set up, we have to load the following packages:
+We load the following packages:
 
 ```{r}
 # load required packages
@@ -73,7 +66,7 @@ library(Cairo) # for printing custom police of graphs
 library(patchwork) # combining plots
 ```
 
-We finally load our custom `ggplot2` theme for graphs:
+We also load our custom **ggplot2** theme for graphs:
 
 ```{r}
 # load ggplot custom theme
@@ -1721,6 +1714,9 @@ graph_concentration_tonnage_pair <- data_concentration_tonnage_pair %>%
   facet_wrap(~ time, scales = "free_x") +
   xlab("Pair Differences in Cruise Tonnage (unitless)") + ylab("Pair Differences \nin Concentrations (µg/m³)") +
   theme_tufte()
+
+# print the graph
+graph_concentration_tonnage_pair
 
 # save the graph
 ggsave(

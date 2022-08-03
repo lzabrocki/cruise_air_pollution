@@ -13,8 +13,8 @@ author:
     affiliation_url: https://www.hhs.se/en/persons/l/leroutier-marion/
   - name: Léo Zabrocki 
     url: https://lzabrocki.github.io/
-    affiliation: Paris School of Economics
-    affiliation_url: https://www.parisschoolofeconomics.eu/fr/zabrocki-leo/
+    affiliation: RFF-CMCC EIEE
+    affiliation_url: https://www.eiee.org/
 date: "`r Sys.Date()`"
 output: 
     distill::distill_article:
@@ -45,7 +45,7 @@ In this document, we take great care providing all steps and R codes required to
 
 We adjust for calendar calendar indicator and weather confounding factors.
 
-**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@hhs.se.**
+**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@gmail.com and marion.leroutier@hhs.se.**
 
 # Required Packages
 

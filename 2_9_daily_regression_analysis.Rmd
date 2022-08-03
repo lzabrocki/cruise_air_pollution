@@ -13,8 +13,8 @@ author:
     affiliation_url: https://www.hhs.se/en/persons/l/leroutier-marion/
   - name: Léo Zabrocki 
     url: https://lzabrocki.github.io/
-    affiliation: Paris School of Economics
-    affiliation_url: https://www.parisschoolofeconomics.eu/fr/zabrocki-leo/
+    affiliation: RFF-CMCC EIEE
+    affiliation_url: https://www.eiee.org/
 date: "`r Sys.Date()`"
 output: 
     distill::distill_article:
@@ -42,7 +42,7 @@ knitr::opts_chunk$set(
 
 In this document, we compare the results found with our matching analysis with those found with an outcome regression approach.
 
-**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@psemail.eu and marion.leroutier@hhs.se.**
+**Should you have any questions, need help to reproduce the analysis or find coding errors, please do not hesitate to contact us at leo.zabrocki@gmail.com and marion.leroutier@hhs.se.**
 
 # Required Packages and Data
 
@@ -61,7 +61,7 @@ library(kableExtra) # for table formatting
 library(Cairo) # for printing custom police of graphs
 ```
 
-We load our custom `ggplot2` theme for graphs:
+We load our custom **ggplot2** theme for graphs:
 
 ```{r}
 # load ggplot custom theme
